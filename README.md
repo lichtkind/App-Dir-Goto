@@ -22,35 +22,36 @@ function gt() { perl ~/../../goto/goto.pl "$@" cd $(cat ~/../../goto/last_choice
 
 
 All commands can be configured, these are my suggestions.
-
+Square brackets embrace optional syntax parts.
+In command mode the cursor is &gt; whereas in (managing) list mode &gt;&gt;.
 
 ## commands for managing list entries:
                 
-- `&lt;pos&gt; . . . . . . . go to directory listed on position (in [])`
-- : &lt;name &gt; . . . . . go to dir listed under name (right beside &lt;pos&gt;)
-- _ . . . . . . . . . go to dir gone to last time
-- a[&lt;pos&gt;[:&lt;name&gt;]]. add current dir on &lt;pos> (default -1) as &lt;name&gt;
-- d[&lt;p/n&gt;] ......... delete dir entry (default -1)
-- n&lt;pos&gt;:&lt;name&gt; . . . add Name to directory (max. 5 alphanumeric char.)
-- n&lt;p/n&gt; ........... delete dir entry name
-- m&lt;p/n&gt;:&lt;newpos&gt; . . move dir to new position in same list
-- m&lt;p/n&gt;:&lt;ln&gt;[:&lt;np&gt;] move to pos &lt;np&gt; on diff. list named ln
-- l ................ display menu with of lists
-- l:&lt;listname&gt; ..... select which list to display (current/archive)
-- s:p|n|v .......... sort list by Position (default), Name, Visit count,
-- s:l|c|d .......... by time of Last visit, time of Creation, Dir path
-- &lt; ................ undo last command
-- &gt; ................ redo - revert previously made undo
-- h ................ long help
-- h:txt ............ overview text
-- h:cmd ............ display list of commands
--  &lt;Enter&gt; .......... exit
+- `<pos>   .  .  .  .  go to directory listed on position (in [])`
+- `:<name> .  .  .  .  go to dir listed under name (right beside <pos>)`
+- `_    .  .  .  .  .  go to dir gone to last time`
+- `a[<pos>[:<name>]]   add current dir on <pos> (default -1) as <name>`
+- `d[<p/n>]   .  .  .  delete dir entry (default -1)`
+- `n<pos>:<name> .  .  add Name to directory (max. 5 alphanumeric char.)`
+- `n<p/n>  .  .  .  .  delete dir entry name`
+- `m<p/n>:<newpos>  .  move dir to new position in same list`
+- `m<p/n>:<ln>[:<np>]  move to pos <np> on diff. list named <ln>`
+- `l .  .  .  .  .  .  display menu with of lists`
+- `l:<command>   .  .  select which list to display or any command for list mode`
+- `s:p|n|v .  .  .  .  sort list by Position (default), Name, Visit count,`
+- `s:l|c|d .  .  .  .  by time of Last visit, time of Creation, Dir path`
+- `< .  .  .  .  .  .  undo last command`
+- `> .  .  .  .  .  .  redo - revert previously made undo`
+- `h .  .  .  .  .  .  long help`
+- `h:txt   .  .  .  .  overview text`
+- `h:cmd   .  .  .  .  display list of commands`
+- `<Enter> .  .  .  .  exit`
 
 ## commands for managing lists:
 
--  &lt;pos&gt; ............ switch to dir list named on &lt;pos&gt;
-- : &lt;name&gt; .......... switch to dir list with &lt;name&gt;
-- a &lt;listname&gt; ...... create a new list
-- d &lt;p/n &gt; ........... delete list (has to be empty)
-- n &lt;p/n &gt;:&lt;name&gt; .... rename dir list
+- `<pos>  .  .  .  .  switch to dir list named on &lt;pos&gt;`
+- `:<name>   .  .  .  switch to dir list with &lt;name&gt;`
+- `a <listname> .  .  create a new list`
+- `d <p/n>   .  .  .  delete list (has to be empty)`
+- `n <p/n>:<name>  .  rename dir list`
 
