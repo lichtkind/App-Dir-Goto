@@ -27,10 +27,10 @@ In command mode the cursor is &gt; whereas in (managing) list mode &gt;&gt;.
 
 ## commands for managing list entries:
                 
-- `<pos>   .  .  .  .  .  .  go to directory listed on position (in [])`
-- `:<name> .  .  .  .  .  go to dir listed under name (right beside <pos>)`
-- `_    .  .  .  .  .  .  .  .  go to dir gone to last time`
-- `a[<pos>[:<name>]]   add current dir on <pos> (default -1) as <name>`
+- `<pos>   .  .  .  .  .  .  .  go to directory listed on position (in [])`
+- `:<name> .  .  .  .  .  .  go to dir listed under name (right beside <pos>)`
+- `_    .  .  .  .  .  .  .  .  .  go to dir gone to last time`
+- `a[<pos>[:<name>]]   .  add current dir on <pos> (default -1) as <name>`
 - `d[<p/n>]   .  .  .  .  .  delete dir entry (default -1)`
 - `n<pos>:<name> .  .  .  add Name to directory (max. 5 alphanumeric char.)`
 - `n<p/n>  .  .  .  .  .  .  delete dir entry name`
@@ -49,9 +49,9 @@ In command mode the cursor is &gt; whereas in (managing) list mode &gt;&gt;.
 
 ## commands for managing lists:
 
-- `<pos>  .  .  .  .  .  .  switch to dir list named on &lt;pos&gt;`
-- `:<name>   .  .  .  .  .  switch to dir list with &lt;name&gt;`
+- `<pos>.  .  .  .  .  .  .  switch to dir list named on &lt;pos&gt;`
+- `:<name>.   .  .  .  .  .  switch to dir list with &lt;name&gt;`
 - `a <listname> .  .  . create a new list`
-- `d <p/n>   .  .  .  .  .  delete list (has to be empty)`
+- `d <p/n>.   .  .  .  .  .  delete list (has to be empty)`
 - `n <p/n>:<name>  .  . rename dir list`
 
