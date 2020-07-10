@@ -8,21 +8,22 @@ use FindBin;
 use File::Spec;
 use YAML;
 
-my $VERSION = 0.7;
+my $VERSION = 0.8;
 my %file = (places => 'places.yaml', 
             backup => 'places.yaml.bak', 
             destination => 'last_choice');
-my %command = (remember =>'r', delete =>'d', name =>'n', move =>'m', sort =>'s',
-                   list =>'l', undo =>'<', redo =>'>', last =>'_', help =>'h');
+my %command = (add =>'a', delete =>'d', name =>'n', move =>'m', sort =>'s',
+              list =>'l', undo =>'<', redo =>'>', last =>'_', help =>'h');
 my %cmd; %cmd = map { die "command $_ is defiend twice" if $cmd{$command{$_}} ;$command{$_} => $_ } keys %command;
 my %sort_shortcut = (''=> 'position', p=> 'position', n=> 'name', v=> 'visits', l=> 'last_visit', c=> 'creation_time', d=> 'dir');
-my $sep = ',:->';
+my $sep = '[,:->]'; # arg separator character
+my $char = '[a-zA-Z0-9]';
 sub help {
 	my $what = shift;
 	if (not $what or $what eq 'txt'){
         say <<EOH;
 
-          Help of          App::Goto        Version $VERSION
+          Help of          App::Dir::Goto        Version $VERSION
           
   Command line tool gt (short for goto) changes the working dir like cd.
   It remembers a set of directories you can address by number or name.
@@ -31,19 +32,19 @@ sub help {
   To optionally address a subdir just write <p/n>/sub/dir.
   Use 'gt <pos>' or 'gt <name>' or just 'gt' to open interactive mode.
   There you type commands that will be completed by <Enter>.
-  Command arguments can be separated by [,:->].
+  Command arguments can be separated by [,:->] (mostly optional).
   Please press just <Enter> to exit the interactive mode.
 EOH
 	}
 	if (not $what or $what eq 'cmd'){
         say <<EOH;
 
-  List of all commands:
+  commands for managing list entries:
                 
   <pos>              go to directory listed on position (in [])
   :<name>            go to dir listed under name (right beside <pos>)
   $command{'last'}                  go to dir gone to last time
-  $command{'remember'}\[<pos>\[:<name>\]\]  remember current dir on <pos> (default -1) as <name>
+  $command{'add'}\[<pos>\[:<name>\]\]  add current dir on <pos> (default -1) as <name>
   $command{'delete'}\[<p/n>\]           delete dir entry (default -1)
   $command{'name'}<pos>:<name>      add Name to directory (max. 5 alphanumeric char.)
   $command{'name'}<p/n>             delete dir entry name
@@ -59,15 +60,24 @@ EOH
   $command{'help'}:txt              overview text
   $command{'help'}:cmd              display list of commands
   <Enter>            exit
+
+  commands for managing lists:
+
+  <pos>              switch to dir list named on <pos>
+  :<name>            switch to dir list with <name>
+  $command{'add'}<listname>        create a new list
+  $command{'delete'}<p/n>\             delete list (has to be empty)
+  $command{'name'}<p/n>:<name>      rename dir list
 EOH
     }
 }
 
 our $cwd = Cwd::cwd();
 chdir $FindBin::Bin;
-die "file $file{'places'} could not be read" unless -r $file{'places'};
-my $data = YAML::LoadFile( $file{'places'} );
-my ($sorted_by, $list_name, $dir_list, %pos_of_name, @state) = ($data->{'sorted_by'});
+my $data = (-r $file{'places'}) ? YAML::LoadFile( $file{'places'} ) : {archive =>[], current => [], sorted_by => 'position'};
+my ($sorted_by, $list_name, $dir_list, %pos_of_name, @next_data) = ($data->{'sorted_by'});
+my @past_data = ($data);
+$data = clone_data($data);
 select_list('current');
 
 if (@ARGV){
@@ -86,90 +96,124 @@ if (@ARGV){
 }
 else {
 main: while (1){
-	    say "dir list '$list_name', sorted by '$sorted_by' (h <Enter> for help):";
+	say "list $dir_list";
+	    say "App::Dir::Goto list '$list_name', sorted by '$sorted_by' (h <Enter> for help):";
 	    my @list_order = $sorted_by eq 'position' ? 0 .. $#$dir_list : sort {$dir_list->[$a]{$sorted_by} cmp $dir_list->[$b]{$sorted_by}} 0 .. $#$dir_list;
 	    printf "[%2s] %6s    %s\n", $_, $dir_list->[$_]{name}, $dir_list->[$_]{dir} for @list_order;
         
 input:  print ">";
         chomp (my $input = <STDIN>);
         given ( $input ) {
-            when (/^$command{'remember'}(\d*)[$sep]?(.*)$/) {
+            when (/^$command{'add'}$sep?(\d*)$sep?($char*)$/) {
                 my $dir = $cwd;
                 $dir = '~/' . substr( $dir, length($ENV{'HOME'}) + 1 ) if index($dir, $ENV{'HOME'}) == 0;
                 for (@$dir_list){ next main if $_->{'dir'} eq $dir}
-                my $pos = ($1 ne '' and $1 >=0 and $1 <= $#$dir_list) ? $1 : $#$dir_list+1;
+                my $pos = $1; $pos = $#$dir_list+1 unless check_new_index($dir_list, $pos);
                 splice @$dir_list, $pos, 0, {dir => $dir, creation_time => now(), last_visit => 0, visits => 0};
 				$dir_list->[$pos]{'name'} = $2 if $2;
-				say "remember directory $dir at position $pos and and under name $2";
+				say "remember directory $dir at position $pos and and under ".($2 ? '': 'no')." name $2";
             }
-            when (/^$command{'name'}(\d+)[$sep]?(.*)$/){
+            when (/^$command{'name'}$sep?($char+)$sep?($char*)$/){
 				my $pos = check_ID($dir_list, $1);
                 error ("index $1 is not a valid list position or name") unless defined $pos;
                 error ("$2 is not a valid name (A-Z,a-z only, max. 5 chars)") if $2 and ($2 =~ /[^A-Za-z0-9]/ or length $2 > 5);
-                if ($2){
+                if (length($2)){
                     for (@$dir_list) { delete $_->{'name'}  if $_->{'name'} eq $2 }
                     $dir_list->[$pos]{'name'} = $2;
                     $pos_of_name{ $2 } = $pos;
-                    say "named enty $pos as $2";
+                    say "named entry $pos as $2";
 				} elsif (exists $dir_list->[$pos]{'name'}) {
                     my $name = delete $dir_list->[ $pos ]{'name'};
                     delete $pos_of_name{ $name };
                     say "deleted path name $name";
 				}
             }
-            when (/^$command{'move'}(\d+)[$sep]?(\d*)$/) {
-				my $from = check_ID($dir_list, $1);
-				my $to = $2 || $#$dir_list;
+            when (/^$command{'move'}($char+)$sep?($char*)$sep?($char*)$/) {
+				my ($from, $lname, $to) = (check_ID($dir_list, $1), $2, $3);
                 error ("index $1 is not a valid list position or name") unless defined $from;
-                error ("index $to is not a valid list position") unless check_index($dir_list, $to);
-                splice( @$dir_list, $to, 0, splice( @$dir_list, $from, 1));
-                say "moved entry from position $from to $to";
+				($lname, $to) = ($list_name, $lname) if $lname !~ /\D/;
+                error ("there is to dir list named $lname") if ref $data->{ $lname } ne 'ARRAY';
+                $to ||= $#{$data->{ $lname }}+1;
+                error ("index $to is not a valid list position") unless check_new_index($data->{ $lname }, $to);
+                splice( @{$data->{ $lname }}, $to, 0, splice( @$dir_list, $from, 1));
+                say "moved entry from position $from to $to of list $lname";
             }
-            when (/^$command{'delete'} ?[$sep]?(.*)$/){ # deleting one element on last or given pos
+            when (/^$command{'delete'}$sep?($char*)$/){ # deleting one element on last or given pos
 				my $pos = check_ID($dir_list, $1);
                 error ("identifier $1 is not a valid list position or name $pos") unless defined $pos;
                 my $entry = splice @$dir_list, $pos, 1;
                 delete $pos_of_name{ $entry->{'name'} } if exists $entry->{'name'};
             }
-            when (/^$command{'sort'} ?[$sep]?(\w){0,1}$/){
+            when (/^$command{'sort'}$sep?(\w){0,1}$/){
 				my $crit = $sort_shortcut{$1};
                 error ("'$1' is not a valid sorting criterion, try 'p','n','v','l','c','d' or empty") unless defined $crit;
 				$data->{'sorted_by'} = $sorted_by = $crit;
 			}
-            when (/^$command{'list'} ?[$sep]?(\w*)$/){
-				my @list = grep {ref $data->{$_} eq 'ARRAY'} keys %$data
-				if ($1){
-					if (ref $data->{$1} eq 'ARRAY'){ select_list($1)}
-					else                           { error ("'$1' is not a valid list name, try: @list") }
+            when (/^$command{'list'}$sep?(\w*)$/){
+				my @list = sort grep {ref $data->{$_} eq 'ARRAY'} keys %$data;
+				if ((my $lname = $1) ne ''){
+					$lname = $list[$lname] if $lname =~ /^\d+$/ and $1 >= 0 and $1 < @list;
+					if (ref $data->{$lname} eq 'ARRAY'){ select_list($lname)}
+					else                               { error ("'$lname' is not a valid index or list name, try 0..$#list or: @list") }
 				} else {
+					say "available directory lists: ";
+                    printf "[%2s]   %02d  %s\n", $_, int @{$data->{$list[$_]}}, $list[$_] for 0..$#list;
+                    while (1){
+                        print ">>";        
+                        chomp (my $input = <STDIN>);
+                        last if $input eq '';
+                        $input = $list[$input] if $input =~ /^\d+$/ and $input >= 0 and $input < @list;
+                        say ("'$input' is not a valid index or list name, try 0..$#list or: @list"), next unless ref $data->{$input} eq 'ARRAY';
+                        select_list( $input );
+                        goto main;
+					}
 				}
-				#print ">";        chomp (my $input = <STDIN>);
 			}
             when ($command{'undo'}){
-                #$data = YAML::LoadFile( $file{'backup'} ) if -r $file{'backup'};
-                #select_list( $list_name );
+				error ("there are no recorded undo step to be redone") unless @past_data;
+				unshift @next_data, $data;
+				pop @past_data;
+				$data = pop @past_data;
+			    select_list( $list_name );
+				say "undo last command";
+				goto main;
             }   
             when ($command{'redo'}){
-                #$data = YAML::LoadFile( $file{'backup'} ) if -r $file{'backup'};
-                #select_list( $list_name );
+				error ("there are no recorded undo step to be redone") unless @next_data;
+                push @past_data, $data;
+				$data = shift @next_data;
+			    select_list( $list_name );
+				say "redo last undo";
+				goto main;
             }   
-            when ($command{'last'})                  { exit goto_path( @{$data->{'last_choice'}}{qw/list position addon/} )}
-            when (/^$command{'help'} ?[$sep]?(\w*)$/){ help( $1 );  goto input	}
-            when (/^(\d+)(\/.+)?$/)          {
+            when (/^$command{'help'}$sep?(\w*)$/){ help( $1 );  goto input	}
+            when ($command{'last'})              { exit goto_path( @{$data->{'last_choice'}}{qw/list position addon/} )}
+            when (/^(\d+)(\/.+)?$/)              {
                 error ("index $1 is not a valid dir list position") unless check_index($dir_list, $1);
                 exit goto_path($list_name, $1, $2); 
             }
-            when (/^[$sep]([a-zA-Z0-9]+)(\/.+)?$/) {
+            when (/^$sep($char+)(\/.+)?$/) {
                 error ("$1 is unknown directory name") unless defined $pos_of_name{$1};
                 exit goto_path($list_name, $pos_of_name{$1}, $2);
             }
-            when ('')  { exit return_path('.') }
+            when ('')  { exit write_return_path('.') }
             default    { help();  goto input   }
         }
-        save_data();
+        write_data( $data );
+        push @past_data, $data;
+	    shift @past_data if @past_data > 22;
+	    @next_data = ();
+	    $data = clone_data($data);
+	    select_list( $list_name );
     }
 }
 
+sub clone_data {
+	my $data = shift;
+	return $data unless ref $data;
+	return [map {clone_data($_)} @$data] if ref $data eq 'ARRAY';
+	return {map {$_ => clone_data( $data->{$_} )} keys %$data} if ref $data eq 'HASH';
+}
 sub select_list { # change displayed list
 	my $new_list_name = shift;
 	return unless ref $data->{ $new_list_name } eq 'ARRAY';
@@ -178,7 +222,8 @@ sub select_list { # change displayed list
 	%pos_of_name = map { $dir_list->[$_]{'name'} => $_ } 0 .. $#$dir_list;
 }
 
-sub check_index { my ($list, $i) = @_; $i =~ /\d+/ and ref $list eq 'ARRAY' and $i >= 0 and $i <= $#$list}
+sub check_index     { my ($list, $i) = @_; $i =~ /\d+/ and ref $list eq 'ARRAY' and $i >= 0 and $i <= $#$list}
+sub check_new_index { my ($list, $i) = @_; $i =~ /\d+/ and ref $list eq 'ARRAY' and $i >= 0 and $i <= @$list}
 sub check_ID  {
 	my ($list, $i) = @_;
 	return unless ref $list eq 'ARRAY';
@@ -192,35 +237,35 @@ sub now { # sortable time stamp
 	sprintf "%4s %02d.%02d. %02d:%02d:%02d", 1900+$t[5], $t[4], $t[3], $t[2], $t[1], $t[0];
 }
 
-
 sub goto_path {
-    my ($list_name, $dir_pos, $addon) = @_;
+    my ($list_name, $list_pos, $addon) = @_;
     return unless ref $data->{$list_name} eq 'ARRAY';
     my $list = $data->{$list_name};
-    return unless defined $dir_pos and int $dir_pos == $dir_pos and $dir_pos >= 0 and $dir_pos < @$dir_list;
+    return unless defined $list_pos and int $list_pos == $list_pos and $list_pos >= 0 and $list_pos < @$list;
 
-    my $path = $dir_list->[$dir_pos]->{'dir'};
+    my $path = $list->[$list_pos]->{'dir'};
     $path = File::Spec->catfile( $ENV{'HOME'}, substr($path, 2) ) if substr($path, 0, 1) eq '~';
     $path = File::Spec->catfile( $path, $addon ) if defined $addon;
     error("could not find directory '$path'") unless -d $path;
-    $dir_list->[$dir_pos]->{'last_visit'} = now();
-    $dir_list->[$dir_pos]->{'visits'}++;
-    $data->{'last_choice'} = {list => $list_name, position => $dir_pos, addon => $addon};
-    save_data();
-    return_path($path);
+    $list->[$list_pos]->{'last_visit'} = now();
+    $list->[$list_pos]->{'visits'}++;
+    $data->{'last_choice'} = {list => $list_name, position => $list_pos, addon => $addon};
+    write_data($data);
+    write_return_path($path);
 }
-sub save_data {
+sub write_data {
     rename $file{'places'}, $file{'backup'};
-    YAML::DumpFile( $file{'places'}, $data );
+    YAML::DumpFile( $file{'places'}, $_[0] );
 }
-sub return_path {
+sub write_return_path {
     open my $FH, '>', $file{'destination'};
     print $FH $_[0];
     0;
 }
+
 __END__
-change list
-move to list
-create data file if not present
-neg indecies
-undo
+
+create list
+delete list
+rename list
+neg indicies
