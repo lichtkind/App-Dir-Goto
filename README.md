@@ -31,11 +31,11 @@ In command mode the cursor is &gt; whereas in (managing) list mode &gt;&gt;.
 - `:<name> .  .  .  .  .  .  go to dir listed under name (right beside <pos>)`
 - `_    .  .  .  .  .  .  .  .  .  go to dir gone to last time`
 - `a[<pos>[:<name>]]   .  add current dir on <pos> (default -1) as <name>`
-- `d[<p/n>]   .  .  .  .  .  delete dir entry (default -1)`
+- `d[<p/n>].   .  .  .  .  .  delete dir entry (default -1)`
 - `n<pos>:<name> .  .  .  add Name to directory (max. 5 alphanumeric char.)`
-- `n<p/n>  .  .  .  .  .  .  delete dir entry name`
+- `n<p/n>.  .  .  .  .  .  .  delete dir entry name`
 - `m<p/n>:<newpos>  .  . move dir to new position in same list`
-- `m<p/n>:<ln>[:<np>]   move to pos <np> on diff. list named <ln>`
+- `m<p/n>:<ln>[:<np>].   move to pos <np> on diff. list named <ln>`
 - `l .  .  .  .  .  .  .  .  .  display menu with of lists`
 - `l:<command>   .  .  .  .  select which list to display or any command for list mode`
 - `s:p|n|v .  .  .  .  .  .  sort list by Position (default), Name, Visit count,`
