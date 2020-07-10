@@ -1,79 +1,26 @@
 #!/usr/bin/perl
 
 use v5.18;
+use lib 'lib';
+use warnings;
 no warnings  qw/experimental::smartmatch/;
 use feature qw/switch/;
 use Cwd;
 use FindBin;
 use File::Spec;
-use YAML;
 
 my $VERSION = 0.8;
-my %file = (places => 'places.yaml', 
-            backup => 'places.yaml.bak', 
-            destination => 'last_choice');
 my %command = (add =>'a', delete =>'d', name =>'n', move =>'m', sort =>'s',
               list =>'l', undo =>'<', redo =>'>', last =>'_', help =>'h');
 my %cmd; %cmd = map { die "command $_ is defiend twice" if $cmd{$command{$_}} ;$command{$_} => $_ } keys %command;
-my %sort_shortcut = (''=> 'position', p=> 'position', n=> 'name', v=> 'visits', l=> 'last_visit', c=> 'creation_time', d=> 'dir');
+my %sort_shortcut = ('' => 'position', p => 'position', n => 'name', v => 'visits', l => 'last_visit', c => 'creation_time', d => 'dir');
 my $sep = '[,:->]'; # arg separator character
 my $char = '[a-zA-Z0-9]';
-sub help {
-	my $what = shift;
-	if (not $what or $what eq 'txt'){
-        say <<EOH;
-
-          Help of          App::Dir::Goto        Version $VERSION
-          
-  Command line tool gt (short for goto) changes the working dir like cd.
-  It remembers a set of directories you can address by number or name.
-  <pos> stands for a position number and <name> for name 
-  of dir entry. <p/n> means one of both (a path identifier).
-  To optionally address a subdir just write <p/n>/sub/dir.
-  Use 'gt <pos>' or 'gt <name>' or just 'gt' to open interactive mode.
-  There you type commands that will be completed by <Enter>.
-  Command arguments can be separated by [,:->] (mostly optional).
-  Please press just <Enter> to exit the interactive mode.
-EOH
-	}
-	if (not $what or $what eq 'cmd'){
-        say <<EOH;
-
-  commands for managing list entries:
-                
-  <pos>              go to directory listed on position (in [])
-  :<name>            go to dir listed under name (right beside <pos>)
-  $command{'last'}                  go to dir gone to last time
-  $command{'add'}\[<pos>\[:<name>\]\]  add current dir on <pos> (default -1) as <name>
-  $command{'delete'}\[<p/n>\]           delete dir entry (default -1)
-  $command{'name'}<pos>:<name>      add Name to directory (max. 5 alphanumeric char.)
-  $command{'name'}<p/n>             delete dir entry name
-  $command{'move'}<p/n>:<newpos>    move dir to new position in same list
-  $command{'move'}<p/n>:<ln>\[:<np>\] move to pos <np> on diff. list named ln
-  $command{'list'}                  display menu with of lists
-  $command{'list'}:<listname>       select which list to display (current/archive)
-  $command{'sort'}:p|n|v            sort list by Position (default), Name, Visit count,
-  $command{'sort'}:l|c|d            by time of Last visit, time of Creation, Dir path
-  $command{'undo'}                  undo last command
-  $command{'redo'}                  redo - revert previously made undo
-  $command{'help'}                  long help
-  $command{'help'}:txt              overview text
-  $command{'help'}:cmd              display list of commands
-  <Enter>            exit
-
-  commands for managing lists:
-
-  <pos>              switch to dir list named on <pos>
-  :<name>            switch to dir list with <name>
-  $command{'add'}<listname>        create a new list
-  $command{'delete'}<p/n>\             delete list (has to be empty)
-  $command{'name'}<p/n>:<name>      rename dir list
-EOH
-    }
-}
+my %file = (places => 'places.yaml',  backup => 'places.yaml.bak',      destination => 'last_choice');
 
 our $cwd = Cwd::cwd();
 chdir $FindBin::Bin;
+require App::Goto::Dir::Data;
 my $data = (-r $file{'places'}) ? YAML::LoadFile( $file{'places'} ) : {archive =>[], current => [], sorted_by => 'position'};
 my ($sorted_by, $list_name, $dir_list, %pos_of_name, @next_data) = ($data->{'sorted_by'});
 my @past_data = ($data);
@@ -96,10 +43,9 @@ if (@ARGV){
 }
 else {
 main: while (1){
-	say "list $dir_list";
-	    say "App::Dir::Goto list '$list_name', sorted by '$sorted_by' (h <Enter> for help):";
+        say "App::Dir::Goto list '$list_name', sorted by '$sorted_by' (h <Enter> for help):";
 	    my @list_order = $sorted_by eq 'position' ? 0 .. $#$dir_list : sort {$dir_list->[$a]{$sorted_by} cmp $dir_list->[$b]{$sorted_by}} 0 .. $#$dir_list;
-	    printf "[%2s] %6s    %s\n", $_, $dir_list->[$_]{name}, $dir_list->[$_]{dir} for @list_order;
+	    printf "[%2s] %6s    %s\n", $_, $dir_list->[$_]{name}//'', $dir_list->[$_]{dir} for @list_order;
         
 input:  print ">";
         chomp (my $input = <STDIN>);
@@ -138,8 +84,9 @@ input:  print ">";
                 splice( @{$data->{ $lname }}, $to, 0, splice( @$dir_list, $from, 1));
                 say "moved entry from position $from to $to of list $lname";
             }
-            when (/^$command{'delete'}$sep?($char*)$/){ # deleting one element on last or given pos
+            when (/^$command{'delete'}$sep?($char*)$/){
 				my $pos = check_ID($dir_list, $1);
+say "--- $pos";
                 error ("identifier $1 is not a valid list position or name $pos") unless defined $pos;
                 my $entry = splice @$dir_list, $pos, 1;
                 delete $pos_of_name{ $entry->{'name'} } if exists $entry->{'name'};
@@ -163,7 +110,7 @@ input:  print ">";
                         chomp (my $input = <STDIN>);
                         last if $input eq '';
                         $input = $list[$input] if $input =~ /^\d+$/ and $input >= 0 and $input < @list;
-                        say ("'$input' is not a valid index or list name, try 0..$#list or: @list"), next unless ref $data->{$input} eq 'ARRAY';
+                        (say "'$input' is not a valid index or list name, try 0..$#list or: @list"), next unless ref $data->{$input} eq 'ARRAY';
                         select_list( $input );
                         goto main;
 					}
@@ -219,7 +166,7 @@ sub select_list { # change displayed list
 	return unless ref $data->{ $new_list_name } eq 'ARRAY';
 	$list_name = $new_list_name;
 	$dir_list = $data->{ $new_list_name };
-	%pos_of_name = map { $dir_list->[$_]{'name'} => $_ } 0 .. $#$dir_list;
+	%pos_of_name = map { $dir_list->[$_]{'name'} => $_ } grep {exists $dir_list->[$_]{'name'}} 0 .. $#$dir_list;
 }
 
 sub check_index     { my ($list, $i) = @_; $i =~ /\d+/ and ref $list eq 'ARRAY' and $i >= 0 and $i <= $#$list}
@@ -227,7 +174,8 @@ sub check_new_index { my ($list, $i) = @_; $i =~ /\d+/ and ref $list eq 'ARRAY' 
 sub check_ID  {
 	my ($list, $i) = @_;
 	return unless ref $list eq 'ARRAY';
-	return $#$list unless defined $i and ($i or $i == 0);
+say "check $list, $i";
+	return $#$list if not defined $i or (not $i and $i != 0);
 	check_index(@_) ? $i : $pos_of_name{$i};
 }
 sub error {	say 'Input Error: ' . shift; goto input }
@@ -262,6 +210,61 @@ sub write_return_path {
     print $FH $_[0];
     0;
 }
+
+sub help {
+	my $what = shift;
+	if (not $what or $what eq 'txt'){
+        say <<EOH;
+
+          Help of          App::Dir::Goto        Version $VERSION
+          
+  Command line tool gt (short for goto) changes the working dir like cd.
+  It remembers a set of directories you can address by number or name.
+  <pos> stands for a position number and <name> for name 
+  of dir entry. <p/n> means one of both (a path identifier).
+  To optionally address a subdir just write <p/n>/sub/dir.
+  Use 'gt <pos>' or 'gt <name>' or just 'gt' to open interactive mode.
+  There you type commands that will be completed by <Enter>.
+  Command arguments can be separated by [,:->] (mostly optional).
+  Please press just <Enter> to exit the interactive mode.
+EOH
+	}
+	if (not $what or $what eq 'cmd'){
+        say <<EOH;
+
+  commands for managing list entries:
+                
+  <pos>              go to directory listed on position (in [])
+  :<name>            go to dir listed under name (right beside <pos>)
+  $command{'last'}                  go to dir gone to last time
+  $command{'add'}\[<pos>\[:<name>\]\]  add current dir on <pos> (default -1) as <name>
+  $command{'delete'}\[<p/n>\]           delete dir entry (default -1)
+  $command{'name'}<pos>:<name>      add Name to directory (max. 5 alphanumeric char.)
+  $command{'name'}<p/n>             delete dir entry name
+  $command{'move'}<p/n>:<newpos>    move dir to new position in same list
+  $command{'move'}<p/n>:<ln>\[:<np>\] move to pos <np> on diff. list named ln
+  $command{'list'}                  display menu with of lists
+  $command{'list'}:<listname>       select which list to display (current/archive)
+  $command{'sort'}:p|n|v            sort list by Position (default), Name, Visit count,
+  $command{'sort'}:l|c|d            by time of Last visit, time of Creation, Dir path
+  $command{'undo'}                  undo last command
+  $command{'redo'}                  redo - revert previously made undo
+  $command{'help'}                  long help
+  $command{'help'}:txt              overview text
+  $command{'help'}:cmd              display list of commands
+  <Enter>            exit
+
+  commands for managing lists:
+
+  <pos>              switch to dir list named on <pos>
+  :<name>            switch to dir list with <name>
+  $command{'add'}<listname>        create a new list
+  $command{'delete'}<p/n>\             delete list (has to be empty)
+  $command{'name'}<p/n>:<name>      rename dir list
+EOH
+    }
+}
+
 
 __END__
 

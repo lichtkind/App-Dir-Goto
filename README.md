@@ -1,19 +1,25 @@
-# App-Dir-Goto
+
+# App-Goto-Dir
+
+- - -
 
 DISCLAIMER: not implemented are: create/delete/rename list, negative indicies
 
 - - -
 
   Command line tool gt (short for goto) changes the working dir like cd.
+
   It remembers a set of directories you can address by number or name.
 
-  &lt;pos> stands for a position number and &lt;name&gt; for name 
-  of dir entry. &lt;p/n> means one of both (a path identifier).
+  &lt;pos&gt; stands for a position number and &lt;name&gt; for name 
+  of dir entry. 
+
+  &lt;p/n> means one of both (a path identifier). Dir's are organized in several lists.
 
   To optionally address a subdir just write &lt;p/n>/sub/dir.
   Use 'gt &lt;pos&gt;' or 'gt &lt;name&gt;' or just 'gt' to open interactive mode.
   There you type commands that will be completed by &lt;Enter&gt;.
-  Command arguments can be separated by [,:-&gt;] (mostly optional).
+  Command arguments can be separated by \[,:-&gt;] (mostly optional).
   Please press just &lt;Enter&gt; to exit the interactive mode.
 
 In order to call this tool in your shell (e.g. under the command gt), you need to add an entry in you bashrc:
