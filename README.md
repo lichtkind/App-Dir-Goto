@@ -3,61 +3,95 @@
 
 - - -
 
-DISCLAIMER: not implemented are: create/delete/rename list, negative indicies
+DISCLAIMER: program is in rebuild and does currently not work at all
 
 - - -
 
-  Command line tool gt (short for goto) changes the working dir like cd.
+  Command line tool gt (short for goto) changes the working dir like cd,
+  to a set of stored locations you don't have to write as a full path.
+  These dir's are organized by lists, and can be adressed via their
+  list position (&lt;pos>), or an user given name (&lt;name>).
+  &lt;ID> (identifier) means &lt;pos> or &lt;name>.
 
-  It remembers a set of directories you can address by number or name.
+  To optionally address a subdir just write &lt;ID>/sub/dir.
+  Use 'gt &lt;ID>' to switch dir or open the interactive mode via 'gt' and
+  select the dir there. Both ways can also used to administer gt lists.
 
-  &lt;pos&gt; stands for a position number and &lt;name&gt; for name 
-  of dir entry. 
+  For instance to add the dir ~/code/perl/goto under the name gd either
+  write 'gt -add gd:~/code/perl/goto' or open interactive mode vaia 'gt'
+  and type '-add gd:~/code/perl/goto' there. The output will be the same in both
+  cases. Just press &lt;Enter> to exit the interactive mode.
 
-  &lt;p/n> means one of both (a path identifier). Dir's are organized in several lists.
+  Every command has a long name and a configurable shortcut.
+  It is usually the first letter of the full name. 
+  Sorting criteria have shortcuts too.
+  
+  In order to makte gt operational, the shellrc have to contain the line:
 
-  To optionally address a subdir just write &lt;p/n>/sub/dir.
-  Use 'gt &lt;pos&gt;' or 'gt &lt;name&gt;' or just 'gt' to open interactive mode.
-  There you type commands that will be completed by &lt;Enter&gt;.
-  Command arguments can be separated by \[,:-&gt;] (mostly optional).
-  Please press just &lt;Enter&gt; to exit the interactive mode.
+  function gt() { perl ~/../goto.pl \$@ cd $\(cat ~/../last_choice) }
 
-In order to call this tool in your shell (e.g. under the command gt), you need to add an entry in you bashrc:
-
-function gt() { perl ~/../../goto/goto.pl "$@" cd $(cat ~/../../goto/last_choice) }
+## syntax rules:
 
 
-All commands can be configured, these are my suggestions.
-Square brackets embrace optional syntax parts.
-In command mode the cursor is &gt; whereas in (managing) list mode &gt;&gt;.
+&lt;dir> means a valid directory (start with / or ~/), defaults to the directory gt is called from
+
+&lt;name> name of an dir entry, only word character (\w), first character has to be a letter
+
+&lt;lname> name of a list, defaults to current list when omitted
+
+&lt;pos> list position, starts with 1, defaults to -1, negative position count from last &lt;pos>
+
+&lt;ID> = &lt;name> or &lt;pos> or &lt;lname>:&lt;pos> (entry identifier)
+
+: separates a value pair and should be omitted, when one value is omitted
+
+&gt; separates two value pairs and when missing is assumed as if written after the command
+
+
+## commands for changing directory:
+
+- `<name>. . . . . . . . . go to dir with <name> (right beside <pos> in list)`
+- `<pos> . . . . . . . . . go to dir listed on <pos> (in []) of current list`
+- `<lname>:<pos> . . . . . go to directory at <pos> in list named <lname>`
+- `<ID>/sub/dir. . . . . . go to subdirectory of a stored dir`
+- `_  . . . . . . . . . . . go to dir gone to last time`
+- `-  . . . . . . . . . . . go to dir gone previously (like cd-)`
+- `<Enter> . . . . . . . .  exit interactive mode and stay in current dir`
+
+## commands to display lists and help:
+- `-list . . . . . . . . . display current list (not needed in interactive)`
+- `-list <lname> . . . . . set <lname> as current list and display it`
+- `-list <lpos>. . . . . . switch to list on <lpos> in the list of lists`
+- `-list-list. . . . . . . display available list names (long for -l-l)`
+- `-sort position. . . . . sort current list by position (default a.k.a. -sort)`
+- `-sort name. . . . . . . change sorting criterion to <name> (long for -sn)`
+- `-sort visits. . . . . . sort by number of times gone to dir (a.k.a. -sv)`
+- `-sort last_visit. . . . sort by time of last visit (earlier first)`
+- `-sort created . . . . . sort by time of dir entry creation (a.k.a -screated)`
+- `-sort dir . . . . . . . sort by dir path (a.k.a. -sort:d)`
+- `-help . . . . . . . . . long help = overview text + commands`
+- `-help txt . . . . . . . overview text`
+- `-help cmd . . . . . . . display list of commands`
+- `-help <command> . . . . detailed help for one command`
 
 ## commands for managing list entries:
+
                 
-- `<pos>   .  .  .  .  .  .  .  go to directory listed on position (in [])`
-- `:<name> .  .  .  .  .  .  go to dir listed under name (right beside <pos>)`
-- `_    .  .  .  .  .  .  .  .  .  go to dir gone to last time`
-- `a[<pos>[:<name>]]   .  add current dir on <pos> (default -1) as <name>`
-- `d[<p/n>].   .  .  .  .  .  delete dir entry (default -1)`
-- `n<pos>:<name> .  .  .  add Name to directory (max. 5 alphanumeric char.)`
-- `n<p/n>.  .  .  .  .  .  .  delete dir entry name`
-- `m<p/n>:<newpos>  .  . move dir to new position in same list`
-- `m<p/n>:<ln>[:<np>].   move to pos <np> on diff. list named <ln>`
-- `l .  .  .  .  .  .  .  .  .  display menu with of lists`
-- `l:<command>   .  .  .  .  select which list to display or any command for list mode`
-- `s:p|n|v .  .  .  .  .  .  sort list by Position (default), Name, Visit count,`
-- `s:l|c|d .  .  .  .  .  .  by time of Last visit, time of Creation, Dir path`
-- `< .  .  .  .  .  .  .  .  .  undo last command`
-- `> .  .  .  .  .  .  .  .  .  redo - revert previously made undo`
-- `h .  .  .  .  .  .  .  .  .  long help`
-- `h:txt   .  .  .  .  .  .  .  overview text`
-- `h:cmd   .  .  .  .  .  .  .  display list of commands`
-- `<Enter> .  .  .  .  .  .  exit`
+- `-add <name>:<dir> > <ID> . add <dir> under <name> on <pos> as defined by <ID>`
+- `-del <ID>. . . . . . . . . delete directory entry as defined by <ID>`
+- `-name <name> > <ID>. . . . (re-)name entry, resolve conflict like configured`
+- `-name <ID> . . . . . . . . delete name of entry`
+- `-move <IDa> > <IDb>. . . . move entry from a to b`
+- `-copy  <IDa> > <IDb>. . . . copy entry a to position b`
+- `<. . . . . . . . . . . . . undo last command`
+- `>. . . . . . . . . . . . . redo - revert previously made undo`
+
+
 
 ## commands for managing lists:
 
-- `<pos>.  .  .  .  .  .  .  switch to dir list named on &lt;pos&gt;`
-- `:<name>.   .  .  .  .  .  switch to dir list with &lt;name&gt;`
-- `a <listname> .  .  . create a new list`
-- `d <p/n>.   .  .  .  .  .  delete list (has to be empty)`
-- `n <p/n>:<name>  .  . rename dir list`
+- `-add-list <lname>. . . . . create a new list`
+- `-del-list <ID> . . . . . .  delete list (has to be empty)`
+- `-name-list <old> > <new> . rename list`
+
 
