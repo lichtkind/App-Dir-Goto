@@ -18,8 +18,8 @@ DISCLAIMER: program is in rebuild and does currently not work at all
   select the dir there. Both ways can also used to administer gt lists.
 
   For instance to add the dir \~/code/perl/goto under the name gd either
-  write 'gt -add gd:~/code/perl/goto' or open interactive mode vaia 'gt'
-  and type '-add gd:~/code/perl/goto' there. The output will be the same in both
+  write 'gt -add gd:\~/code/perl/goto' or open interactive mode vaia 'gt'
+  and type '-add gd:\~/code/perl/goto' there. The output will be the same in both
   cases. Just press &lt;Enter> to exit the interactive mode.
 
   Every command has a long name and a configurable shortcut.
