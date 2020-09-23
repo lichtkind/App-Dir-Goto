@@ -65,6 +65,9 @@ sub pos_from_ID {
 	} else { return $self->{'pos_by_name'}{ $ID } if exists $self->{'pos_by_name'}{ $ID } }
 	-1;
 }
+sub is_pos     { $_[1] == int $_[1] and $_[1] > 0 and $_[1] < $_[0]->{'count'} }
+sub is_new_pos { $_[1] == int $_[1] and $_[1] > 0 and $_[1] <= $_[0]->{'count'} }
+
 
 sub rename_entry {
 	my ($self, $ID, $newname) = @_;
@@ -88,33 +91,16 @@ sub delete_entry {
 	$self->refresh_reverse_hashes();
 	$entry;
 }
-########################################################################
 
+########################################################################
 sub get_entry {
 	my ($self, $ID) = @_;
-	$ID = $self->pos_from_ID($ID);
-	return "'$ID' is not a valid dir name or position of the current list" unless defined $ID and $ID;
-	
-	return $self->{'last'} unless defined $ID or $ID;
-	if ($ID =~ /-?\d+/){
-		$ID = $self->{'last'} + 1 - $ID if $ID < 0;
-		return $ID if $self->is_pos($ID);
-	} else { $self->{'pos_by_name'}{ $ID } }
+	my $pos = $self->pos_from_ID($ID);
+	return "'$ID' is not a valid dir name or position of the current list" if $pos < 0;
+	$self->{'elems'}[$pos];
 }
 
-
-sub content {
-	my ($self, $sorted_by, @keys) = @_;
-	if (not defined $sorted_by or $sorted_by eq 'position') {
-	    return map {my ($pos,$entry) = ($_, $self->{'elems'}[$_-1]); [ map {$_ eq 'position' ? $pos : ($entry->{$_} // '')} @keys] } 1 .. @{$self->{'elems'}};
-	} else {
-	    return map {my ($pos,$entry) = ($_, $self->{'elems'}[$_-1]); [ map {$_ eq 'position' ? $pos : ($entry->{$_} // '')} @keys] } 
-	                                  sort {$self->{'elems'}[$a-1]{$sorted_by} cmp $self->{'elems'}[$b-1]{$sorted_by}} 1 .. @{$self->{'elems'}};
-	}
-}
-
-
-sub is_pos     { $_[1] == int $_[1] and $_[1] > 0 and $_[1] < $_[0]->{'count'} }
-sub is_new_pos { $_[1] == int $_[1] and $_[1] > 0 and $_[1] <= $_[0]->{'count'} }
+sub all_entry { @{$_[0]->{'elems'}} }
+########################################################################
 
 1;
