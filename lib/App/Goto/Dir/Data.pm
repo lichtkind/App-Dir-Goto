@@ -6,31 +6,66 @@ use App::Goto::Dir::Data::List;
 package App::Goto::Dir::Data;
 
 sub new {
-    my ($pkg, $file) = @_;
-    my $data = (-r $file) ? YAML::LoadFile($file) : {list => {archive =>[], current => [], bin => [], new => []}, sorted_by => 'position', last_choice => {}};
-    $data->{'current_list_name'} = 'now';
+    my ($pkg, $config) = @_;
+    my $file = $config->{'file'}{'data'};
+    my $data = (-r $file) ? YAML::LoadFile($file) : {list => {all => [], idle =>[], now => [], bin => [], new => []}, sorted_by => 'position', last_choice => '', history => [0]};
+    $data->{'current_list'} = 'now';
     $data->{'history'} = [0];
-    $data->{'file'} = $file;
+    $data->{'file'} = $config->{'file'};
+    my $all = $data->{'list'}{'all'} = App::Goto::Dir::Data::List->restate( $data->{'list'}{'all'} );
+    if (ref $all) {
+		for my $list_name (keys %{$data->{'list'}}){
+			next if $list_name eq 'all';
+			my $list = App::Goto::Dir::Data::List->new();
+			for my $eldata (@{$data->{'list'}{$list_name}}){
+				$list->insert_entry( $all->get_entry( $all->pos_from_dir( App::Goto::Dir::Data::Entry->restate( $eldata )->full_dir ) ) );
+			}
+			$data->{'list'}{$list_name} = $list;
+		}
+	}
     bless $data;
 }
 sub write {
-	my ($self) = @_;
-    YAML::DumpFile( $self->{'file'} , {map { $_ => $self->{$_} } qw/list sorted_by last_choice/} );
+	my ($self, $dir) = @_;
+	$dir //= $self->{'last_choice'};
+	my $pos = $self->{'list'}{'all'}->pos_from_dir($dir);
+	if ($pos > -1){
+    	my $entry = $self->{'list'}{'all'}->get_entry( $pos );
+	    $dir = $entry->visit() if ref $entry;
+	    $self->{'last_choice'} = $dir;
+	} else { say "Warning! directory $dir could not be found" }
+ 	
+	my $state = {};
+	$state->{$_} = $self->{$_} for qw/list current_list sorted_by last_choice history/;
+    $state->{'list'} = { map {$_ => $state->{'list'}{$_}->state } keys %{$state->{'list'}} };
+    
+    rename $self->{'file'}{'data'}, $self->{'file'}{'backup'};
+    YAML::DumpFile( $self->{'file'}{'data'}, $state );
+    open my $FH, '>', $self->{'file'}{'return'};
+    print $FH $self->{'last_choice'};
 }
 
 ########################################################################
+sub change_list {
+	my ($self, $new_list) = @_;
+	return 0 unless defined $new_list and exists $self->{'list'}{$new_list};
+	$self->{'current_list'} = $new_list;
+}
+sub get_current_list_name {                  $_[0]->{'current_list'}   }
+sub get_current_list      { $_[0]->{'list'}{ $_[0]->{'current_list'} } }
+########################################################################
 
-sub add_dir { 
+sub add_entry { 
 	my ($self, $dir) = @_;	
 	$self->{'list'}{$self->{'current_list_name'}}->insert(@_);
 	my $entry = {dir => $dir, creation_time => _now(), stamp => time, last_visit => 0, visits => 0};
 }
 
-sub name_dir   { 
+sub name_entry   { 
 	my ($self) = shift;
 	$self->{'list'}{$self->{'current_list_name'}}->rename_entry(@_);
 }
-sub delete_dir { 
+sub delete_entry { 
 	my ($self) = shift;
 	$self->{'list'}{$self->{'current_list_name'}}->delete_entry(@_);
 }
@@ -78,3 +113,11 @@ sub _now { # sortable time stamp
 
 
 1;
+
+__END__
+
+ new
+ use
+idle
+ bin
+all 
