@@ -5,12 +5,12 @@ use App::Goto::Dir::Data::Entry;
 
 package App::Goto::Dir::Data::List; # index: 1 .. count
 ########################################################################
-sub new { bless { elems => [], pos_by_name => {}, pos_by_dir => {}  } }
+sub new { bless { elems => [], pos_by_name => {}, pos_by_dir => {} } }
 sub state   { [map { $_->state } @{$_[0]->{'elems'}}] }
 sub restate {
-    my ($self, $list) = @_;
+    my ($pkg, $list) = @_;
     return unless ref $list eq 'ARRAY';
-    $self = { elems => [ map {$_->restate} @$list] };
+    my $self = { elems => [ map {App::Goto::Dir::Data::Entry->restate($_)} @$list] };
     refresh_reverse_hashes( $self );
     bless $self
 }
@@ -25,25 +25,26 @@ sub refresh_reverse_hashes {
     }
 }
 sub configure {
-    my ($self, $config) = shift;
+    my ($self, $config) = @_;
     return unless ref $config eq 'HASH';
-    $self->{ $_} = $config->{ $_ } for qw/prefer_in_dir_conflict prefer_in_name_conflict max_name_length/;
+    $self->{'config'}{ $_ } = $config->{ $_ } for keys %$config;
+    $self;
 }
 ########################################################################
 sub insert_entry {
     my ($self, $entry, $pos) = @_;
     return "need an App::Goto::Dir::Data::Entry object as argument!" unless ref $entry eq 'App::Goto::Dir::Data::Entry';
-    $pos = @{$self->{'elems'}} unless defined $pos;
+    $pos = $self->{'config'}{'position_of_new_entry'} unless defined $pos;
     return "'$pos' is an illegal list position" unless $self->is_new_pos($pos);
     $pos = @{$self->{'elems'}} + 2 + $pos if $pos < 0;
     my $dir_pos = $self->pos_from_dir( $entry->full_dir );
     if ($dir_pos){
-        return 'path '.$entry->full_dir.' is already stored in this list' if $self->{'prefer_in_dir_conflict'} eq 'old';
+        return 'path '.$entry->full_dir.' is already stored in this list' if $self->{'config'}{'prefer_in_dir_conflict'} eq 'old';
         return $self->move_entry($dir_pos, $pos);
     }
     if ($entry->name and exists $self->{'pos_by_name'}{ $entry->name }){
-        if ($self->{'prefer_in_name_conflict'} eq 'new')  { $self->unname_entry( $entry->name ) }
-        else                                              { $entry->rename('') }
+        if ($self->{'config'}{'prefer_in_name_conflict'} eq 'new')  { $self->unname_entry( $entry->name ) }
+        else                                                        { $entry->rename('') }
     }
     splice @{$self->{'elems'}}, $pos-1, 0, $entry;
     $self->refresh_reverse_hashes();
@@ -78,7 +79,7 @@ sub rename_entry {
     return "'$ID' is not a valid dir name or position of the current list" if not $pos;
     my $name_pos = $self->pos_from_ID( $newname );
     return "entry name $newname is already taken and config does not allow delete name of other entry"
-            if $name_pos and $self->{'prefer_in_name_conflict'} ne 'new';
+            if $name_pos and $self->{'config'}{'prefer_in_name_conflict'} ne 'new';
     my $entry = $self->{'elems'}[$pos-1];
     my $old_name = $entry->name;
     $entry->rename( $newname );
@@ -100,7 +101,7 @@ sub redirect_entry { # cd
     $new_dir = App::Goto::Dir::Data::Entry::_expand_home_dir( $new_dir );
     return "path missing" unless defined $new_dir;
     my $dir_pos = $self->pos_from_dir( $new_dir );
-    return "path $new_dir is already stored in this list" if $dir_pos and $self->{'prefer_in_dir_conflict'} eq 'old';
+    return "path $new_dir is already stored in this list" if $dir_pos and $self->{'config'}{'prefer_in_dir_conflict'} eq 'old';
     my $entry = $self->{'elems'}[$pos-1];
     my $old_dir = $entry->full_dir;
     $entry->redirect( $new_dir );

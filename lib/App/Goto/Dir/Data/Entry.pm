@@ -17,7 +17,7 @@ sub new {
 }
 sub clone   { $_[0]->restate($_[0]->state) }
 sub restate { bless $_[1] if ref $_[1] eq 'HASH' }
-sub state   { return { map {$_ => $_[0]->{$_}} keys %{$_[0]} } }
+sub state   { return { map {$_ => ref $_[0]->{$_} ? [@{$_[0]->{$_}}] : $_[0]->{$_}} keys %{$_[0]} } }
 
 ########################################################################
 
@@ -33,6 +33,7 @@ sub delete_time    { $_[0]->{'delete_time'} }
 sub visit_stamp    { $_[0]->{'visit_stamp'} }
 sub visit_time     { $_[0]->{'visit_time'} }
 sub visit_count    { $_[0]->{'visits'} }
+sub ID             { $_[0]->{'creation_stamp'}.$_[0]->{'full_dir'} }
 
 ########################################################################
 
@@ -69,7 +70,7 @@ sub _expand_home_dir  { (substr($_[0], 0, 1) eq '~') ? File::Spec->catfile( $ENV
 
 sub _format_time_stamp { # sortable time stamp
     my @t = localtime shift;
-    sprintf "%02d.%02d.%4s  %02d:%02d:%02d", $t[3], $t[4], 1900+$t[5], $t[2], $t[1], $t[0];
+    sprintf "%02d.%02d.%4s  %02d:%02d:%02d", $t[3], $t[4]+1, 1900+$t[5], $t[2], $t[1], $t[0];
 }
 sub _now { time }
 ########################################################################
