@@ -7,11 +7,11 @@ package App::Goto::Dir::Data::Entry;
 ########################################################################
 
 sub new {
-    my ($pkg, $dir, $name) = @_;
-    # return "directory $dir does not exist" unless -d $dir;
+    my ($pkg, $dir, $name) = @_;  # return "directory $dir does not exist" unless -d $dir;
     my $now = _now();
-    bless { name => $name//'', cmd =>[], compact_dir => _compact_home_dir($dir), full_dir => _expand_home_dir($dir),
-            creation_time => _format_time_stamp($now), creation_stamp => $now,
+    bless { name => $name // '', cmd => [], pos => {},
+            compact_dir => _compact_home_dir($dir), full_dir => _expand_home_dir($dir),
+            create_time => _format_time_stamp($now), create_stamp => $now,
             visit_time   => 0,  visit_stamp => 0, visits => 0,
             delete_time => 0, delete_stamp => 0,  }
 }
@@ -21,19 +21,24 @@ sub state   { return { map {$_ => ref $_[0]->{$_} ? [@{$_[0]->{$_}}] : $_[0]->{$
 
 ########################################################################
 
-sub name           { $_[0]->{'name'} }
-sub dir            { $_[0]->{'compact_dir'} }
-sub full_dir       { $_[0]->{'full_dir'} }
-sub age            { defined $_[1] ? ($_[1] - $_[0]->{'creation_stamp'}) : time - $_[0]->{'creation_stamp'} }
-sub overdue        { not $_[0]->{'delete_stamp'} ? 0 : (defined $_[1]) ? ($_[1] - $_[0]->{'delete_stamp'}) : time - $_[0]->{'delete_stamp'} }
-sub creation_time  { $_[0]->{'creation_time'} }
-sub creation_stamp { $_[0]->{'creation_stamp'} }
-sub delete_stamp   { $_[0]->{'delete_stamp'} }
-sub delete_time    { $_[0]->{'delete_time'} }
-sub visit_stamp    { $_[0]->{'visit_stamp'} }
-sub visit_time     { $_[0]->{'visit_time'} }
-sub visit_count    { $_[0]->{'visits'} }
-sub ID             { $_[0]->{'creation_stamp'}.$_[0]->{'full_dir'} }
+sub add_to_list      { delete $_[0]->{'pos'}{ $_[1] } = $_[2] }
+sub remove_from_list { delete $_[0]->{'pos'}{ $_[1] } }
+sub member_of_lists  { keys %{ $_[0]->{'pos'} } }
+
+########################################################################
+
+sub age           { defined $_[1] ? ($_[1] - $_[0]->{'create_stamp'}) : time - $_[0]->{'create_stamp'} }
+sub overdue       { not $_[0]->{'delete_stamp'} ? 0 : (defined $_[1]) ? ($_[1] - $_[0]->{'delete_stamp'}) : time - $_[0]->{'delete_stamp'} }
+sub create_time   { $_[0]->{'create_time'} }
+sub create_stamp  { $_[0]->{'create_stamp'} }
+sub delete_stamp  { $_[0]->{'delete_stamp'} }
+sub delete_time   { $_[0]->{'delete_time'} }
+sub visit_stamp   { $_[0]->{'visit_stamp'} }
+sub visit_time    { $_[0]->{'visit_time'} }
+sub visit_count   { $_[0]->{'visits'} }
+sub dir           { $_[0]->{'compact_dir'} }
+sub full_dir      { $_[0]->{'full_dir'} }
+sub name          { $_[0]->{'name'} }
 
 ########################################################################
 
@@ -45,23 +50,11 @@ sub redirect {
 }
 sub visit {
     my ($self) = @_;
-    my $now = _now();
-    $self->{'visits'}++;
-    $self->{'visit_stamp'} = $now;
-    $self->{'visit_time'} = _format_time_stamp($now);
+    $self->{'visit_time'} = _format_time_stamp( $self->{'visit_stamp'} = _now() );
     $self->{'full_dir'};
 }
-sub delete {
-    my ($self) = @_;
-    my $now = _now();
-    $self->{'delete_stamp'} = $now;
-    $self->{'delete_time'} = _format_time_stamp($now);
-}
-sub undelete {
-    my ($self) = @_;
-    $self->{'delete_stamp'} = 0;
-    $self->{'delete_time'} = 0;
-}
+sub delete   { $_[0]->{'delete_time'} = _format_time_stamp( $_[0]->{'delete_stamp'} = _now() ) }
+sub undelete { $_[0]->{'delete_stamp'} = $_[0]->{'delete_time'} = 0                            }
 
 ########################################################################
 
@@ -73,6 +66,7 @@ sub _format_time_stamp { # sortable time stamp
     sprintf "%02d.%02d.%4s  %02d:%02d:%02d", $t[3], $t[4]+1, 1900+$t[5], $t[2], $t[1], $t[0];
 }
 sub _now { time }
+
 ########################################################################
 
 1;
