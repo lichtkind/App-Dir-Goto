@@ -4,7 +4,7 @@ use File::Spec;
 
 package App::Goto::Dir::Data::Entry;
 
-########################################################################
+#### de- constructors ##################################################
 
 sub new {
     my ($pkg, $dir, $name) = @_;  # return "directory $dir does not exist" unless -d $dir;
@@ -17,17 +17,19 @@ sub new {
 }
 sub clone   { $_[0]->restate($_[0]->state) }
 sub restate { bless $_[1] if ref $_[1] eq 'HASH' }
-sub state   { return { map {$_ => ref $_[0]->{$_} ? [@{$_[0]->{$_}}] : $_[0]->{$_}} keys %{$_[0]} } }
+sub state   { return { map {$_ => $_[0]->{$_} } keys %{$_[0]} } }
 
-########################################################################
+#### list API ##########################################################
 
-sub add_to_list      { delete $_[0]->{'pos'}{ $_[1] } = $_[2] }
+sub add_to_list      { $_[0]->{'pos'}{ $_[1] } = $_[2] }
+sub get_list_pos     { $_[0]->{'pos'}{ $_[1] } if defined $_[1] }
 sub remove_from_list { delete $_[0]->{'pos'}{ $_[1] } }
 sub member_of_lists  { keys %{ $_[0]->{'pos'} } }
 
-########################################################################
+#### ro attr ###########################################################
 
 sub age           { defined $_[1] ? ($_[1] - $_[0]->{'create_stamp'}) : time - $_[0]->{'create_stamp'} }
+sub unvisited     { not $_[0]->{'visit_stamp'} ? 0 : (defined $_[1]) ? ($_[1] - $_[0]->{'visit_stamp'}) : time - $_[0]->{'visit_stamp'} }
 sub overdue       { not $_[0]->{'delete_stamp'} ? 0 : (defined $_[1]) ? ($_[1] - $_[0]->{'delete_stamp'}) : time - $_[0]->{'delete_stamp'} }
 sub create_time   { $_[0]->{'create_time'} }
 sub create_stamp  { $_[0]->{'create_stamp'} }
@@ -40,7 +42,7 @@ sub dir           { $_[0]->{'compact_dir'} }
 sub full_dir      { $_[0]->{'full_dir'} }
 sub name          { $_[0]->{'name'} }
 
-########################################################################
+#### rw attr ###########################################################
 
 sub rename   { $_[0]->{'name'} = $_[1] }
 sub redirect {
@@ -56,7 +58,7 @@ sub visit {
 sub delete   { $_[0]->{'delete_time'} = _format_time_stamp( $_[0]->{'delete_stamp'} = _now() ) }
 sub undelete { $_[0]->{'delete_stamp'} = $_[0]->{'delete_time'} = 0                            }
 
-########################################################################
+#### utils #############################################################
 
 sub _compact_home_dir { (index($_[0], $ENV{'HOME'}) == 0) ? '~/' . substr( $_[0], length($ENV{'HOME'}) + 1 ) : $_[0] }
 sub _expand_home_dir  { (substr($_[0], 0, 1) eq '~') ? File::Spec->catfile( $ENV{'HOME'}, substr($_[0], 2) ) : $_[0] }
@@ -67,6 +69,6 @@ sub _format_time_stamp { # sortable time stamp
 }
 sub _now { time }
 
-########################################################################
+#### end ###############################################################
 
 1;
