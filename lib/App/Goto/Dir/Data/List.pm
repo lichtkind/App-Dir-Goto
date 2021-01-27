@@ -7,7 +7,6 @@ my $el_class = 'App::Goto::Dir::Data::Entry';
 package App::Goto::Dir::Data::List; # index: 1 .. count
 
 #### constructor #######################################################
-
 sub new {
     my ($pkg, $name, $config, @elems) = @_;
     my $self = bless { entry => \@elems, name => $name, config => $config, pos_by_name => {}, pos_by_dir => {} };
@@ -27,7 +26,6 @@ sub refresh_reverse_hashes {
 }
 
 #### accessors #########################################################
-
 sub get_entry {
     my ($self, $ID) = @_;
     return "can not get an list entry without ID!" unless defined $ID;
@@ -37,10 +35,10 @@ sub get_entry {
     $self->{'entry'}[$pos-1], $pos;
 }
 sub all_entries { @{$_[0]->{'entry'}} }
-sub count     { int @{$_[0]->{'entry'}} }
+sub count       { int @{$_[0]->{'entry'}} }
+sub get_name    { $_[0]->{'name'} }
 
 #### elem API ##########################################################
-
 sub _insert_entry { splice @{$_[0]->{'entry'}}, $_[2]-1, 0, $_[1] }
 sub insert_entry {
     my ($self, $entry, $pos) = @_;
@@ -88,7 +86,6 @@ sub move_entry {
 }
 
 #### utils #############################################################
-
 sub pos_from_ID {
     my ($self, $ID) = @_;
     return 0 unless defined $ID;
@@ -114,7 +111,5 @@ sub is_new_pos {
     my $c = $self->count;
     $i == int $i and (($i > 0 and $i <= $c+1) or ($i < 0 and $i >= -$c-1))
 }
-
-#### end ###############################################################
 
 1;
