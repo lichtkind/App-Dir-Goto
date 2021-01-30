@@ -29,7 +29,7 @@ syntax:
     move: m
     remove: r
     name : n
-    path: p
+    bend: b
     sort: s
     list: l
     help: h

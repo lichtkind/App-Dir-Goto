@@ -37,7 +37,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 ## syntax rules:
 
 - `<dir> . . . directory path, starts with / or ~/, in quotes ('' "") when containing \W beside /,
-   . . . . . . defaults to path (cwd) goto is called from`
+ . . . . . . . . defaults to path (cwd) goto is called from`
 - `<name>. . . name of an dir entry, (only word character \w), first char has to be a letter`
 - `<lname> . . name of a list, defaults to current list when omitted`
 - `<pos> . . . list position, first is 1, last is -1 (default), second last -2`
@@ -47,7 +47,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `# . . . . . (read number) separates <lname> and <pos> in full adress of an entry`
 - `: . . . . . precedes, separates <name>,  (see -add, -name)`
 - `> . . . . . separates a source (left) and its destination (right) (see -add, -move, -copy)`
-- `<Space> . . has to separate long commands and data, is allowed around > and after :`
+- `<Space> . . ' ' has to separate long commands and data, is allowed around > and after :`
 
 ## commands for changing directory:
 
@@ -55,7 +55,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `<pos> . . . . . . . . . go to dir listed on <pos> (in []) of current list`
 - `<lname>#<pos> . . . . . go to directory at <pos> in list <lname>`
 - `<ID>/sub/dir. . . . . . go to subdirectory of a stored dir`
-- `_ . . . . . . . . . . . go to dir gone to last time`
+- `_ . . . . . . . . . . . go to dir gone to last time (-goto-last)`
 - `- . . . . . . . . . . . go to dir gone previously (like cd-)`
 - `<Enter> . . . . . . . .  exit interactive mode and stay in current dir`
 
@@ -79,19 +79,20 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 ## commands for managing list entries:
 
 - `-add <dir>:<name> > <lpos> . add <dir> under <name> and <lpos>, only <dir> is required`
-- `-del <ID>. . . . . . . . . delete directory entry as defined by <ID> in all lists and move to bin list`
-- `-remove <ID> . . . . . . . remove entry from current or specified list (can't from special list all and bin)`
-- `-move <IDa> > <IDb>. . . . move entry a to position (of) b`
-- `-copy  <IDa> > <IDb>. . . . copy entry a to position (of) b`
+- `-del[ete] <ID> . . . . . . . delete entry with <ID> in all lists but special lists "all" and "bin"`
+- `-rem[ove] <ID> . . . . . . . remove entry from current or specified list (can't from special list all and bin)`
+- `-move <IDa> > <IDb>. . . . . move entry <IDa> to position (of) <IDb>`
+- `-copy <IDa> > <IDb> . . . . copy entry <IDa> to position (of) <IDb>`
 - `-name <ID>:<name>. . . . . (re-)name entry, resolve conflict like configured`
 - `-name <ID> . . . . . . . . delete name of entry`
+- `-bend <ID> > <dir> . . . . change directory of entry with <ID>`
 - `<. . . . . . . . . . . . . undo last command`
 - `>. . . . . . . . . . . . . redo - revert previously made undo`
 
 ## commands for managing lists:
 
-- `-add-list <lname>. . . . . create a new list`
-- `-del-list <lID>. . . . . . delete list of <lname> or <lpos> (has to be empty)`
+- `-list <lname>. . . . . create a new list`
+- `-del-list <lname>. . . . . delete list of <lname> or <lpos> (has to be empty)`
 - `-name-list <lID>:<lname> . rename list, conflicts not allowed`
 - `-list-list . . . . . . .  . <lname> and <lpos> of available lists (short -l-l)`
 
