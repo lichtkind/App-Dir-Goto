@@ -8,7 +8,7 @@ my %alias = ( rem => 'remove', del => 'delete', );
 
 
 my %cmd_shortcut = (add =>'a', delete =>'d', copy => 'c', move =>'m', remove =>  'r', name =>'n', bend => 'b',
-                   sort =>'s', list =>'l', undo =>'<', redo =>'>', 'goto-last' =>'_', 'goto-previous' => '-', help =>'h');
+                   sort =>'s', list =>'l', 'goto-last' =>'_', 'goto-previous' => '-', help =>'h'); # undo =>'<', redo =>'>',
 
 my %so_shortcut = ( created => 'c',   dir => 'd',  last_visit => 'l', position => 'p',  name => 'n',  visits => 'v',     default => 'position',);
 

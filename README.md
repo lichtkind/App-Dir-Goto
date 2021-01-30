@@ -63,7 +63,6 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 - `-list . . . . . . . . . display current list (not needed in interactive)`
 - `-list <lname> . . . . . set <lname> as current list and display it`
-- `-list <lpos>. . . . . . switch to list on <lpos> in the list of lists`
 - `-list-list. . . . . . . display available list names (long for -l-l)`
 - `-sort position. . . . . sort displayed list by position (default = -sort)`
 - `-sort name. . . . . . . change sorting criterion to <name> (long for -sn)`
@@ -79,21 +78,22 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 ## commands for managing list entries:
 
 - `-add <dir>:<name> > <lpos> . add <dir> under <name> and <lpos>, only <dir> is required`
-- `-del[ete] <ID> . . . . . . . delete entry with <ID> in all lists but special lists "all" and "bin"`
-- `-rem[ove] <ID> . . . . . . . remove entry from current or specified list (can't from special list all and bin)`
+- `-del[ete] <ID> . . . . . . . delete entry with <ID> in all but special lists "all" and "bin"`
+- `-rem[ove] <ID> . . . . . . . remove entry from current or specified list (not from special list "all", "bin")`
 - `-move <IDa> > <IDb>. . . . . move entry <IDa> to position (of) <IDb>`
 - `-copy <IDa> > <IDb> . . . . copy entry <IDa> to position (of) <IDb>`
 - `-name <ID>:<name>. . . . . (re-)name entry, resolve conflict like configured`
 - `-name <ID> . . . . . . . . delete name of entry`
 - `-bend <ID> > <dir> . . . . change directory of entry with <ID>`
-- `<. . . . . . . . . . . . . undo last command`
-- `>. . . . . . . . . . . . . redo - revert previously made undo`
+
+# - `< . . . . . . . . . . . . . undo last command`
+# - `> . . . . . . . . . . . . . redo - revert previously made undo`
 
 ## commands for managing lists:
 
-- `-list <lname>. . . . . create a new list`
-- `-del-list <lname>. . . . . delete list of <lname> or <lpos> (has to be empty)`
-- `-name-list <lID>:<lname> . rename list, conflicts not allowed`
+- `-list-add <lname> . . . . . create a new list`
+- `-list-del <lname> . . . . . delete list of <lname> or <lpos> (has to be empty)`
+- `-list-name <lID>:<lname>. . rename list, conflicts not allowed`
 - `-list-list . . . . . . .  . <lname> and <lpos> of available lists (short -l-l)`
 
 
