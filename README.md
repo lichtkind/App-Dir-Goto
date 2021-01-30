@@ -61,15 +61,15 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 ## commands to display lists and help:
 
-- `--list . . . . . . . . . display current list (not needed in interactive)`
+- `--list . . . . . . . . . display current list (not needed in interactive) (short -l)`
 - `--list <lname> . . . . . set <lname> as current list and display it`
 - `--list-lists . . . . . . display available list names (long for -ll)`
-- `--sort=position. . . . . sort displayed list by position (default = -sort)`
+- `--sort=position. . . . . sort displayed list by position (default) (short -s, -sp)`
 - `--sort=name. . . . . . . change sorting criterion to <name> (long for -sn)`
 - `--sort=visits. . . . . . sort by number of times gone to dir (a.k.a. -sv)`
 - `--sort=last_visit. . . . sort by time of last visit (earlier first, -sl)`
 - `--sort=created . . . . . sort by time of dir entry creation (a.k.a -sc)`
-- `--sort=dir . . . . . . . sort by dir path (a.k.a. -sd, -sort d)`
+- `--sort=dir . . . . . . . sort by dir path (a.k.a. -sd, -sort=d)`
 - `--help . . . . . . . . . long help = intro text + commands overview`
 - `--help=txt . . . . . . . intro text`
 - `--help=cmd . . . . . . . display list of commands`
@@ -79,7 +79,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 - `--add <dir>:<name> > <lpos> . add <dir> under <name> and <lpos>, only <dir> is required`
 - `--del[ete] <ID> . . . . . . . delete entry with <ID> in all but special lists "all" and "bin"`
-- `--rem[ove] <ID> . . . . . . . remove entry from specified , but not from special list "all", "bin"`
+- `--rem[ove] <ID> . . . . . . . remove entry from specified, but not from special list "all", "bin"`
 - `--move <IDa> > <IDb>. . . . . move entry <IDa> to position (of) <IDb>`
 - `--copy <IDa> > <IDb>. . . . . copy entry <IDa> to position (of) <IDb>`
 - `--name <ID>:<name>. . . . . . (re-)name entry, resolve conflict like configured`
