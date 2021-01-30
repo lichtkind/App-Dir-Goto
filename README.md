@@ -61,30 +61,30 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 ## commands to display lists and help:
 
-- `-list . . . . . . . . . display current list (not needed in interactive)`
-- `-list <lname> . . . . . set <lname> as current list and display it`
-- `-list-list. . . . . . . display available list names (long for -l-l)`
-- `-sort position. . . . . sort displayed list by position (default = -sort)`
-- `-sort name. . . . . . . change sorting criterion to <name> (long for -sn)`
-- `-sort visits. . . . . . sort by number of times gone to dir (a.k.a. -sv)`
-- `-sort last_visit. . . . sort by time of last visit (earlier first, -sl)`
-- `-sort created . . . . . sort by time of dir entry creation (a.k.a -sc)`
-- `-sort dir . . . . . . . sort by dir path (a.k.a. -sd, -sort d)`
-- `-help . . . . . . . . . long help = intro text + commands overview`
-- `-help txt . . . . . . . intro text`
-- `-help cmd . . . . . . . display list of commands`
-- `-help <command> . . . . detailed help for one command`
+- `--list . . . . . . . . . display current list (not needed in interactive)`
+- `--list <lname> . . . . . set <lname> as current list and display it`
+- `--list-lists . . . . . . display available list names (long for -ll)`
+- `--sort=position. . . . . sort displayed list by position (default = -sort)`
+- `--sort=name. . . . . . . change sorting criterion to <name> (long for -sn)`
+- `--sort=visits. . . . . . sort by number of times gone to dir (a.k.a. -sv)`
+- `--sort=last_visit. . . . sort by time of last visit (earlier first, -sl)`
+- `--sort=created . . . . . sort by time of dir entry creation (a.k.a -sc)`
+- `--sort=dir . . . . . . . sort by dir path (a.k.a. -sd, -sort d)`
+- `--help . . . . . . . . . long help = intro text + commands overview`
+- `--help=txt . . . . . . . intro text`
+- `--help=cmd . . . . . . . display list of commands`
+- `--help <command> . . . . detailed help for one command`
 
 ## commands for managing list entries:
 
-- `-add <dir>:<name> > <lpos> . add <dir> under <name> and <lpos>, only <dir> is required`
-- `-del[ete] <ID> . . . . . . . delete entry with <ID> in all but special lists "all" and "bin"`
-- `-rem[ove] <ID> . . . . . . . remove entry from specified , but not from special list "all", "bin"`
-- `-move <IDa> > <IDb>. . . . . move entry <IDa> to position (of) <IDb>`
-- `-copy <IDa> > <IDb>. . . . . copy entry <IDa> to position (of) <IDb>`
-- `-name <ID>:<name>. . . . . . (re-)name entry, resolve conflict like configured`
-- `-name <ID> . . . . . . . . . delete name of entry`
-- `-bend <ID> > <dir> . . . . . change directory of entry with <ID>`
+- `--add <dir>:<name> > <lpos> . add <dir> under <name> and <lpos>, only <dir> is required`
+- `--del[ete] <ID> . . . . . . . delete entry with <ID> in all but special lists "all" and "bin"`
+- `--rem[ove] <ID> . . . . . . . remove entry from specified , but not from special list "all", "bin"`
+- `--move <IDa> > <IDb>. . . . . move entry <IDa> to position (of) <IDb>`
+- `--copy <IDa> > <IDb>. . . . . copy entry <IDa> to position (of) <IDb>`
+- `--name <ID>:<name>. . . . . . (re-)name entry, resolve conflict like configured`
+- `--name <ID> . . . . . . . . . delete name of entry`
+- `--bend <ID> > <dir> . . . . . change directory of entry with <ID>`
 
 <!---
 `< . . . . . . . . . . . . . undo last command`
@@ -93,9 +93,17 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 ## commands for managing lists:
 
-- `-list-add <lname> . . . . . create a new list`
-- `-list-del <lname> . . . . . delete list of <lname> or <lpos> (has to be empty)`
-- `-list-name <lID>:<lname>. . rename list, conflicts not allowed`
-- `-list-list . . . . . . .  . <lname> and <lpos> of available lists (short -l-l)`
+- `--list-add <lname> . . . . . create a new list`
+- `--list-del <lname> . . . . . delete list of <lname> or <lpos> (has to be empty)`
+- `--list-name <lID>:<lname>. . rename list, conflicts not allowed`
+- `--list-lists. . . . . . .  . <lname> and <lpos> of available lists (short -l-l)`
 
+<!---
+## commands for managing commans:
 
+- `--cmd-add <lname> . . . . . create a new list`
+- `--cmd-del <lname> . . . . . delete list of <lname> or <lpos> (has to be empty)`
+- `--cmd-name <lID>:<lname>. . rename list, conflicts not allowed`
+- `--cmd-list . . . . . . .  . <lname> and <lpos> of available lists (short -l-l)`
+
+--->

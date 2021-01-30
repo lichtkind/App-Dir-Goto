@@ -37,16 +37,17 @@ syntax:
     goto-previous: '-'
     undo: '<'
     redo: '>'
-  search_option:
-    created: c
-    default: position
-    dir: d
-    last_visit: l
-    position: p
-    name: n
-    visits: v
-  help:
-    all: a
-    usage: u
-    commands: c
+  argument_option:
+    search:
+      created: c
+      default: position
+      dir: d
+      last_visit: l
+      position: p
+      name: n
+      visits: v
+    help:
+      all: a
+      usage: u
+      commands: c
 
