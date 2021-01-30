@@ -79,15 +79,17 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 - `-add <dir>:<name> > <lpos> . add <dir> under <name> and <lpos>, only <dir> is required`
 - `-del[ete] <ID> . . . . . . . delete entry with <ID> in all but special lists "all" and "bin"`
-- `-rem[ove] <ID> . . . . . . . remove entry from current or specified list (not from special list "all", "bin")`
+- `-rem[ove] <ID> . . . . . . . remove entry from specified , but not from special list "all", "bin"`
 - `-move <IDa> > <IDb>. . . . . move entry <IDa> to position (of) <IDb>`
-- `-copy <IDa> > <IDb> . . . . copy entry <IDa> to position (of) <IDb>`
-- `-name <ID>:<name> . . . . . (re-)name entry, resolve conflict like configured`
-- `-name <ID>. . . . . . . . . delete name of entry`
-- `-bend <ID> > <dir>. . . . . change directory of entry with <ID>`
+- `-copy <IDa> > <IDb>. . . . . copy entry <IDa> to position (of) <IDb>`
+- `-name <ID>:<name>. . . . . . (re-)name entry, resolve conflict like configured`
+- `-name <ID> . . . . . . . . . delete name of entry`
+- `-bend <ID> > <dir> . . . . . change directory of entry with <ID>`
 
-[comment]: # - `< . . . . . . . . . . . . . undo last command`
-[comment]: # - `> . . . . . . . . . . . . . redo - revert previously made undo`
+<!---
+`< . . . . . . . . . . . . . undo last command`
+`> . . . . . . . . . . . . . redo - revert previously made undo`
+--->
 
 ## commands for managing lists:
 
