@@ -36,16 +36,17 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 ## syntax rules:
 
-- `<dir> . . . directory path, starts with / or ~/, in quotes ('' "") when contain \W, defaults to path (cwd) goto is called from`
+- `<dir> . . . directory path, starts with / or ~/, in quotes ('' "") when containing \W beside /,
+               defaults to path (cwd) goto is called from`
 - `<name>. . . name of an dir entry, [only word character (\w)], first char has to be a letter`
 - `<lname> . . name of a list, defaults to current list when omitted`
 - `<pos> . . . list position, first is 1, last is -1 (default)`
-- `<ID>  = <name> or :<name> or <pos> or #<pos> or <lname>#<pos> (entry identifier)`
+- `<ID>  . . . = <name> or :<name> or <pos> or #<pos> or <lname>#<pos> (entry identifier)`
 - `- . . . . . starting character of any command in long (-add) or short form (-a)`
 - `# . . . . . (read number) separates &lt;lname> and &lt;pos> in full adress of an entry`
 - `: . . . . . follows &lt;name>, to assign it to &lt;dir> (see -add, -name)`
 - `> . . . . . separates an entry (left) and its destination (right) (see -add, -move, -copy)`
-- `<Space> . has to separate long commands and data, is allowed around > and after :`
+- `<Space> . . has to separate long commands and data, is allowed around > and after :`
 
 ## commands for changing directory:
 
