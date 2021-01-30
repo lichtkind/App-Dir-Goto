@@ -1,0 +1,52 @@
+---
+file:
+  data: places.yml
+  backup: places.bak.yml
+  return: last_choice
+list:
+  deprecate_new: 1209600
+  deprecate_bin: 1209600
+  start_with: current
+  sorted_by: default
+  default_name: use
+  name:
+    all: all
+    bin: bin
+    idle: idle
+    new: new
+    use: use
+entry:
+  max_name_length: 5
+  position_of_new_entry: -1
+  prefer_in_name_conflict: new
+  prefer_in_dir_conflict: new
+syntax:
+  argument_separator: ',:-'
+  command_shortcut:
+    add: a
+    copy: c
+    delete: d
+    move: m
+    remove: r
+    name : n
+    path: p
+    sort: s
+    list: l
+    help: h
+    last: '_'
+    previous: '-'
+    undo: '<'
+    redo: '>'
+  search_option:
+    created: c
+    default: position
+    dir: d
+    last_visit: l
+    position: p
+    name: n
+    visits: v
+  help:
+    all: a
+    usage: u
+    commands: c
+
