@@ -69,7 +69,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `-sort visits. . . . . . sort by number of times gone to dir (a.k.a. -sv)`
 - `-sort last_visit. . . . sort by time of last visit (earlier first, -sl)`
 - `-sort created . . . . . sort by time of dir entry creation (a.k.a -sc)`
-- `-sort dir . . . . . . . sort by dir path (a.k.a. -sort d)`
+- `-sort dir . . . . . . . sort by dir path (a.k.a. -sd, -sort d)`
 - `-help . . . . . . . . . long help = intro text + commands overview`
 - `-help txt . . . . . . . intro text`
 - `-help cmd . . . . . . . display list of commands`
@@ -82,12 +82,12 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `-rem[ove] <ID> . . . . . . . remove entry from current or specified list (not from special list "all", "bin")`
 - `-move <IDa> > <IDb>. . . . . move entry <IDa> to position (of) <IDb>`
 - `-copy <IDa> > <IDb> . . . . copy entry <IDa> to position (of) <IDb>`
-- `-name <ID>:<name>. . . . . (re-)name entry, resolve conflict like configured`
-- `-name <ID> . . . . . . . . delete name of entry`
-- `-bend <ID> > <dir> . . . . change directory of entry with <ID>`
+- `-name <ID>:<name> . . . . . (re-)name entry, resolve conflict like configured`
+- `-name <ID>. . . . . . . . . delete name of entry`
+- `-bend <ID> > <dir>. . . . . change directory of entry with <ID>`
 
-# - `< . . . . . . . . . . . . . undo last command`
-# - `> . . . . . . . . . . . . . redo - revert previously made undo`
+[comment]: # - `< . . . . . . . . . . . . . undo last command`
+[comment]: # - `> . . . . . . . . . . . . . redo - revert previously made undo`
 
 ## commands for managing lists:
 
