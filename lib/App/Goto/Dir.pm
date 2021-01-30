@@ -2,8 +2,9 @@ use v5.18;
 use warnings;
 use File::Spec;
 use YAML;
-use App::Goto::Dir::Parser;
 use App::Goto::Dir::Data;
+use App::Goto::Dir::Parser;
+use App::Goto::Dir::Formater;
 
 package App::Goto::Dir;
 
