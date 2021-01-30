@@ -37,15 +37,16 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 ## syntax rules:
 
 - `<dir> . . . directory path, starts with / or ~/, in quotes ('' "") when containing \W beside /,
-               defaults to path (cwd) goto is called from`
-- `<name>. . . name of an dir entry, [only word character (\w)], first char has to be a letter`
+   . . . . . . defaults to path (cwd) goto is called from`
+- `<name>. . . name of an dir entry, (only word character \w), first char has to be a letter`
 - `<lname> . . name of a list, defaults to current list when omitted`
-- `<pos> . . . list position, first is 1, last is -1 (default)`
-- `<ID>  . . . = <name> or :<name> or <pos> or #<pos> or <lname>#<pos> (entry identifier)`
+- `<pos> . . . list position, first is 1, last is -1 (default), second last -2`
+- `<lpos>. . . = <pos> or #<pos> or <lname>#<pos> (default is current list)`
+- `<ID>. . . . = <name> or :<name> or <lpos> (entry identifier)`
 - `- . . . . . starting character of any command in long (-add) or short form (-a)`
-- `# . . . . . (read number) separates &lt;lname> and &lt;pos> in full adress of an entry`
-- `: . . . . . follows &lt;name>, to assign it to &lt;dir> (see -add, -name)`
-- `> . . . . . separates an entry (left) and its destination (right) (see -add, -move, -copy)`
+- `# . . . . . (read number) separates <lname> and <pos> in full adress of an entry`
+- `: . . . . . precedes, separates <name>,  (see -add, -name)`
+- `> . . . . . separates a source (left) and its destination (right) (see -add, -move, -copy)`
 - `<Space> . . has to separate long commands and data, is allowed around > and after :`
 
 ## commands for changing directory:
@@ -77,7 +78,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 ## commands for managing list entries:
 
-- `-add <dir>:<name> > <ID> . add <dir> under <name> on <pos> as defined by <ID>, only <dir> is required`
+- `-add <dir>:<name> > <lpos> . add <dir> under <name> and <lpos>, only <dir> is required`
 - `-del <ID>. . . . . . . . . delete directory entry as defined by <ID> in all lists and move to bin list`
 - `-remove <ID> . . . . . . . remove entry from current or specified list (can't from special list all and bin)`
 - `-move <IDa> > <IDb>. . . . move entry a to position (of) b`
