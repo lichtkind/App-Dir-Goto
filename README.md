@@ -15,55 +15,46 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
   Use 'gt &lt;ID>' to switch dir or open the interactive mode via 'gt' and
   select the dir then. Both ways can also be used to administer lists.
-  Syntax and output of all commands will be the same.
+  Syntax and output of all commands will be the same and you can write
+  several commands in sequence.
 
   For instance to add \~/code/perl/goto under the name "gg" do either type
-  'gt -add gg:\~/code/perl/goto' or open interactive mode via 'gt'
-  and write '-add gd:\~/code/perl/goto' there. Then just press &lt;Enter>
+  'gt -add \~/code/perl/goto:gg' or open interactive mode via 'gt'
+  and write '-add \~/code/perl/goto:gg' there. Then just press &lt;Enter>
   again to exit the interactive mode.
 
   Every command has a long name and a configurable shortcut.
   It is usually the first letter of the full name.
-  Our example : '-agd:\~/code/perl/goto'.
-
-  Sorting criteria have shortcuts too.
+  Our example : '-a\~/code/perl/goto:gg'.
+  Parameters like sorting criteria have shortcuts too.
 
   In order to makte gt operational, add to the shellrc the following line:
-
   function gt() { perl ~/../goto.pl \$@ cd $\(cat ~/../last_choice) }
 
-  Please check ~/../goto_dir_config.yml for further options.
+  Please check ~/../goto_dir_config.yml for further configuration options.
 
 
 ## syntax rules:
-`<dir> . . . directory path, starts with / or ~/, defaults to path goto is called from`
 
-`<name>. . . name of an dir entry, [only word character (\w)], first char has to be a letter`
-
-`<lname> . . name of a list, defaults to current list when omitted`
-
-`<pos> . . . list position, first is 1, last is -1 (default)`
-
-`<ID> . = <name> or <pos> or #<pos> or <lname>#<pos> (entry identifier)`
-
-`- . . . . starting character of any command in long (-add) or short form (-a)`
-
-`# . . . . (read number) separates &lt;lname> and &lt;pos> in full adress of an entry`
-
-`: . . . . follows &lt;name>, to assign it to &lt;dir> (see -add, -name)`
-
-`> . . . . separates an entry (left) and its destination (right) (see -add, -move, -copy)`
-
-`<Space> &nbsp; &nbsp; has to separate long commands and data, is allowed around > and after :`
-
+- `<dir> . . . directory path, starts with / or ~/, in quotes ('' "") when contain \W, defaults to path (cwd) goto is called from`
+- `<name>. . . name of an dir entry, [only word character (\w)], first char has to be a letter`
+- `<lname> . . name of a list, defaults to current list when omitted`
+- `<pos> . . . list position, first is 1, last is -1 (default)`
+- `<ID>  = <name> or :<name> or <pos> or #<pos> or <lname>#<pos> (entry identifier)`
+- `- . . . . . starting character of any command in long (-add) or short form (-a)`
+- `# . . . . . (read number) separates &lt;lname> and &lt;pos> in full adress of an entry`
+- `: . . . . . follows &lt;name>, to assign it to &lt;dir> (see -add, -name)`
+- `> . . . . . separates an entry (left) and its destination (right) (see -add, -move, -copy)`
+- `<Space> . has to separate long commands and data, is allowed around > and after :`
 
 ## commands for changing directory:
+
 - `<name>. . . . . . . . . go to dir with <name> (right beside <pos> in list)`
 - `<pos> . . . . . . . . . go to dir listed on <pos> (in []) of current list`
 - `<lname>#<pos> . . . . . go to directory at <pos> in list <lname>`
 - `<ID>/sub/dir. . . . . . go to subdirectory of a stored dir`
-- `_  . . . . . . . . . . . go to dir gone to last time`
-- `-  . . . . . . . . . . . go to dir gone previously (like cd-)`
+- `_ . . . . . . . . . . . go to dir gone to last time`
+- `- . . . . . . . . . . . go to dir gone previously (like cd-)`
 - `<Enter> . . . . . . . .  exit interactive mode and stay in current dir`
 
 ## commands to display lists and help:
@@ -85,12 +76,13 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 ## commands for managing list entries:
 
-- `-add <name>:<dir> > <ID> . add <dir> under <name> on <pos> as defined by <ID>`
-- `-del <ID>. . . . . . . . . delete directory entry as defined by <ID>`
-- `-name <name>:<ID>. . . . . (re-)name entry, resolve conflict like configured`
-- `-name <ID> . . . . . . . . delete name of entry`
+- `-add <dir>:<name> > <ID> . add <dir> under <name> on <pos> as defined by <ID>, only <dir> is required`
+- `-del <ID>. . . . . . . . . delete directory entry as defined by <ID> in all lists and move to bin list`
+- `-remove <ID> . . . . . . . remove entry from current or specified list (can't from special list all and bin)`
 - `-move <IDa> > <IDb>. . . . move entry a to position (of) b`
 - `-copy  <IDa> > <IDb>. . . . copy entry a to position (of) b`
+- `-name <ID>:<name>. . . . . (re-)name entry, resolve conflict like configured`
+- `-name <ID> . . . . . . . . delete name of entry`
 - `<. . . . . . . . . . . . . undo last command`
 - `>. . . . . . . . . . . . . redo - revert previously made undo`
 
