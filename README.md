@@ -23,9 +23,9 @@ DISCLAIMER: program is in rebuild and does currently not work at all
   again to exit the interactive mode.
 
   Every command has a long name and a configurable shortcut.
-  It is usually the first letter of the full name. 
+  It is usually the first letter of the full name.
   Sorting criteria have shortcuts too.
-  
+
   In order to makte gt operational, add to the shellrc the following line:
 
   function gt() { perl ~/../goto.pl \$@ cd $\(cat ~/../last_choice) }
@@ -33,7 +33,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 ## syntax rules:
 
 
-&lt;dir> &nbsp; &nbsp; &nbsp; &nbsp;  directory path, starts with / or ~/, defaults to dir gt is called from
+`<dir> . . . directory path, starts with / or ~/, defaults to path goto is called from`
 
 &lt;name> &nbsp; &nbsp;name of list entry, only word character (\w), first char has to be a letter
 
@@ -82,7 +82,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 ## commands for managing list entries:
 
-                
+
 - `-add <name>:<dir> > <ID> . add <dir> under <name> on <pos> as defined by <ID>`
 - `-del <ID>. . . . . . . . . delete directory entry as defined by <ID>`
 - `-name <name>:<ID>. . . . . (re-)name entry, resolve conflict like configured`

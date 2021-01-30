@@ -5,9 +5,9 @@ use Test::More tests => 13;
 
 BEGIN { unshift @INC, 'lib', '../lib', '.', 't'}
 use App::Goto::Dir::Data::Entry;
-my $class = 'App::Goto::Dir::Data::Entry';
+my $class = 'App::Goto::Dir::Data::List';
 
-my $nameless = App::Goto::Dir::Data::Entry->new('dir');
+my $nameless = App::Goto::Dir::Data::List->new('dir');
 is(ref $nameless, $class,           'created first simple entry');
 is($nameless->dir, 'dir',           'got back directory');
 is($nameless->name, '',             'got back name');
