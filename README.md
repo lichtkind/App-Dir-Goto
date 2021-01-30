@@ -36,21 +36,28 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 
 ## syntax rules:
-
 `<dir> . . . directory path, starts with / or ~/, defaults to path goto is called from`
+
 `<name>. . . name of an dir entry, [only word character (\w)], first char has to be a letter`
+
 `<lname> . . name of a list, defaults to current list when omitted`
+
 `<pos> . . . list position, first is 1, last is -1 (default)`
+
 `<ID> . = <name> or <pos> or #<pos> or <lname>#<pos> (entry identifier)`
+
 `- . . . . starting character of any command in long (-add) or short form (-a)`
+
 `# . . . . (read number) separates &lt;lname> and &lt;pos> in full adress of an entry`
+
 `: . . . . follows &lt;name>, to assign it to &lt;dir> (see -add, -name)`
+
 `> . . . . separates an entry (left) and its destination (right) (see -add, -move, -copy)`
+
 `<Space> &nbsp; &nbsp; has to separate long commands and data, is allowed around > and after :`
 
 
 ## commands for changing directory:
-
 - `<name>. . . . . . . . . go to dir with <name> (right beside <pos> in list)`
 - `<pos> . . . . . . . . . go to dir listed on <pos> (in []) of current list`
 - `<lname>#<pos> . . . . . go to directory at <pos> in list <lname>`
