@@ -10,48 +10,43 @@ DISCLAIMER: program is in rebuild and does currently not work at all
   Command line tool gt (short for goto) changes the working dir like cd,
   to a set of stored locations you don't have to write as a full path.
   These dir's are organized by lists, and can be adressed via their
-  list position (&lt;pos>), or an user given short name (&lt;name>).
+  list position (&lt;pos>), or with an user given short name (&lt;name>).
   &lt;ID> (dir entry identifier) means &lt;pos> or &lt;name>.
 
   Use 'gt &lt;ID>' to switch dir or open the interactive mode via 'gt' and
-  select the dir there. Both ways can also be used to administer lists.
+  select the dir then. Both ways can also be used to administer lists.
   Syntax and output of all commands will be the same.
 
-  For instance to add \~/code/perl/goto under the name gd do either type
-  'gt -add gd:\~/code/perl/goto' or open interactive mode via 'gt'
+  For instance to add \~/code/perl/goto under the name "gg" do either type
+  'gt -add gg:\~/code/perl/goto' or open interactive mode via 'gt'
   and write '-add gd:\~/code/perl/goto' there. Then just press &lt;Enter>
   again to exit the interactive mode.
 
   Every command has a long name and a configurable shortcut.
   It is usually the first letter of the full name.
+  Our example : '-agd:\~/code/perl/goto'.
+
   Sorting criteria have shortcuts too.
 
   In order to makte gt operational, add to the shellrc the following line:
 
   function gt() { perl ~/../goto.pl \$@ cd $\(cat ~/../last_choice) }
 
+  Please check ~/../goto_dir_config.yml for further options.
+
+
 ## syntax rules:
 
-
 `<dir> . . . directory path, starts with / or ~/, defaults to path goto is called from`
-
-&lt;name> &nbsp; &nbsp;name of list entry, only word character (\w), first char has to be a letter
-
-&lt;lname> &nbsp; name of a list, defaults to current list when omitted
-
-&lt;pos> &nbsp; &nbsp; &nbsp; list position, first is 1, last is -1 (default)
-
-&lt;ID> &nbsp; = &nbsp; &lt;name> or &lt;pos> or #&lt;pos> or &lt;lname>#&lt;pos> (entry identifier)
-
-\-&nbsp; &nbsp; &nbsp; starting character of any command in long (-add) or short form (-a)
-
-\# &nbsp; &nbsp; (read number) separates &lt;lname> and &lt;pos> in full adress of an entry
-
-:&nbsp; &nbsp; &nbsp; follows &lt;name>, to assign it to &lt;dir> (see -add, -name)
-
-&gt;&nbsp; &nbsp; &nbsp;separates an entry (left) and its destination (right) (see -add, -move, -copy)
-
-&lt;Space> &nbsp; &nbsp; has to separate long commands and data, is allowed around > and after :
+`<name>. . . name of an dir entry, [only word character (\w)], first char has to be a letter`
+`<lname> . . name of a list, defaults to current list when omitted`
+`<pos> . . . list position, first is 1, last is -1 (default)`
+`<ID> . = <name> or <pos> or #<pos> or <lname>#<pos> (entry identifier)`
+`- . . . . starting character of any command in long (-add) or short form (-a)`
+`# . . . . (read number) separates &lt;lname> and &lt;pos> in full adress of an entry`
+`: . . . . follows &lt;name>, to assign it to &lt;dir> (see -add, -name)`
+`> . . . . separates an entry (left) and its destination (right) (see -add, -move, -copy)`
+`<Space> &nbsp; &nbsp; has to separate long commands and data, is allowed around > and after :`
 
 
 ## commands for changing directory:
@@ -65,6 +60,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `<Enter> . . . . . . . .  exit interactive mode and stay in current dir`
 
 ## commands to display lists and help:
+
 - `-list . . . . . . . . . display current list (not needed in interactive)`
 - `-list <lname> . . . . . set <lname> as current list and display it`
 - `-list <lpos>. . . . . . switch to list on <lpos> in the list of lists`
@@ -81,7 +77,6 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `-help <command> . . . . detailed help for one command`
 
 ## commands for managing list entries:
-
 
 - `-add <name>:<dir> > <ID> . add <dir> under <name> on <pos> as defined by <ID>`
 - `-del <ID>. . . . . . . . . delete directory entry as defined by <ID>`
