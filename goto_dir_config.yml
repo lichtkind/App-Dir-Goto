@@ -9,6 +9,7 @@ list:
   start_with: current
   sorted_by: default
   default_name: use
+  default_sort: position
   name:
     all: all
     bin: bin
@@ -37,10 +38,9 @@ syntax:
     goto-previous: '-'
     undo: '<'
     redo: '>'
-  argument_option:
+  option_shortcut:
     search:
       created: c
-      default: position
       dir: d
       last_visit: l
       position: p

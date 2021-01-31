@@ -71,20 +71,20 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `--sort=created . . . . . sort by time of dir entry creation (a.k.a -sc)`
 - `--sort=dir . . . . . . . sort by dir path (a.k.a. -sd, -sort=d)`
 - `--help . . . . . . . . . long help = intro text + commands overview`
-- `--help=txt . . . . . . . intro text`
-- `--help=cmd . . . . . . . display list of commands`
+- `--help=usage . . . . . . intro text (short u)`
+- `--help=commands. . . . . display list of commands`
 - `--help <command> . . . . detailed help for one command`
 
 ## commands for managing list entries:
 
-- `--add <dir>:<name> > <lpos> . add <dir> under <name> and <lpos>, only <dir> is required`
-- `--del[ete] <ID> . . . . . . . delete entry with <ID> in all but special lists "all" and "bin"`
-- `--rem[ove] <ID> . . . . . . . remove entry from specified, but not from special list "all", "bin"`
-- `--move <IDa> > <IDb>. . . . . move entry <IDa> to position (of) <IDb>`
-- `--copy <IDa> > <IDb>. . . . . copy entry <IDa> to position (of) <IDb>`
-- `--name <ID>:<name>. . . . . . (re-)name entry, resolve conflict like configured`
-- `--name <ID> . . . . . . . . . delete name of entry`
-- `--bend <ID> > <dir> . . . . . change directory of entry with <ID>`
+- `--add <dir>[:<name>] [> <lpos>] add <dir> under <name> and <lpos>, only <dir> is required`
+- `--del[ete] [<ID>] . . . . . . . delete entry with <ID> in all but special lists "all" and "bin"`
+- `--rem[ove] [<ID>] . . . . . . . remove entry from specified, but not special lists "all", "bin"`
+- `--move [<IDa>] > <IDb>. . . . . move entry <IDa> to position (of) <IDb>`
+- `--copy [<IDa>] > <IDb>. . . . . copy entry <IDa> to position (of) <IDb>`
+- `--name [<ID>]:<name>. . . . . . (re-)name entry, resolve conflict like configured`
+- `--name [<ID>] . . . . . . . . . delete name of entry`
+- `--bend [<ID>] > <dir> . . . . . change directory of entry with <ID>`
 
 <!---
 `< . . . . . . . . . . . . . undo last command`
@@ -97,6 +97,9 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `--list-del <lname> . . . . . delete list of <lname> or <lpos> (has to be empty)`
 - `--list-name <lID>:<lname>. . rename list, conflicts not allowed`
 - `--list-lists. . . . . . .  . <lname> and <lpos> of available lists (short -l-l)`
+
+# planned features
+
 
 <!---
 ## commands for managing commans:
