@@ -62,7 +62,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 ## commands to display lists and help:
 
 - `--list . . . . . . . . . display current list (not needed in interactive) (short -l)`
-- `--list <lname> . . . . . set <lname> as current list and display it`
+- `--list <lname> . . . . . set <lname> as current list and display it (-1)`
 - `--list-lists . . . . . . display available list names (long for -l-l)`
 - `--sort=position. . . . . sort displayed list by position (default) (short -s, -sp)`
 - `--sort=name. . . . . . . change sorting criterion to <name> (long for -sn)`
@@ -77,9 +77,10 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 ## commands for managing list entries:
 
-- `--add <dir>[:<name>] [> <lpos>] add <dir> under <name> and <lpos>, only <dir> is required`
-- `--del[ete] [<ID>] . . . . . . . delete entry with <ID> in all but special lists "all" and "bin" `
-- `--rem[ove] [<ID>] . . . . . . . remove entry from specified, but not special lists "all", "bin" (-r)`
+- `--add <dir>[:<name>] [> <lpos>] add <dir> under <name> and <lpos>, only <dir> is required (-a)
+- `--del[ete] [<ID>] . . . . . . . delete entry with <ID> in all but special lists: all, bin (-d)
+. . . . . . . . . . . . . . . . . . . get moved to special list "bin" and disappear after configured time`
+- `--rem[ove] [<ID>] . . . . . . . remove entry from chosen, but not special lists: all, bin (-r)`
 - `--move [<IDa>] > <IDb>. . . . . move entry <IDa> to position (of) <IDb> (-m)`
 - `--copy [<IDa>] > <IDb>. . . . . copy entry <IDa> to position (of) <IDb> (-c)`
 - `--name [<ID>]:<name>. . . . . . (re-)name entry, resolve conflict like configured (-n)`
