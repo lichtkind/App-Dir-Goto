@@ -75,6 +75,8 @@ sub get_current_list      {        $_[0]->{'list_object'}{ $_[0]->{'list'}{'curr
 sub get_current_list_name {                                $_[0]->{'list'}{'current'}   }
 sub get_all_list_name     { keys %{$_[0]->{'list_object'}}                              }
 sub get_list              { $_[0]->{'list_object'}{$_[1]} if exists $_[0]->{'list_object'}{$_[1]} }
+sub get_special_lists     { my $self = shift; @{$self->{'list_object'}}{ @{$self->{'config'}{'list'}{'name'}}{@_} } }
+sub get_special_list_names{ my $self = shift; @{$self->{'config'}{'list'}{'name'}}{@_} }
 sub list_exists           { defined $_[1] and exists $_[0]->{'list_object'}{$_[1]}      }
 
 #### entry API #########################################################
@@ -87,7 +89,7 @@ sub new_entry {
     return "entry list with name '$list_name' does not exist" unless $self->list_exists( $list_name );
     my $entry = App::Goto::Dir::Data::Entry->new($dir, $name);
     my $list     = $self->get_list( $list_name );
-    my ($all_entry, $new_entry) = @{$self->{'list_object'}}{ @{$self->{'config'}{'list'}{'name'}}{'all', 'new'} };
+    my ($all_entry, $new_entry) = $self->get_special_lists('all', 'new');
     my $ret = $all_entry->insert_entry( $entry, $list eq $all_entry ? $list_pos : undef ); # sorting out names too
     return $ret unless ref $ret; # return error msg: could not inserted because not allowed overwrite entry with same dir
     $new_entry->insert_entry( $entry, $list eq $new_entry ? $list_pos : undef );
@@ -99,14 +101,14 @@ sub delete_entry { # remove from all lists (-all) & move to bin
     my ($self, $list_name, $entry_ID) = @_;
     my ($entry, $list) = $self->get_entry( $entry_ID );
     return $entry unless ref $entry;
-    my ($all_entry, $bin_entry) = @{$self->{'list_object'}}{ @{$self->{'config'}{'list'}{'name'}}{'all', 'bin'} };
+    my ($all_list, $bin_list) = $self->get_special_lists('all', 'bin');
     for my $list (values %{$self->{'list_object'}}) {
-        next if $list eq $all_entry or $list eq $bin_entry;
+        next if $list eq $all_list or $list eq $bin_list;
         $list->remove_entry( $entry );
     }
     unless ($entry->overdue()){
         $entry->delete();
-        $bin_entry->insert_entry( $entry );
+        $bin_list->insert_entry( $entry );
     }
     $entry;
 }
@@ -115,7 +117,7 @@ sub remove_entry { # from one list
     my ($self, $list_name, $entry_ID) = @_;
     my ($entry, $list) = $self->get_entry( $entry_ID );
     return $entry unless ref $entry;
-    return "can not remove entries from special lists: new, bin and all" if $list_name ~~ [@{$self->{'config'}{'list'}{'name'}}{qw/new bin all/}];
+    return "can not remove entries from special lists: new, bin and all" if $list_name ~~ [$self->get_special_list_names(qw/new bin all/)];
     $list->remove_entry( $entry_ID );
 }
 
@@ -127,8 +129,9 @@ sub move_entry {
     my ($from_list, $to_list)  = @{$self->{'list_object'}}{ $from_list_name, $to_list_name };
     return "unknown source list name: $from_list_name" unless ref $from_list;
     return "unknown target list name: $to_list_name" unless ref $to_list;
-    return "can not move entries from special lists: new, bin and all" if $from_list_name ~~ [@{$self->{'config'}{'list'}{'name'}}{qw/new bin all/}];
-    return "can not move entries to special lists: new, bin and all" if $to_list_name ~~ [@{$self->{'config'}{'list'}{'name'}}{qw/new bin all/}];
+    my $special_list_names = [$self->get_special_list_names(qw/new bin all/)];
+    return "can not move entries from special lists: new, bin and all" if $from_list_name ~~ $special_list_names;
+    return "can not move entries to special lists: new, bin and all" if $to_list_name ~~ $special_list_names;
     my $entry = $from_list->remove_entry( $from_ID );
     return $entry unless ref $entry;
     $to_list->insert_entry( $entry, $to_ID );
@@ -142,7 +145,7 @@ sub copy_entry {
     my ($from_list, $to_list)  = @{$self->{'list_object'}}{ $from_list_name, $to_list_name };
     return "unknown source list name: $from_list_name" unless ref $from_list;
     return "unknown target list name: $to_list_name" unless ref $to_list;
-    return "can not copy entries to special lists: new, bin and all" if $to_list_name ~~ [@{$self->{'config'}{'list'}{'name'}}{qw/new bin all/}];
+    return "can not copy entries to special lists: new, bin and all" if $to_list_name ~~ [$self->get_special_list_names(qw/new bin all/)];
     my $entry = $from_list->get_entry( $from_ID );
     return $entry unless ref $entry;
     $to_list->insert_entry( $entry, $to_ID );
@@ -153,14 +156,14 @@ sub rename_entry { # delete name when name arg omitted
     my ($entry, $list) = $self->get_entry( $entry_ID );
     return $entry unless ref $entry;
     $new_name //= '';
-    my $all_entry = $self->{'list_object'}{ $self->{'config'}{'list'}{'name'}{'all'} };
+    my $all_entry = $self->get_special_lists('all');
     my $sibling = $all_entry->get_entry( $new_name );
     if ($new_name and ref $sibling){
         return "name $new_name is already taken" if $self->{'config'}{'entry'}{'prefer_in_name_conflict'} eq 'old';
-        $self->rename_entry( $self->{'config'}{'list'}{'name'}{'all'}, $new_name, '');
+        $self->rename_entry( undef, $new_name, '');
     }
     $entry->rename( $new_name );
-    $self->{'list_object'}{ $_ }->refresh_reverse_hashes for $entry->member_of_lists;
+    $self->get_list( $_)->refresh_reverse_hashes for $entry->member_of_lists;
     $entry;
 }
 
@@ -171,7 +174,7 @@ sub redirect_entry   {
     my ($entry, $list) = $self->get_entry( $entry_ID );
     return $entry unless ref $entry;
     $entry->redirect($new_dir);
-    $self->{'list_object'}{ $_ }->refresh_reverse_hashes for $entry->member_of_lists;
+    $self->get_list( $_)->refresh_reverse_hashes for $entry->member_of_lists;
     $entry;
 }
 
@@ -179,7 +182,8 @@ sub get_entry {
     my ($self, $list_name, $entry_ID) = @_;
     return "missing ID (list position or name) of dir entry" unless defined $entry_ID;
     $list_name //= $self->get_current_list_name;
-    my $list  = $self->{'list_object'}{ $list_name };
+    $list_name = $self->get_special_lists('all') if $entry_ID !~ /-?\d+/;
+    my $list  = $self->get_list( $list_name );
     return "unknown list name: $list_name" unless ref $list;
     $list->get_entry( $entry_ID ), $list;
 }
@@ -195,15 +199,11 @@ sub visit_entry {
     $self->{'visits'}{'last_subdir'} = defined $sub_dir ? $sub_dir : '';
     $entry, $list;
 }
-
 sub visit_last_entry {
-    my ($self) = @_;
-    $self->visit_entry( $self->{'config'}{'list'}{'name'}{'all'}, $self->{'visits'}{'last_dir'},$self->{'visits'}{'last_subdir'} );
+    $_[0]->visit_entry( $_[0]->{'config'}{'list'}{'name'}{'all'}, $_[0]->{'visits'}{'last_dir'}, $_[0]->{'visits'}{'last_subdir'} );
 }
-
 sub visit_previous_entry {
-    my ($self) = @_;
-    $self->visit_entry( $self->{'config'}{'list'}{'name'}{'all'}, $self->{'visits'}{'previous_dir'},$self->{'visits'}{'previous_subdir'} );
+    $_[0]->visit_entry( $_[0]->{'config'}{'list'}{'name'}{'all'}, $_[0]->{'visits'}{'previous_dir'}, $_[0]->{'visits'}{'previous_subdir'} );
 }
 
 ########################################################################

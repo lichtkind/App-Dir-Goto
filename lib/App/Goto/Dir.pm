@@ -8,10 +8,14 @@ use App::Goto::Dir::Formater;
 
 package App::Goto::Dir;
 
-#my $file = "goto_dir_config.yml";
-#my $config = YAML::LoadFile($file);
-#my $data = App::Goto::Dir::Data->new( $config );
-#App::Goto::Dir::Parser::init($config);
+my $file = "goto_dir_config.yml";
+
+sub new {
+    my $config = YAML::LoadFile($file);
+    my $data = App::Goto::Dir::Data->new( $config );
+    App::Goto::Dir::Parser::init($config);
+    bless {  };
+}
 
 
 1;

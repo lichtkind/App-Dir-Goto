@@ -63,7 +63,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 - `--list . . . . . . . . . display current list (not needed in interactive) (short -l)`
 - `--list <lname> . . . . . set <lname> as current list and display it`
-- `--list-lists . . . . . . display available list names (long for -ll)`
+- `--list-lists . . . . . . display available list names (long for -l-l)`
 - `--sort=position. . . . . sort displayed list by position (default) (short -s, -sp)`
 - `--sort=name. . . . . . . change sorting criterion to <name> (long for -sn)`
 - `--sort=visits. . . . . . sort by number of times gone to dir (a.k.a. -sv)`
@@ -78,13 +78,13 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 ## commands for managing list entries:
 
 - `--add <dir>[:<name>] [> <lpos>] add <dir> under <name> and <lpos>, only <dir> is required`
-- `--del[ete] [<ID>] . . . . . . . delete entry with <ID> in all but special lists "all" and "bin"`
-- `--rem[ove] [<ID>] . . . . . . . remove entry from specified, but not special lists "all", "bin"`
-- `--move [<IDa>] > <IDb>. . . . . move entry <IDa> to position (of) <IDb>`
-- `--copy [<IDa>] > <IDb>. . . . . copy entry <IDa> to position (of) <IDb>`
-- `--name [<ID>]:<name>. . . . . . (re-)name entry, resolve conflict like configured`
+- `--del[ete] [<ID>] . . . . . . . delete entry with <ID> in all but special lists "all" and "bin" `
+- `--rem[ove] [<ID>] . . . . . . . remove entry from specified, but not special lists "all", "bin" (-r)`
+- `--move [<IDa>] > <IDb>. . . . . move entry <IDa> to position (of) <IDb> (-m)`
+- `--copy [<IDa>] > <IDb>. . . . . copy entry <IDa> to position (of) <IDb> (-c)`
+- `--name [<ID>]:<name>. . . . . . (re-)name entry, resolve conflict like configured (-n)`
 - `--name [<ID>] . . . . . . . . . delete name of entry`
-- `--bend [<ID>] > <dir> . . . . . change directory of entry with <ID>`
+- `--path [<ID>] > <dir> . . . . . change directory of entry with <ID> (short -p)`
 
 <!---
 `< . . . . . . . . . . . . . undo last command`
@@ -93,20 +93,22 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 ## commands for managing lists:
 
-- `--list-add <lname> . . . . . create a new list`
-- `--list-del <lname> . . . . . delete list of <lname> or <lpos> (has to be empty)`
-- `--list-name <lID>:<lname>. . rename list, conflicts not allowed`
+- `--list-add <lname> . . . . . create a new list (-l-a)`
+- `--list-del <lname> . . . . . delete list of <lname> (has to be empty) (-l-d)`
+- `--list-name <lID>:<lname>. . rename list, conflicts not allowed (-l-n)`
 - `--list-lists. . . . . . .  . <lname> and <lpos> of available lists (short -l-l)`
 
 # planned features
 
+- administer commands per entry, that are run when switching to dir
+- undo ?
 
 <!---
 ## commands for managing commans:
 
-- `--cmd-add <lname> . . . . . create a new list`
-- `--cmd-del <lname> . . . . . delete list of <lname> or <lpos> (has to be empty)`
-- `--cmd-name <lID>:<lname>. . rename list, conflicts not allowed`
-- `--cmd-list . . . . . . .  . <lname> and <lpos> of available lists (short -l-l)`
+- `--cmd-add <lname> . . . . . create a new list (-c-a)`
+- `--cmd-del <lname> . . . . . delete list of <lname> or <lpos> (has to be empty) (-c-d)`
+- `--cmd-move <pos> > <pos>. . move command position`
+- `--cmd-list . . . . . . .  . <lname> and <lpos> of available lists (short -c-l)`
 
 --->

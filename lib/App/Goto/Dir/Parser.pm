@@ -23,6 +23,7 @@ sub init {
     %cmd_shortcut  = %{ $config->{'syntax'}{'command_shortcut'}};
     %command_sc     = map { $cmd_shortcut{$_} => $_ } keys %cmd_shortcut;
     %opt_shortcut     = %{ $config->{'syntax'}{'option_shortcut'}};
+# insert default
     for my $opt (keys %opt_shortcut){
         $option_sc{$opt} = { map { $opt_shortcut{$opt}{$_} => $_ } keys %{$opt_shortcut{$opt}} };
     }
@@ -46,3 +47,12 @@ sub run_command {
 1;
 
 __END__
+
+add <dir>[:<name>] [> <lpos>]
+del[ete] [<ID>]
+rem[ove] [<ID>]
+move [<IDa>] > <IDb>
+copy [<IDa>] > <IDb>
+name [<ID>] :<name>
+name [<ID>]
+bend [<ID>] > <dir>
