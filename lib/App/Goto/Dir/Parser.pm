@@ -14,7 +14,7 @@ my %opt_shortcut = ( sort => {created => 'c', dir => 'd', last_visit => 'l', pos
 );
 my (%command_sc, %option_sc);
 
-my @command = (qw/add del delete rem remove move copy name bend help goto-last goto-previous list-add list-del list-name list-lists/);
+my @command = (qw/add del delete rem remove move copy name path help last previous list-add list-del list-name list-lists/);
 say for @command;
 
 # - : ,
