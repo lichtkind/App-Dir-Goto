@@ -30,7 +30,7 @@ syntax:
     move: m
     remove: r
     name : n
-    bend: b
+    path: p
     sort: s
     list: l
     help: h

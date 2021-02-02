@@ -4,7 +4,7 @@ use File::Spec;
 
 package App::Goto::Dir::Parser;
 
-my %cmd_shortcut = (add =>'a', delete =>'d', copy => 'c', move =>'m', remove =>  'r', name =>'n', bend => 'b',
+my %cmd_shortcut = (add =>'a', delete =>'d', copy => 'c', move =>'m', remove =>  'r', name =>'n', path => 'p',
                    sort =>'s', list =>'l', 'goto-last' =>'_', 'goto-previous' => '-', help =>'h'); # undo =>'<', redo =>'>',
 my %cmd_alias    = ( rem => 'remove', del => 'delete', );
 my %cmd_compund  = (  list => [qw/add del/], sort => [qw/created dir last_visit position name visits/] );
