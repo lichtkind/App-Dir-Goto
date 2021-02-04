@@ -1,26 +1,28 @@
+use v5.18;
+use warnings;
+use File::Spec;
 
-# App-Goto-Dir
+package App::Goto::Dir::Help;
 
-- - -
-
-DISCLAIMER: program is in rebuild and does currently not work at all
-
-- - -
-
+sub overview {
+    say ;
+}
+sub usage    {
+    say <<EOT;
   Command line tool gt (short for goto) changes the working dir like cd,
   to a set of stored locations you don't have to write as a full path.
   These dir's are organized by lists, and can be adressed via their
-  list position (&lt;pos>), or with an user given short name (&lt;name>).
-  &lt;ID> (dir entry identifier) means &lt;pos> or &lt;name>.
+  list position (<pos>), or with an user given short name (<name>).
+  <ID> (dir entry identifier) means <pos> or <name>.
 
-  Use 'gt &lt;ID>' to switch dir or open the interactive mode via 'gt' and
+  Use 'gt <ID>' to switch dir or open the interactive mode via 'gt' and
   select the dir then. Both ways can also be used to administer lists.
   Syntax and output of all commands will be the same and you can write
   several commands in sequence.
 
   For instance to add \~/code/perl/goto under the name "gg" do either type
   'gt -add \~/code/perl/goto:gg' or open interactive mode via 'gt'
-  and write '-add \~/code/perl/goto:gg' there. Then just press &lt;Enter>
+  and write '-add \~/code/perl/goto:gg' there. Then just press <Enter>
   again to exit the interactive mode.
 
   Every command has a long name and a configurable shortcut.
@@ -32,7 +34,45 @@ DISCLAIMER: program is in rebuild and does currently not work at all
   function gt() { perl ~/../goto.pl \$@ cd $\(cat ~/../last_choice) }
 
   Please check ~/../goto_dir_config.yml for further configuration options.
+EOT
+}
 
+sub commands {
+    say <<EOT;
+
+  Long form commands of Goto Dir :
+  -------------------------------
+
+  --last                          go to dir gone to last time, short: _
+  --previous                      go to dir gone previously, short: -, like cd -
+
+  --add <dir>[:<name>] [> <lpos>] add directory <dir> under <name> to a list (-a)
+  --del[ete] [<ID>]               delete dir entry from all lists  (-d)
+  --rem[ove] [<ID>]               remove dir entry from chosen lists (-r)
+  --move [<IDa>] > <IDb>          move dir entry <IDa> to position (of) <IDb> (-m)
+  --copy [<IDa>] > <IDb>          copy entry <IDa> to position (of) <IDb> (-c)
+  --name [<ID>]:<name>            (re-, un-) name entry (-n)
+  --path [<ID>] > <dir>           change directory of entry  (-p)
+
+  --sort=p|n|v|l|c|d              set sorting criterion of list display (-s)
+  --list [<lname>]                change current list and display it (-l<lname>)
+  --list-lists                    display available list names (long for -l-l)
+  --list-add <lname>              create a new list (-l-a)
+  --list-del <lname>              delete list of <lname> (has to be empty) (-l-d)
+  --list-name <lID>:<lname>       rename list, conflicts not allowed (-l-n)
+
+  --help                          display many kindss of help texts (-h)
+
+EOT
+}
+
+sub shortcuts {
+}
+
+
+1;
+
+__END__
 
 ## syntax rules:
 

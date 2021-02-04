@@ -4,18 +4,47 @@ use File::Spec;
 
 package App::Goto::Dir::Parser;
 
-my %cmd_shortcut = (add =>'a', delete =>'d', copy => 'c', move =>'m', remove =>  'r', name =>'n', path => 'p',
-                   sort =>'s', list =>'l', 'goto-last' =>'_', 'goto-previous' => '-', help =>'h'); # undo =>'<', redo =>'>',
-my %cmd_alias    = ( rem => 'remove', del => 'delete', );
-my %cmd_compund  = (  list => [qw/add del/], sort => [qw/created dir last_visit position name visits/] );
-
-my %opt_shortcut = ( sort => {created => 'c', dir => 'd', last_visit => 'l', position => 'p',  name => 'n',  visits => 'v' },
+my %command = ('add' => [0, 1, 0, 0], # 0 option 1st arg required
+               'del' => 'delete',
+            'delete' => [0, 0],
+               'rem' => 'remove',
+            'remove' => [0, 0],
+              'move' => [0, 0, 1],
+              'copy' => [0, 0, 1],
+              'name' => [0, 0, 0],
+              'path' => [0, 0, 1],
+              'last' => [0],
+          'previous' => [0],
+              'help' => [3, 0],
+              'sort' => [6],
+              'list' => [0, 0],
+          'list-add' => [0, 1],
+          'list-del' => 'list-delete',
+       'list-delete' => [0, 1],
+         'list-name' => [0, 1, 1],
+        'list-lists' => [0],
+);
+my %cmd_argument = ( 'add' => [qw/dir name target/],
+                    delete => ['source'],
+                    remove => ['source'],
+                      move => ['source', 'target'],
+                      copy => ['source', 'target'],
+                      name => ['source', 'name'],
+                      path => ['source', 'dir'],
+                      help => ['command'],
+                'list-add' => ['name'],
+             'list-delete' => ['name'],
+               'list-name' => ['name', 'name'],
+);
+my %cmd_option  = ( list => [qw/add del/],
+                    sort => [qw/created dir last_visit position name visits/]
+);
+my %cmd_shortcut = (  add =>'a',delete =>'d', copy => 'c', move =>'m', remove =>  'r', name =>'n', path => 'p',
+                     sort =>'s',  list =>'l', 'last' =>'_', 'previous' => '-' , help =>'h' ,); # undo =>'<', redo =>'>',
+my %opt_shortcut = ( sort => { created => 'c', dir => 'd', last_visit => 'l', position => 'p',  name => 'n',  visits => 'v' },
                      help => {                all => 'a',      usage => 'u', commands => 'c', },
 );
 my (%command_sc, %option_sc);
-
-my @command = (qw/add del delete rem remove move copy name path help last previous list-add list-del list-name list-lists/);
-say for @command;
 
 # - : ,
 sub init {
@@ -55,4 +84,4 @@ move [<IDa>] > <IDb>
 copy [<IDa>] > <IDb>
 name [<ID>] :<name>
 name [<ID>]
-bend [<ID>] > <dir>
+path [<ID>] > <dir>

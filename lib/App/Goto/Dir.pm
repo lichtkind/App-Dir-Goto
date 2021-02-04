@@ -5,8 +5,10 @@ use YAML;
 use App::Goto::Dir::Data;
 use App::Goto::Dir::Parser;
 use App::Goto::Dir::Formater;
+use App::Goto::Dir::Help;
 
 package App::Goto::Dir;
+our $VERSION = 0.4;
 
 my $file = "goto_dir_config.yml";
 
