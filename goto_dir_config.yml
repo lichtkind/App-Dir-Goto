@@ -50,4 +50,5 @@ syntax:
       all: a
       usage: u
       commands: c
+      settings: s
 

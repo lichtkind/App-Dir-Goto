@@ -36,8 +36,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 ## syntax rules:
 
-- `<dir> . . . directory path, starts with / or ~/, in quotes ('') when containing \W beside /,
- . . . . . . . . defaults to path (cwd) goto is called from`
+- `<dir> . . . directory path, starts with: \ / ~ , defaults to dir app is called from`
 - `<name>. . . name of an dir entry, (start with letter + word character \w), default ''`
 - `<lname> . . name of a list, defaults to current list when omitted`
 - `<pos> . . . list position, first is 1, last is -1 (default), second last -2`
@@ -52,13 +51,14 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 ## commands for changing directory:
 
-- `<name>. . . . . . . . . go to dir with <name> (right beside <pos> in list)`
-- `<pos> . . . . . . . . . go to dir listed on <pos> (in []) of current list`
+- `[:]<name> . . . . . . . go to dir with <name> (right beside <pos> in list)`
+- `[#]<pos>. . . . . . . . go to dir listed on <pos> (in []) of current list`
 - `<lname>#<pos> . . . . . go to directory at <pos> in list <lname>`
+- `*last . . . . . . . . . go to dir gone to last time (in short: '_')`
+- `*previous . . . . . . . go to dir gone previously (short '-', like cd -)`
+- `*new. . . . . . . . . . go to dir added last (*)`
 - `<ID>/sub/dir. . . . . . go to subdirectory of a stored dir`
-- `--last. . . . . . . . . go to dir gone to last time (in short: '_')`
-- `--previous. . . . . . . go to dir gone previously (short '-', like cd -)`
-- `<Enter> . . . . . . . .  exit interactive mode and stay in current dir`
+- `<Enter> . . . . . . . . exit interactive mode and stay in current dir`
 
 ## commands to display lists and help:
 
@@ -71,9 +71,10 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `--sort=last_visit. . . . sort by time of last visit (earlier first, -sl)`
 - `--sort=created . . . . . sort by time of dir entry creation (-sc)`
 - `--sort=dir . . . . . . . sort by dir path (-sd, -sort=d)`
-- `--help . . . . . . . . . long help = intro text + commands overview (-h)`
+- `--help . . . . . . . . . overview of all help topics (-h)`
 - `--help=usage . . . . . . intro text (short -hu)`
 - `--help=commands. . . . . display list of commands (-hc)`
+- `--help=settings. . . . . explanation of settings (-hs)`
 - `--help <command> . . . . detailed help for one command (-h<command>)`
 
 ## commands for managing list entries:
@@ -83,11 +84,11 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `--del[ete] [<ID>] . . . . . . . delete entry with <ID> in all but special lists: all, bin (-d)
 . . . . . . . . . . . . . . . . . .and move to special list "bin", hard delete after configured time`
 - `--rem[ove] [<ID>] . . . . . . . remove entry from chosen, but not special lists: all, bin (-r)`
-- `--move [<IDa>] > <IDb>. . . . . move entry <IDa> to position (of) <IDb> (-m)`
-- `--copy [<IDa>] > <IDb>. . . . . copy entry <IDa> to position (of) <IDb> (-c)`
+- `--move [<IDa>] > <IDb>. . . . . move entry <IDa> to (position of) <IDb> (-m)`
+- `--copy [<IDa>] > <IDb>. . . . . copy entry <IDa> to (position of) <IDb> (-c)`
 - `--name [<ID>]:<name>. . . . . . (re-)name entry, resolve conflict like configured (-n)`
 - `--name [<ID>] . . . . . . . . . delete name of entry (-n)`
-- `--path [<ID>] > <dir> . . . . . change directory of entry with <ID> (-p)`
+- `--path [<ID>] <dir> . . . . . . change directory of entry with <ID> (-p)`
 
 
 ## commands for managing lists:

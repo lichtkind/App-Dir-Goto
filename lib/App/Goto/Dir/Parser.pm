@@ -45,6 +45,11 @@ my %opt_shortcut = ( sort => { created => 'c', dir => 'd', last_visit => 'l', po
                      help => {                all => 'a',      usage => 'u', commands => 'c', },
 );
 my (%command_sc, %option_sc);
+my $sigil_command  = '-';
+my $sigil_option   = '=';
+my $sigil_name     = ':';
+my $sigil_position = '#';
+my $sigil_enty     = '*';
 
 # - : ,
 sub init {
