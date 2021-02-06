@@ -36,7 +36,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 ## syntax rules:
 
-- `<dir> . . . directory path, starts with: \/~ , in quotes ('..') when containing ':' or ' '
+- `<dir> . . . directory path, starts with any of: '\/~'; in quotes ('..') when containing ':' or ' '
 . . . . . . . . defaults to dir app is called from`
 - `<name>. . . name of an dir entry, (start with letter + word character \w), default ''`
 - `<lname> . . name of a list, defaults to current list when omitted`
