@@ -22,8 +22,12 @@ entry:
   prefer_in_name_conflict: new
   prefer_in_dir_conflict: new
 syntax:
-  argument_separator: '>: '
-  special_entry_sigil: '*'
+  sigil:
+    command: '-'
+    entry_name: ':'
+    entry_position: '#'
+    target_entry: '>'
+    special_entry: '*'
   special_entry:
     last: '_'
     previous: '-'

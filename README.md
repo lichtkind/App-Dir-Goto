@@ -37,7 +37,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 ## syntax rules:
 
 - `<dir> . . . directory path, starts with any of '\/~'; in quotes ('..') when containing ':' or ' '
-. . . . . . . . defaults to dir app is called from`
+. . . . . . defaults to dir app is called from`
 - `<name>. . . name of an dir entry, (start with letter + word character \w), default ''`
 - `<lname> . . name of a list, defaults to current list when omitted`
 - `<pos> . . . list position, first is 1, last is -1 (default), second last -2`
@@ -47,6 +47,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `- . . . . . starting character of any command in short form (-add)`
 - `# . . . . . (read number) separates <lname> and <pos> in full adress of an entry`
 - `: . . . . . precedes, separates <name>,  (see -add, -name)`
+- `* . . . . . start name of special entry like *last`
 - `> . . . . . separates a source (left) and its destination (right) (see -add, -move, -copy)`
 - `<Space> . . ' ' separates long commands and args, allowed around > and before : #`
 
@@ -99,7 +100,8 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `--list-name <lID>:<lname>. . rename list, conflicts not allowed (-l-n)`
 - `--list-lists. . . . . . .  . <lname> and <lpos> of available lists (short -l-l)`
 
-<!--
+
 # planned features
--->
+
+- simpel undo
 

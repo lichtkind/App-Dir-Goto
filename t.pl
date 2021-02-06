@@ -15,6 +15,11 @@ App::Goto::Dir::Parser::init($config);
 #say $data->delete_entry( 'all', 'p' );
 $data->write();
 
+
+#say App::Goto::Dir::Help::text( $config );
+#say App::Goto::Dir::Help::text($config, 'option', 'command');
+say App::Goto::Dir::Help::text($config, 'command', 'delete');
+
 say '   run goto test in ', sprintf("%.4f",timediff( Benchmark->new, $t)->[1]), ' sec';
 
 

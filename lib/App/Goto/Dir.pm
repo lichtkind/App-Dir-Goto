@@ -16,7 +16,7 @@ sub new {
     my $config = YAML::LoadFile($file);
     my $data = App::Goto::Dir::Data->new( $config );
     App::Goto::Dir::Parser::init($config);
-    bless {  };
+    bless { config => $config, data => $data};
 }
 
 

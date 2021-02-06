@@ -22,7 +22,16 @@ entry:
   prefer_in_name_conflict: new
   prefer_in_dir_conflict: new
 syntax:
-  argument_separator: ',:-'
+  sigil:
+    command: '-'
+    entry_name: ':'
+    entry_position: '#'
+    target_entry: '>'
+    special_entry: '*'
+  special_entry:
+    last: '_'
+    previous: '-'
+    new: '*'
   command_shortcut:
     add: a
     copy: c
@@ -33,13 +42,13 @@ syntax:
     path: p
     sort: s
     list: l
+    list-lists: l-l
+    list-add: l-a
+    list-delete: l-d
+    list-name: l-n
     help: h
-    goto-last: '_'
-    goto-previous: '-'
-    undo: '<'
-    redo: '>'
   option_shortcut:
-    search:
+    sort:
       created: c
       dir: d
       last_visit: l
@@ -47,7 +56,6 @@ syntax:
       name: n
       visits: v
     help:
-      all: a
       usage: u
       commands: c
       settings: s
