@@ -91,7 +91,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `--name [<ID>]:<name>. . . . . . (re-)name entry, resolve conflict like configured (-n)`
 - `--name [<ID>] . . . . . . . . . delete name of entry (-n)`
 - `--path [<ID>] <dir> . . . . . . change directory of entry with <ID> (-p)`
-
+- `--edit [<ID>] '<code>'. . . . . edit script, that is run when gone to dir (-e)`
 
 ## commands for managing lists:
 

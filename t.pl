@@ -17,7 +17,8 @@ $data->write();
 
 
 #say App::Goto::Dir::Help::text( $config );
-#say App::Goto::Dir::Help::text($config, 'option', 'command');
+say App::Goto::Dir::Help::text($config, 'option', 'commands');
+say App::Goto::Dir::Help::text($config, 'command', 'add');
 say App::Goto::Dir::Help::text($config, 'command', 'delete');
 
 say '   run goto test in ', sprintf("%.4f",timediff( Benchmark->new, $t)->[1]), ' sec';

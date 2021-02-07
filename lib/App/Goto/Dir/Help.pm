@@ -5,12 +5,13 @@ use File::Spec;
 package App::Goto::Dir::Help;
 
 my %option = ( overview => \&overview,
-               usage    => \&usage,
-               command  => \&command,
+               basics   => \&basics,
+               commands => \&commands,
+               install  => \&install,
                settings => \&settings,
 );
 sub overview { &usage }
-sub usage {
+sub basics {
     my $config = shift;
     my $us = '-'x length $App::Goto::Dir::VERSION;
     <<EOT;
@@ -38,13 +39,27 @@ sub usage {
   Our example : '-a\~/code/perl/goto:gg'.
   Parameters like sorting criteria have shortcuts too.
 
-  In order to makte gt operational, add to the shellrc the following line:
-  function gt() { perl ~/../goto.pl \\\$@ cd \$\\(cat ~/../last_choice) }
 
   For overview of more help topics use --help help or -$config->{syntax}{command_shortcut}{help} $config->{'syntax'}{'command_shortcut'}{'help'}
 EOT
 }
-sub command {
+sub install{ <<EOT,
+
+   How to install App::Goto::Dir :
+  -------------------------------
+
+   perl 5.18
+   YAML
+
+   goto_dir_config.yml
+   places.yml
+
+  In order to makte gt operational, add to the shellrc the following line:
+  function gt() { perl ~/../goto.pl \\\$@ cd \$\\(cat ~/../last_choice) }
+
+EOT
+}
+sub commands {
     my $config = shift;
     my $sc = $config->{'syntax'}{'command_shortcut'};
     my $opt = $config->{'syntax'}{'option_shortcut'};
@@ -62,6 +77,7 @@ sub command {
   --copy [<IDa>] > <IDb>          copy entry <IDa> to (position of) <IDb> (-$sc->{copy})
   --name [<ID>]:<name>            (re-, un-) name entry (-$sc->{name})
   --path [<ID>] <dir>             change directory of entry (-$sc->{path})
+  --edit [<ID>] '<code>'          edit project landing script (-$sc->{edit})
 
   --sort=$sopt              set sorting criterion of list display (-$sc->{sort})
   --list [<lname>]                change current list and display it (-$sc->{list})
@@ -70,7 +86,7 @@ sub command {
   --list-del <lname>              delete list of <lname> (has to be empty) (-$sc->{'list-delete'})
   --list-name <lID>:<lname>       rename list, conflicts not allowed (-$sc->{'list-name'})
 
-  --help[=$hopt| <command>]       general or command specific help texts (-$sc->{help})
+  --help[=$hopt| <command>]     general or command specific help texts (-$sc->{help})
 EOT
 }
 
@@ -130,6 +146,7 @@ my %command = ( add => \&add,
                copy => \&copy,
                name => \&name,
                path => \&path,
+               edit => \&edit,
                list => \&list,
                sort => \&sort,
        'list-lists' => \&llists,
@@ -138,13 +155,12 @@ my %command = ( add => \&add,
         'list-name' => \&lname,
                help => \&help,
 );
-
 sub add {
     my $config = shift;
     my $lname = $config->{'list'}{'name'};
     <<EOT;
 
-   hg --add      create a new entry
+   gt --add      create a new entry
   ----------------------------------
 
   --add <dir>[:<name>] [> <lpos>]     full syntax
@@ -154,17 +170,20 @@ sub add {
   --add /project/dir         Adding the directory into current list on default position
                              under no name - will also appear in special lists '$lname->{new}' and '$lname->{all}'.
 
-  --add /path:name           adding path under a name
+  --add /path :name          adding path under a name
 
-  --add /path:name > [#]3    adding named path to current list on third position
+  --add /path:name>[#]3      adding named path to current list on third position
 
   --add /path > good#4       adding unnamed path to list named good on fourth position
 
 
-  If this directory is already stored in any list, the config entry: entry.prefer_in_dir_conflict
-  in goto_dir_config.yml decides if new or old entry is kept.
-  If the chosen name is already used by any entry, the config entry: entry.prefer_in_name_conflict
-  in goto_dir_config.yml decides if new or old entry will keep it.
+    <Space> (' ') around: '>', '#' and ':' is optional.
+    If <dir> contains <Space> or ':', it has to be set in single quotes ('/path').
+
+    If this directory is already stored in any list, the config entry: entry.prefer_in_dir_conflict
+    in goto_dir_config.yml decides if new or old entry is kept.
+    If the chosen name is already used by any entry, the config entry: entry.prefer_in_name_conflict
+    in goto_dir_config.yml decides if new or old entry will keep it.
 EOT
 }
 sub delete {
@@ -173,7 +192,7 @@ sub delete {
     my $lname = $config->{'list'}{'name'};
      <<EOT;
 
-   hg --delete      delete entry from store
+   gt --delete      delete entry from store
   ------------------------------------------
 
   --delete [<ID>]            full syntax
@@ -184,9 +203,9 @@ sub delete {
   --delete                   Removes in  the directory into current list on default position
                              under no name - will also appear in special lists '$lname->{bin}' and '$lname->{all}'.
 
-  --add /path:name           adding path under a name
+  --add /path :name          adding path under a name
 
-  --add /path:name > [#]3    adding named path to current list on third position
+  --add /path:name>[#]3      adding named path to current list on third position
 
   --add /path > good#4       adding unnamed path to list named good on fourth position
 
@@ -214,6 +233,10 @@ sub name {
 EOT
 }
 sub path {
+    my $config = shift;  <<EOT;
+EOT
+}
+sub edit {
     my $config = shift;  <<EOT;
 EOT
 }
@@ -247,13 +270,14 @@ sub help {
     my $opt = $config->{'syntax'}{'option_shortcut'}{'help'};
     <<EOT;
 
-   hg --help      display documentation
+   gt --help      display documentation
   --------------------------------------
 
   --help            -$sc        overview
 
-  --help=usage      -$sc$opt->{usage}       general (basic) usage
+  --help=basics     -$sc$opt->{basics}       general, simple (basic) usage
   --help=commands   -$sc$opt->{commands}       list of all commands (cheat sheet)
+  --help=install    -$sc$opt->{install}       how to install the app
   --help=settings   -$sc$opt->{settings}       how to configure the program
 
   --help <command>  -$sc <cmd>  detailed explanation of one command

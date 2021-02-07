@@ -9,7 +9,7 @@ package App::Goto::Dir::Data::Entry;
 sub new {
     my ($pkg, $dir, $name) = @_;  # return "directory $dir does not exist" unless -d $dir;
     my $now = _now();
-    bless { name => $name // '', cmd => '', pos => {},
+    bless { name => $name // '', scrit => '', pos => {},
             compact_dir => _compact_home_dir($dir), full_dir => _expand_home_dir($dir),
             create_time => _format_time_stamp($now), create_stamp => $now,
             visit_time   => 0,  visit_stamp => 0, visits => 0,
@@ -41,10 +41,12 @@ sub visit_count   { $_[0]->{'visits'} }
 sub dir           { $_[0]->{'compact_dir'} }
 sub full_dir      { $_[0]->{'full_dir'} }
 sub name          { $_[0]->{'name'} }
+sub script        { $_[0]->{'script'} }
 
 #### rw attr ###########################################################
 
 sub rename   { $_[0]->{'name'} = $_[1] }
+sub edit     { $_[0]->{'script'} = $_[1] }
 sub redirect {
     my ($self, $dir) = @_;
     $self->{'compact_dir'} = _compact_home_dir( $dir );

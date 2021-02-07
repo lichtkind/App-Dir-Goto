@@ -40,6 +40,7 @@ syntax:
     remove: r
     name : n
     path: p
+    edit: e
     sort: s
     list: l
     list-lists: l-l
@@ -56,7 +57,8 @@ syntax:
       name: n
       visits: v
     help:
-      usage: u
+      basics: b
       commands: c
+      install: i
       settings: s
 

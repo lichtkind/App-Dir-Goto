@@ -162,9 +162,10 @@ sub rename_entry { # delete name when name arg omitted
         return "name $new_name is already taken" if $self->{'config'}{'entry'}{'prefer_in_name_conflict'} eq 'old';
         $self->rename_entry( undef, $new_name, '');
     }
+    my $old_name = $entry->name;
     $entry->rename( $new_name );
     $self->get_list( $_)->refresh_reverse_hashes for $entry->member_of_lists;
-    $entry;
+    ($entry, $old_name);
 }
 
 sub redirect_entry   {
@@ -173,9 +174,19 @@ sub redirect_entry   {
     return "directory $new_dir is already used" if ref $self->{'list_object'}{ $self->{'config'}{'list'}{'name'}{'all'} }->get_entry( $new_dir );
     my ($entry, $list) = $self->get_entry( $entry_ID );
     return $entry unless ref $entry;
+    my $old_dir = $entry->full_dir;
     $entry->redirect($new_dir);
     $self->get_list( $_)->refresh_reverse_hashes for $entry->member_of_lists;
-    $entry;
+    ($entry, $old_dir);
+}
+
+sub edit_entry   {
+    my ($self, $list_name, $entry_ID, $script) = @_;
+    $script //= '';
+    my ($entry, $list) = $self->get_entry( $entry_ID );
+    return $entry unless ref $entry;
+    my $old_script = $entry->script;
+    ($entry, $old_script);
 }
 
 sub get_entry {

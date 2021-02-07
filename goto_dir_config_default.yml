@@ -56,7 +56,7 @@ syntax:
       name: n
       visits: v
     help:
-      usage: u
+      basics: b
       commands: c
+      install: i
       settings: s
-
