@@ -88,7 +88,7 @@ sub new_entry {
     $list_name //= $self->get_current_list_name;
     return "entry list with name '$list_name' does not exist" unless $self->list_exists( $list_name );
     my $entry = App::Goto::Dir::Data::Entry->new($dir, $name);
-    my $list     = $self->get_list( $list_name );
+    my $list  = $self->get_list( $list_name );
     my ($all_entry, $new_entry) = $self->get_special_lists('all', 'new');
     my $ret = $all_entry->insert_entry( $entry, $list eq $all_entry ? $list_pos : undef ); # sorting out names too
     return $ret unless ref $ret; # return error msg: could not inserted because not allowed overwrite entry with same dir
@@ -129,10 +129,14 @@ sub move_entry {
     my ($from_list, $to_list)  = @{$self->{'list_object'}}{ $from_list_name, $to_list_name };
     return "unknown source list name: $from_list_name" unless ref $from_list;
     return "unknown target list name: $to_list_name" unless ref $to_list;
-    my $special_list_names = [$self->get_special_list_names(qw/new bin all/)];
-    return "can not move entries from special lists: new, bin and all" if $from_list_name ~~ $special_list_names;
-    return "can not move entries to special lists: new, bin and all" if $to_list_name ~~ $special_list_names;
+    if ($from_list_name eq $to_list_name) {
+        return $from_list->move_entry( $from_ID, $to_ID)
+    } else {
+       return "can not move entries from special lists: new, bin and all" if $from_list_name ~~ [$self->get_special_list_names(qw/new all/)];
+       return "can not move entries to special lists: new, bin and all" if $to_list_name ~~ [$self->get_special_list_names(qw/new bin all/)];
+    }
     my $entry = $from_list->remove_entry( $from_ID );
+    $entry->undelete();
     return $entry unless ref $entry;
     $to_list->insert_entry( $entry, $to_ID );
 }

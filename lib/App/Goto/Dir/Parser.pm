@@ -7,9 +7,11 @@ package App::Goto::Dir::Parser;
 my %command = ('add' => [0, 1, 0, 0], # 0 option 1st arg required
                'del' => 'delete',
             'delete' => [0, 0],
-               'rem' => 'remove',
+                'rm' => 'remove',
             'remove' => [0, 0],
+                'mv' => 'move',
               'move' => [0, 0, 1],
+                'cp' => 'copy',
               'copy' => [0, 0, 1],
               'name' => [0, 0, 0],
               'path' => [0, 0, 1],
@@ -22,7 +24,7 @@ my %command = ('add' => [0, 1, 0, 0], # 0 option 1st arg required
           'list-del' => 'list-delete',
        'list-delete' => [0, 1],
          'list-name' => [0, 1, 1],
-        'list-lists' => [0],
+         'list-list' => [0],
 );
 my %cmd_argument = ( 'add' => [qw/dir name target/],
                     delete => ['source'],

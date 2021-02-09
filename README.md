@@ -67,12 +67,12 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `--list . . . . . . . . . display current list (not needed in interactive) (short -l)`
 - `--list <lname> . . . . . set <lname> as current list and display it (-l<name>)`
 - `--list-lists . . . . . . display available list names (long for -l-l)`
-- `--sort=position. . . . . sort displayed list by position (default) (-s, -sp)`
+- `--sort=position. . . . . sort displayed list by position (default) (-s, -so)`
+- `--sort=path. . . . . . . sort by dir path (-sp)`
 - `--sort=name. . . . . . . change sorting criterion to <name> (-sn)`
 - `--sort=visits. . . . . . sort by number of times gone to dir (-sv)`
 - `--sort=last_visit. . . . sort by time of last visit (earlier first, -sl)`
-- `--sort=created . . . . . sort by time of dir entry creation (-sc)`
-- `--sort=dir . . . . . . . sort by dir path (-sd, -sort=d)`
+- `--sort=created . . . . . sort by time of entry creation (earlier first, -sc)`
 - `--help . . . . . . . . . overview of all help topics (-h)`
 - `--help=usage . . . . . . intro text (short -hu)`
 - `--help=commands. . . . . display list of commands (-hc)`
@@ -97,7 +97,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 - `--list-add <lname> . . . . . create a new list (-l-a)`
 - `--list-del <lname> . . . . . delete list of <lname> (has to be empty) (-l-d)`
-- `--list-name <lID>:<lname>. . rename list, conflicts not allowed (-l-n)`
+- `--list-name <old> > <new>. . rename list, conflicts not allowed (-l-n)`
 - `--list-lists. . . . . . .  . <lname> and <lpos> of available lists (short -l-l)`
 
 

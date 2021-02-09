@@ -7,7 +7,7 @@ list:
   deprecate_new: 1209600
   deprecate_bin: 1209600
   start_with: current
-  sorted_by: default
+  sorted_by: current
   default_name: use
   default_sort: position
   name:
@@ -18,7 +18,7 @@ list:
     use: use
 entry:
   max_name_length: 5
-  position_of_new_entry: -1
+  default_position: -1
   prefer_in_name_conflict: new
   prefer_in_dir_conflict: new
 syntax:
@@ -43,7 +43,7 @@ syntax:
     edit: e
     sort: s
     list: l
-    list-lists: l-l
+    list-list: l-l
     list-add: l-a
     list-delete: l-d
     list-name: l-n
@@ -51,9 +51,9 @@ syntax:
   option_shortcut:
     sort:
       created: c
-      dir: d
+      path: p
       last_visit: l
-      position: p
+      position: o
       name: n
       visits: v
     help:

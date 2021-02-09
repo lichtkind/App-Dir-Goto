@@ -43,11 +43,11 @@ sub _insert_entry { splice @{$_[0]->{'entry'}}, $_[2]-1, 0, $_[1] }
 sub insert_entry {
     my ($self, $entry, $pos) = @_;
     return "need an $el_class object as argument!" unless ref $entry eq $el_class;
-    $pos = $self->{'config'}{'position_of_new_entry'} unless defined $pos;
+    $pos = $self->{'config'}{'default_position'} unless defined $pos;
     return "'$pos' is an illegal list position for list $self->{name}" unless $self->is_new_pos($pos);
     $pos += @{$self->{'entry'}} + 2 if $pos < 0; # resolve negative pos
     my $dir_pos = $self->pos_from_dir( $entry->full_dir );
-    return 'path '.$entry->full_dir." is already stored in this list $self->{name}"
+    return 'path '.$entry->full_dir." is already stored in list $self->{name}"
         if $dir_pos and $self->{'config'}{'prefer_in_dir_conflict'} eq 'old';
 
     if ($entry->name and exists $self->{'pos_by_name'}{ $entry->name } and $self->{'pos_by_name'}{ $entry->name } != $dir_pos){
