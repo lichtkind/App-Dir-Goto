@@ -4,7 +4,7 @@ use File::Spec;
 
 package App::Goto::Dir::Parser;
 
-my %command = ('add' => [0, 1, 0, 0], # 0 option 1st arg required
+my %command = ('add' => [0, 0, 0, 0], # 0 option 1st arg required
                'del' => 'delete',
             'delete' => [0, 0],
                 'rm' => 'remove',

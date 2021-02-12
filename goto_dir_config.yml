@@ -15,6 +15,7 @@ list:
     bin: bin
     idle: idle
     new: new
+    stale: stale
     use: use
 entry:
   max_name_length: 5
@@ -27,7 +28,8 @@ syntax:
     entry_name: ':'
     entry_position: '#'
     target_entry: '>'
-    special_entry: '*'
+    special_entry: '+'
+    special_list: '*'
   special_entry:
     last: '_'
     previous: '-'
@@ -39,7 +41,7 @@ syntax:
     move: m
     remove: r
     name : n
-    path: p
+    dir: i
     edit: e
     sort: s
     list: l
@@ -51,9 +53,9 @@ syntax:
   option_shortcut:
     sort:
       created: c
-      path: p
+      dir: i
       last_visit: l
-      position: o
+      position: p
       name: n
       visits: v
     help:

@@ -68,7 +68,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `--list <lname> . . . . . set <lname> as current list and display it (-l<name>)`
 - `--list-lists . . . . . . display available list names (long for -l-l)`
 - `--sort=position. . . . . sort displayed list by position (default) (-s, -so)`
-- `--sort=path. . . . . . . sort by dir path (-sp)`
+- `--sort=dir . . . . . . . sort by dir path (-si)`
 - `--sort=name. . . . . . . change sorting criterion to <name> (-sn)`
 - `--sort=visits. . . . . . sort by number of times gone to dir (-sv)`
 - `--sort=last_visit. . . . sort by time of last visit (earlier first, -sl)`
@@ -90,7 +90,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `--copy [<IDa>] > <IDb>. . . . . copy entry <IDa> to (position of) <IDb> (-c)`
 - `--name [<ID>]:<name>. . . . . . (re-)name entry, resolve conflict like configured (-n)`
 - `--name [<ID>] . . . . . . . . . delete name of entry (-n)`
-- `--path [<ID>] <dir> . . . . . . change directory of entry with <ID> (-p)`
+- `--dir [<ID>] <dir>. . . . . . . change directory of entry with <ID> (-i)`
 - `--edit [<ID>] '<code>'. . . . . edit script, that is run when gone to dir (-e)`
 
 ## commands for managing lists:
