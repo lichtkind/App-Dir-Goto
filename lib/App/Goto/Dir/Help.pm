@@ -105,6 +105,7 @@ sub basics {
   $sig->{special_list}new                    newly created entries (configure how old, --help=settings)
   $sig->{special_list}bin                    deleted entries (scrapped after configured period)
   $sig->{special_list}stale                  entries with defunct (not existing) directories
+  $sig->{special_list}special                content of all special entries
 EOT
 }
 sub install{
@@ -155,8 +156,8 @@ sub commands {
    commands to manage entries:
 
   -$sc->{add} --add <dir>[:<name>] [> <ID>]  add directory <dir> under <name> to a list
-  -$sc->{delete} --del[ete] [<ID>]              delete dir entry from all lists
-  -$sc->{remove} --rem[ove] [<ID>]              remove dir entry from chosen lists
+  -$sc->{delete} --del[ete] [<ID>]              delete dir entries from all regular lists
+  -$sc->{remove} --rem[ove] [<ID>]              remove dir entries from a chosen lists
   -$sc->{move} --move [<IDa>] > <IDb>         move dir entry <IDa> to (position of) <IDb>
   -$sc->{copy} --copy [<IDa>] > <IDb>         copy entry <IDa> to (position of) <IDb>
 
@@ -281,13 +282,9 @@ sub add {
  EXAMPLES:
 
   --add /project/dir         adding the directory into current list on default position with no name
-
    -$sc/path:p                 adding path into same place but under the name 'p'
-
   --add /path:p > [#]3       adding named path to current list on third position
-
   --add /path > good#4       adding unnamed path to list named 'good' on fourth position
-
   --add /path > good:s       adding unnamed path to list 'good' on position of entry named 's'
 
     Space (' ') is after '#' and ':' not allowed, but after --add required.
@@ -325,14 +322,12 @@ sub delete {
  EXAMPLES:
 
   --delete                   removing entry on default position ($config->{'entry'}{'default_position'}) of current list from all lists
-
-  --del [#]<pos>             deleting entry on chosen position of current list
-
-  --del <list>#<pos>         deleting entry on chosen position of list named <list>
-
+  --del [#]2                 deleting second entry of current list
+  --del idle#-2              deleting second last entry of list 'idle'
+  --del good#1..3            deleting first, second and third entry of list named 'good'
+  --del good#*               deleting all entries list 'good'
   --del $sig->{special_entry}new                 deleting a previosly created entry
-
-   -$sc\[:]fm                   deleting entry named fm
+   -$sc\[:]fm:pm                deleting entry named 'fm' and entry named 'pm'
 
     Space (' ') is after '#' and ':' not allowed, but after --del[ete] required.
     Space before '#', ':' and after '-$sc' is optional.
@@ -349,10 +344,10 @@ sub remove {
     my $arg = 'good:ll';
     <<EOT;
 
-   gt --remove      remove entry from list
-  -----------------------------------------
+  gt --remove      remove entry from list
+ -----------------------------------------
 
-    Removes a specified <dir> entry from a list.
+    Removes one or more <dir> entries from a regular list.
     Special lists like $sig->{special_list}$lname->{new}, $sig->{special_list}$lname->{all}, $sig->{special_list}$lname->{stale} and $sig->{special_list}$lname->{bin} will not respond.
 
  USAGE:
@@ -365,15 +360,12 @@ sub remove {
  EXAMPLES:
 
   --remove                   removing entry on default position ($config->{'entry'}{'default_position'}) of current list
-
   --rm -1                    removing entry from last position of current list
-
-  --rm good#4                removing entry from fourth position of list named good
-
-  --rm :ll                   removing entry named 'll' from current list
-
-   -$sc$arg                 removing entry 'll' from list named good
-
+  --rm good#4                removing entry from fourth position of list named 'good'
+  --rm good#4..-1            removing entries from second to last position of list 'good'
+  --rm good#*                removing all entries from list named 'good'
+  --rm :ll :gg               removing entries named 'll' and 'gg' from current list
+   -$sc$arg                 removing entry 'll' from list named 'good'
 
     Space (' ') is after '#' and ':' not allowed, but after --remove or --rm required.
     Space before '#' or ':' and after -$sc is optional.
@@ -390,11 +382,11 @@ sub move {
     my $arg = '2>-1';
     <<EOT;
 
-   gt --move      move entry from one to another list
-  ----------------------------------------------------
+  gt --move      move entry from one to another list
+ ----------------------------------------------------
 
-    Removes a specified <dir> entry from a list and inserts it into another list.
-    If source and target <list> are the same, it only changes the <list> position.
+    Removes a specified entry from a list in any case and inserts it into another list.
+    If source and target list are the same, it only changes it's position in list.
     Entries can not be moved into and out of the special lists like $sig->{special_list}$lname->{new} and $sig->{special_list}$lname->{all}.
     Only exception: they can be moved out of $sig->{special_list}$lname->{bin} to undelete entries.
     Use the command --delete to move an entry out of all regular lists into $sig->{special_list}$lname->{bin}.
@@ -408,19 +400,14 @@ sub move {
 
  EXAMPLES:
 
-  --move > idle#3            moving entry from default position ($config->{'entry'}{'default_position'}) of current list
-                             to third position of list named 'idle'
-
+  --move > idle#3            moving from default position ($config->{'entry'}{'default_position'}) of current list to third pos. of list 'idle'
    -$sc$arg                    moving entry from second to last position in current list
-
   --mv good#4 > better#2     moving entry from fourth position of list 'good' to second pos. of 'better'
-
+  --mv good#1..5 > better#2  moving entries 1 to 5 of list 'good' to second pos. of 'better'
+  --mv good#* > better#2     moving all entries in list 'good' to second pos. of 'better'
   --mv rr > good             moving entry in current list named 'rr' to default position of list 'good'
-
   --mv meak:rr > great:d     moving entry 'rr' in list 'meak' to position of entry 'd' in list 'great'
-
   --move $sig->{special_entry}delete > great     undelete the most recently deleted entry and move it into list 'great'
-
 
     Space (' ') is after '#' and ':' not allowed, but after --move or --mv required.
     Space before '#' or ':', around '>' and after -$sc is optional.
@@ -437,10 +424,10 @@ sub copy {
     my $arg = '2>-1';
     <<EOT;
 
-   gt --copy      copy entry from one to another list
-  ----------------------------------------------------
+  gt --copy      copy entry from one to another list
+ ----------------------------------------------------
 
-    Insert an entry it into a regular list, but not a special list like $sig->{special_list}$lname->{new}, $sig->{special_list}$lname->{all} and $sig->{special_list}$lname->{bin}.
+    Insert an entries into a regular list, but not a special list like $sig->{special_list}$lname->{new}, $sig->{special_list}$lname->{all} and $sig->{special_list}$lname->{bin}.
     If entry is already list element, the config key entry.prefer_in_dir_conflict
     in goto_dir_config.yml decides if new or old entry is kept.
 
@@ -453,18 +440,14 @@ sub copy {
 
  EXAMPLES:
 
-  --copy > idle#3            copying from default position ($config->{'entry'}{'default_position'}) of current list to third position of list 'idle'
-
-   -$sc$arg                    copying entry from second to last position in current list (produces conflict!)
-
-  --cp all#4 > better#2      copying entry from fourth position of list 'all' to second pos. of 'better'
-
-  --cp *move > idle#3        copying recently moved entry to third pos. of list 'idle'
-
-  --cp rr > good             copying entry named 'rr' (of any list) to default position of list 'good'
-
-  --cp :rr > great:d         copying entry 'rr' to position of entry 'd' in list 'great'
-
+  --copy > idle#3            copy from default position ($config->{'entry'}{'default_position'}) of current list to third position of 'idle'
+   -$sc$arg                    copy from second to last position in current list (produces dir_conflict!)
+  --cp all#4 > better#2      copy entry from fourth position of list 'all' to second pos. of 'better'
+  --cp all#1..4 > better#2   copy first four entries of list 'all' to second pos. of 'better'
+  --cp $sig->{special_list}stale#* > weird      copy all entries of special list 'stale' to default position of 'weird'
+  --cp $sig->{special_entry}move > idle#3        copy recently moved entry to third pos. of list 'idle'
+  --cp rr > good             copy entry named 'rr' (of any list) to default position of list 'good'
+  --cp :rr > great:d         copy entry 'rr' to position of entry 'd' in list 'great'
 
     Space (' ') is after '#' and ':' not allowed, but after --copy or --cp required.
     Space before '#' or ':', around '>' and after -$sc is optional.
@@ -479,8 +462,8 @@ sub name {
     my $arg = 'mi:fa';
     <<EOT;
 
-   gt --name      change entry name
-  ----------------------------------
+  gt --name      change entry name
+ ----------------------------------
 
     Find a <dir> entry and change its unique name (applies to all entries holding same path).
     If <name> is omitted, it defaults to an empty string, which results in deleting the entry name.
@@ -496,15 +479,10 @@ sub name {
  EXAMPLES:
 
   --name                     delete name of entry on default position ($config->{'entry'}{'default_position'}) of current list
-
   --name :do                 set name of default entry to 'do'
-
   --name idle#3:re           give entry on third position of list 'idle' the name 're'
-
    -$sc$arg                   rename entry 'mi' to 'fa'
-
   --name sol                 delete name of entry 'sol'
-
 
     Space (' ') is after '#' and ':' not allowed, but after --name required.
     Space before '#' or ':'  and after -$sc is optional.
@@ -518,8 +496,8 @@ sub dir {
     my $sc = $config->{'syntax'}{'command_shortcut'}{'dir'};
     <<EOT;
 
-   gt --dir      change dir path of entry
-  ----------------------------------------
+  gt --dir      change dir path of entry
+ ----------------------------------------
 
     Change <dir> of one or more entries. gt switches into <dir>, when entry is selected.
     If <dir> is already stored in any other entry, the config key entry.prefer_in_dir_conflict
@@ -534,13 +512,9 @@ sub dir {
  EXAMPLES:
 
   --dir ~/perl/project            set path of default entry ($config->{'entry'}{'default_position'}) in current list to '~/perl/project'
-
    -$sc/usr/temp                    change <dir> of default entry in current list to '/usr/temp'
-
   --dir :sol /usr/bin             set path of entry named 'sol' to /usr/bin
-
   --dir idle#3 /bin/da            set path of third entry in list 'idle' to /bin/da
-
   --dir /code/purl >> /code/perl  replace '/code/purl' with '/code/perl' in every entry <dir>
 
     Space (' ') is after '#' and ':' not allowed, but after --dir required.
@@ -557,8 +531,8 @@ sub edit {
     my $sc = $config->{'syntax'}{'command_shortcut'}{'edit'};
     <<EOT;
 
-   gt --edit      change landing script
-  --------------------------------------
+  gt --edit      change landing script
+ --------------------------------------
 
     Find an entry and change its <code> property - a snippet of perl code that is run,
     after switching into the entries <dir>. It's output will be displayed.
@@ -572,13 +546,9 @@ sub edit {
  EXAMPLES:
 
   --edit 'say "dance"'       set code of default entry ($config->{'entry'}{'default_position'}) in current list to 'say "dance"'
-
   --edit :sol 'say "gg"'     set landing script code of entry bamed 'sol' to 'say "gg"'
-
   --edit idle#3 'say f2()'   set code of third entry in list 'idle' to 'say f2()'
-
    -$sc\'say 99'                change <code> of default entry in current list to 'say 99'
-
 
     Space (' ') is after '#' and ':' not allowed, but after --path required.
     Space before '#' or ':'  and after -$sc is optional.
@@ -592,15 +562,14 @@ sub list {
     my $sc = $config->{'syntax'}{'command_shortcut'}{'list'};
     <<EOT;
 
-   gt --list      display list of entries
-  ----------------------------------------
+  gt --list      display list of entries
+ ----------------------------------------
 
     Set the name of the current list, that will be displayed immediately.
     When running the gt REPL shell (open via gt without any arguments), the current list
     will be displayed after each command. There you need --list only to switch the shown list.
     When calling gt with arguments you need --list to get any (or several) lists displayed.
     All commands regarding lists start with --list-.. but are separate commands.
-
 
  USAGE:
 
@@ -612,7 +581,6 @@ sub list {
 
     gt --list a --list b       display list named 'a' and 'b' in the shell
 
-
     List names contain only word character (A-Z,a-z,0-9,_) and start with a letter.
 EOT
 }
@@ -622,8 +590,8 @@ sub sort {
     my $opt = $config->{'syntax'}{'option_shortcut'}{'sort'};
     <<EOT;
 
-   gt --sort      set list sorting criterion
-  -------------------------------------------
+  gt --sort      set list sorting criterion
+ -------------------------------------------
 
     Selecting the sorting criterion used by --list to display any <dir> entry list.
     The default criterion ($config->{list}{default_sort}) is set by the config key: list.default_sort in goto_dir_config.yml.
@@ -633,6 +601,7 @@ sub sort {
     Starting the option with '!' means: reversed order.
     Like the command itself, every option has a short version too.
 
+ USAGE:
 
   --sort              -$sc        set to default criterion ($config->{list}{default_sort})
   --sort=position     -$sc$opt->{position}       obey user defined positional ordering of list
@@ -654,7 +623,6 @@ sub llists {
 
     Display overview with all list names. The special ones are marked with '*' and their function.
 
-
  USAGE:
 
   --list-list    long command name
@@ -666,15 +634,15 @@ sub ladd {
     my $sc = $config->{'syntax'}{'command_shortcut'}{'list-add'};
     <<EOT;
 
-   gt --list-add      create a list
-  ----------------------------------
+  gt --list-add      create a list
+ ----------------------------------
+
+    Create a new and empty list for path entries. It's mandatory name has to be not taken yet.
 
  USAGE:
 
   --list-add  <name>    long command name
    -$sc<name>           short alias
-
-    Create a new and empty list for path entries. It's mandatory name has to be not taken yet.
 
     Space (' ') after --list-add is required, but after -$sc optional.
     List names have to be unique, contain only word character (A-Z,a-z,0-9,_) and start with a letter.
@@ -688,13 +656,13 @@ sub ldelete {
    gt --list-delete      remove an empty list
   --------------------------------------------
 
+    Deletes an empty, none special (user created) list. There is no undelete, but --list-add.
+
  USAGE:
 
   --list-delete  <name>    long command name
   --list-del  <name>       shorter alias
    -$sc<name>              short alias
-
-    Deletes an empty, none special (user created) list. There is no undelete, but --list-add.
 
     Space (' ') after --list-delete and --list-del is required, but after -$sc optional.
     List names have to be unique, contain only word character (A-Z,a-z,0-9,_) and start with a letter.
@@ -705,11 +673,10 @@ sub lname {
     my $sc = $config->{'syntax'}{'command_shortcut'}{'list-name'};
     <<EOT;
 
-   gt --list-name      rename a list
-  -----------------------------------
+  gt --list-name      rename a list
+ -----------------------------------
 
     Change name of any list, even the special ones. Does not work when <newname> is taken.
-
 
  USAGE:
 
@@ -727,8 +694,8 @@ sub help {
     my $opt = $config->{'syntax'}{'option_shortcut'}{'help'};
     <<EOT;
 
-   gt --help      display documentation
-  --------------------------------------
+  gt --help      display documentation
+ --------------------------------------
 
   --help            -$sc         overview
 

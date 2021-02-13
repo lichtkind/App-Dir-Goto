@@ -16,6 +16,7 @@ list:
     idle: idle
     new: new
     stale: stale
+    special: special
     use: use
 entry:
   max_name_length: 5

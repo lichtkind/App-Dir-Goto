@@ -22,8 +22,8 @@ sub state   { return { map {$_ => $_[0]->{$_} } keys %{$_[0]} } }
 #### list API ##########################################################
 
 sub add_to_list      { $_[0]->{'pos'}{ $_[1] } = $_[2] }
-sub get_list_pos     { $_[0]->{'pos'}{ $_[1] } if defined $_[1] }
 sub remove_from_list { delete $_[0]->{'pos'}{ $_[1] } }
+sub get_list_pos     { $_[0]->{'pos'}{ $_[1] } if defined $_[1] }
 sub member_of_lists  { keys %{ $_[0]->{'pos'} } }
 
 #### ro attr ###########################################################

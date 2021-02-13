@@ -18,7 +18,9 @@ sub new {
                           : { entry => [],  list => { name => [ keys %{$lname}], current => $lname->{'use'}, sorted_by => 'position', } ,
                               visits => {last_dir => '',last_subdir => '', previous_dir => '', previous_subdir => ''},  history => [0],};
 
-    @{ $data->{'entry'}} = map  { $_->remove_from_list( $lname->{'new'} ) if $_->age() > $config->{'list'}{'deprecate_new'}; $_ }
+    @{ $data->{'entry'}} = map  { $_->add_to_list( $lname->{'stale'}, -1 ) unless $_->get_list_pos($lname->{'stale'}) or -d $_->full_dir; $_}
+                           map  { $_->remove_from_list( $lname->{'stale'} ) if $_->get_list_pos($lname->{'stale'}) and -d $_->full_dir; $_}
+                           map  { $_->remove_from_list( $lname->{'new'} ) if $_->age() > $config->{'list'}{'deprecate_new'}; $_ }
                            grep { $_->overdue() < $config->{'list'}{'deprecate_bin'} }
                            map  { App::Goto::Dir::Data::Entry->restate($_)}                  @{ $data->{'entry'} };
     my %list;
@@ -39,15 +41,15 @@ sub new {
 }
 
 sub write {
-    my ($self) = @_;
+    my ($self, $config) = @_;
     my $state                = { map { $_ => $self->{$_}} qw/visits list/ }; # history ?
-    $state->{'entry'}         = [ map { $_->state } $self->{'list_object'}{ $self->{'config'}{'list'}{'name'}{'all'} }->all_entries ];
+    $state->{'entry'}         = [ map { $_->state } $self->{'list_object'}{ $config->{'list'}{'name'}{'all'} }->all_entries ];
     $state->{'list'}{'name'}   = [ keys %{ $self->{'list_object'} } ];
-    $state->{'list'}{'current'} = $self->{'config'}{'list'}{'default_name'} if  $self->{'config'}{'list'}{'start_with'} eq 'default';
+    $state->{'list'}{'current'} = $config->{'list'}{'default_name'} if  $config->{'list'}{'start_with'} eq 'default';
 
-    rename $self->{'config'}{'file'}{'data'}, $self->{'config'}{'file'}{'backup'};
-    YAML::DumpFile( $self->{'config'}{'file'}{'data'}, $state );
-    open my $FH, '>', $self->{'config'}{'file'}{'return'};
+    rename $config->{'file'}{'data'}, $config->{'file'}{'backup'};
+    YAML::DumpFile( $config->{'file'}{'data'}, $state );
+    open my $FH, '>', $config->{'file'}{'return'};
     print $FH File::Spec->catdir( $self->{'visits'}{'last_dir'}, $self->{'visits'}{'last_subdir'});
 }
 
@@ -215,10 +217,12 @@ sub visit_entry {
     $entry, $list;
 }
 sub visit_last_entry {
-    $_[0]->visit_entry( $_[0]->{'config'}{'list'}{'name'}{'all'}, $_[0]->{'visits'}{'last_dir'}, $_[0]->{'visits'}{'last_subdir'} );
+    my ($self, $config) = @_;
+    $self->visit_entry( $config->{'list'}{'name'}{'all'}, $self->{'visits'}{'last_dir'}, $self->{'visits'}{'last_subdir'} );
 }
 sub visit_previous_entry {
-    $_[0]->visit_entry( $_[0]->{'config'}{'list'}{'name'}{'all'}, $_[0]->{'visits'}{'previous_dir'}, $_[0]->{'visits'}{'previous_subdir'} );
+    my ($self, $config) = @_;
+    $self->visit_entry( $config->{'list'}{'name'}{'all'}, $self->{'visits'}{'previous_dir'}, $self->{'visits'}{'previous_subdir'} );
 }
 
 ########################################################################
