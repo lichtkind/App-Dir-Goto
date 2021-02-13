@@ -17,14 +17,14 @@ $data->write();
 
 
 #say App::Goto::Dir::Help::text( $config );
-say App::Goto::Dir::Help::text($config, 'option', 'basics');
+#say App::Goto::Dir::Help::text($config, 'option', 'basics');
 #say App::Goto::Dir::Help::text($config, 'option', 'commands');
 #say App::Goto::Dir::Help::text($config, 'option', 'install');
-say App::Goto::Dir::Help::text($config, 'command', 'add');
+#say App::Goto::Dir::Help::text($config, 'command', 'add');
 #say App::Goto::Dir::Help::text($config, 'command', 'delete');
 #say App::Goto::Dir::Help::text($config, 'command', 'remove');
-#say App::Goto::Dir::Help::text($config, 'command', 'move');
-#say App::Goto::Dir::Help::text($config, 'command', 'copy');
+say App::Goto::Dir::Help::text($config, 'command', 'move');
+say App::Goto::Dir::Help::text($config, 'command', 'copy');
 #say App::Goto::Dir::Help::text($config, 'command', 'name');
 say App::Goto::Dir::Help::text($config, 'command', 'dir');
 #say App::Goto::Dir::Help::text($config, 'command', 'edit');
@@ -34,7 +34,7 @@ say App::Goto::Dir::Help::text($config, 'command', 'dir');
 #say App::Goto::Dir::Help::text($config, 'command', 'list-add');
 #say App::Goto::Dir::Help::text($config, 'command', 'list-delete');
 #say App::Goto::Dir::Help::text($config, 'command', 'list-name');
-#say App::Goto::Dir::Help::text($config, 'command', 'help');
+say App::Goto::Dir::Help::text($config, 'command', 'help');
 
 say '   run goto test in ', sprintf("%.4f",timediff( Benchmark->new, $t)->[1]), ' sec';
 

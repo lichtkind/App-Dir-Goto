@@ -41,7 +41,7 @@ syntax:
     move: m
     remove: r
     name : n
-    dir: i
+    dir: D
     edit: e
     sort: s
     list: l
