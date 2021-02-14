@@ -82,11 +82,11 @@ sub get_special_list_names{ my $self = shift; @{$self->{'config'}{'list'}{'name'
 sub list_exists           { defined $_[1] and exists $_[0]->{'list_object'}{$_[1]}      }
 
 #### entry API #########################################################
-sub new_entry {
+sub add_entry {
     my ($self, $dir, $name, $list_name, $list_pos) = @_;
     return 'Data::new_entry misses first required argument: a valid path' unless defined $dir;
-    return "entry name name $name is too long, max chars are ".$self->{'config'}{'entry'}{'max_name_length'}
-        if defined $name and length($name) > $self->{'config'}{'entry'}{'max_name_length'};
+    return "entry name name $name is too long, max chars are ".$self->{'config'}{'entry'}{'name_length_max'}
+        if defined $name and length($name) > $self->{'config'}{'entry'}{'name_length_max'};
     $list_name //= $self->get_current_list_name;
     return "entry list with name '$list_name' does not exist" unless $self->list_exists( $list_name );
     my $entry = App::Goto::Dir::Data::Entry->new($dir, $name);

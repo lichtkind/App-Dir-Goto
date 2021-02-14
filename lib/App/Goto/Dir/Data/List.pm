@@ -43,7 +43,7 @@ sub _insert_entry { splice @{$_[0]->{'entry'}}, $_[2]-1, 0, $_[1] }
 sub insert_entry {
     my ($self, $entry, $pos) = @_;
     return "need an $el_class object as argument!" unless ref $entry eq $el_class;
-    $pos = $self->{'config'}{'default_position'} unless defined $pos;
+    $pos = $self->{'config'}{'position_default'} unless defined $pos;
     return "'$pos' is an illegal list position for list $self->{name}" unless $self->is_new_pos($pos);
     $pos += @{$self->{'entry'}} + 2 if $pos < 0; # resolve negative pos
     my $dir_pos = $self->pos_from_dir( $entry->full_dir );
@@ -94,7 +94,7 @@ sub pos_from_ID {
         $ID += $c + 1 if $ID < 0;
         return $ID if $ID > 0 and $ID <= $c;
     } else {
-        return $self->pos_from_name($ID) if length($ID) <= $self->{'config'}{'max_name_length'};
+        return $self->pos_from_name($ID) if length($ID) <= $self->{'config'}{'name_length_max'};
         $self->pos_from_dir($ID);
     }
     0;

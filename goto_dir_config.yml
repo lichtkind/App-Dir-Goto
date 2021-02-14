@@ -1,67 +1,65 @@
 ---
+entry:
+  name_length_max: 5
+  position_default: -1
+  prefer_in_dir_conflict: new
+  prefer_in_name_conflict: new
 file:
-  data: places.yml
   backup: places.bak.yml
+  data: places.yml
   return: last_choice
 list:
-  deprecate_new: 1209600
   deprecate_bin: 1209600
-  start_with: current
-  sorted_by: current
-  default_name: use
-  default_sort: position
+  deprecate_new: 1209600
   name:
     all: all
     bin: bin
     idle: idle
     new: new
-    stale: stale
     special: special
+    stale: stale
     use: use
-entry:
-  max_name_length: 5
-  default_position: -1
-  prefer_in_name_conflict: new
-  prefer_in_dir_conflict: new
+  name_default: use
+  sort_default: position
+  sorted_by: current
+  start_with: current
 syntax:
-  sigil:
-    command: '-'
-    entry_name: ':'
-    entry_position: '#'
-    target_entry: '>'
-    special_entry: '+'
-    special_list: '*'
-  special_entry:
-    last: '_'
-    previous: '-'
-    new: '*'
   command_shortcut:
     add: a
     copy: c
     delete: d
-    move: m
-    remove: r
-    name : n
     dir: D
     edit: e
-    sort: s
-    list: l
-    list-list: l-l
-    list-add: l-a
-    list-delete: l-d
-    list-name: l-n
     help: h
+    list: l
+    list-add: l-s
+    list-delete: l-d
+    list-lists: l-l
+    list-name: l-n
+    move: m
+    name: n
+    remove: r
+    sort: s
   option_shortcut:
-    sort:
-      created: c
-      dir: i
-      last_visit: l
-      position: p
-      name: n
-      visits: v
     help:
       basics: b
       commands: c
       install: i
       settings: s
-
+    sort:
+      created: c
+      dir: D
+      last_visit: l
+      name: n
+      position: p
+      visits: v
+  sigil:
+    command: '-'
+    entry_name: ':'
+    entry_position: '#'
+    special_entry: +
+    special_list: '&'
+    target_entry: '>'
+  special_entry:
+    last: _
+    previous: '-'

@@ -7,11 +7,11 @@ BEGIN { $t = Benchmark->new(); }
 use App::Goto::Dir;
 
 my $file = "goto_dir_config.yml";
-my $config = YAML::LoadFile($file);
+my $config = App::Goto::Dir::Config::load();
 my $data = App::Goto::Dir::Data->new( $config );
-App::Goto::Dir::Parser::init($config);
- $data->new_entry( '~/code/perl/projekt/App-Goto-Dir', 'gt' );
- $data->new_entry( '~/code/perl/projekt', 'p' );
+App::Goto::Dir::Parser::init( $config );
+$data->add_entry( '~/code/perl/projekt/App-Goto-Dir', 'gt' );
+$data->add_entry( '~/code/perl/projekt', 'p' );
 #say $data->delete_entry( 'all', 'p' );
 $data->write( $config );
 
@@ -20,7 +20,7 @@ $data->write( $config );
 #say App::Goto::Dir::Help::text($config, 'option', 'basics');
 #say App::Goto::Dir::Help::text($config, 'option', 'commands');
 #say App::Goto::Dir::Help::text($config, 'option', 'install');
-#say App::Goto::Dir::Help::text($config, 'command', 'add');
+say App::Goto::Dir::Help::text($config, 'command', 'add');
 #say App::Goto::Dir::Help::text($config, 'command', 'delete');
 #say App::Goto::Dir::Help::text($config, 'command', 'remove');
 #say App::Goto::Dir::Help::text($config, 'command', 'move');
@@ -28,9 +28,9 @@ $data->write( $config );
 #say App::Goto::Dir::Help::text($config, 'command', 'name');
 #say App::Goto::Dir::Help::text($config, 'command', 'dir');
 #say App::Goto::Dir::Help::text($config, 'command', 'edit');
-#say App::Goto::Dir::Help::text($config, 'command', 'list');
-#say App::Goto::Dir::Help::text($config, 'command', 'sort');
-#say App::Goto::Dir::Help::text($config, 'command', 'list-lists');
+say App::Goto::Dir::Help::text($config, 'command', 'list');
+say App::Goto::Dir::Help::text($config, 'command', 'sort');
+say App::Goto::Dir::Help::text($config, 'command', 'list-lists');
 #say App::Goto::Dir::Help::text($config, 'command', 'list-add');
 #say App::Goto::Dir::Help::text($config, 'command', 'list-delete');
 #say App::Goto::Dir::Help::text($config, 'command', 'list-name');
@@ -38,6 +38,7 @@ $data->write( $config );
 
 say '   run goto test in ', sprintf("%.4f",timediff( Benchmark->new, $t)->[1]), ' sec';
 
+#App::Goto::Dir::Config::reset();
 
 __END__
 

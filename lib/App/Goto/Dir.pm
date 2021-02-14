@@ -3,10 +3,13 @@ use warnings;
 no warnings  qw/experimental::smartmatch/;
 use feature qw/switch/;
 use File::Spec;
+use YAML;
+use App::Goto::Dir::Command;
+use App::Goto::Dir::Config;
 use App::Goto::Dir::Data;
-use App::Goto::Dir::Parser;
 use App::Goto::Dir::Formater;
 use App::Goto::Dir::Help;
+use App::Goto::Dir::Parser;
 
 package App::Goto::Dir;
 our $VERSION = 0.4;
@@ -14,9 +17,9 @@ our $VERSION = 0.4;
 my $file = "goto_dir_config.yml";
 
 sub new {
-    my $config = YAML::LoadFile($file);
+    my $config = App::Goto::Dir::Config::load();
     my $data = App::Goto::Dir::Data->new( $config );
-    App::Goto::Dir::Parser::init($config);
+    App::Goto::Dir::Parser::init( $config );
     bless { config => $config, data => $data};
 }
 
@@ -24,8 +27,8 @@ sub new {
 sub new_entry {
     my ($self, $dir, $name, $list_name, $list_pos) = @_;
     return 'Data::new_entry misses first required argument: a valid path' unless defined $dir;
-    return "entry name name $name is too long, max chars are ".$self->{'config'}{'entry'}{'max_name_length'}
-        if defined $name and length($name) > $self->{'config'}{'entry'}{'max_name_length'};
+    return "entry name name $name is too long, max chars are ".$self->{'config'}{'entry'}{'name_length_max'}
+        if defined $name and length($name) > $self->{'config'}{'entry'}{'name_length_max'};
     $list_name //= $self->get_current_list_name;
     return "entry list with name '$list_name' does not exist" unless $self->list_exists( $list_name );
     my $entry = App::Goto::Dir::Data::Entry->new($dir, $name);

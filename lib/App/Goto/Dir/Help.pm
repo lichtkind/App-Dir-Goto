@@ -134,6 +134,8 @@ sub install{
 
   goto_dir_config.yml  Contains configuration (settings), it's name is fixed.
                        Defaults are in goto_dir_config_default.yml.
+                       If one of these two files is missing, it will be created
+                       at the next program start containing the defaults.
 EOT
 }
 sub commands {
@@ -165,7 +167,7 @@ sub commands {
 
   -$sc->{sort} --sort=$sopt             set sorting criterion of list display
   -$sc->{list}  --list [<listname>]           change current list and display it
-  -$sc->{'list-list'} --list-lists                 display available list names
+  -$sc->{'list-lists'} --list-lists                 display available list names
   -$sc->{'list-add'} --list-add <listname>        create a new list
   -$sc->{'list-delete'} --list-del[ete] <listname>   delete list with <listname> (has to be empty)
   -$sc->{'list-name'} --list-name <lID>:<listname> rename list, conflicts not allowed
@@ -191,19 +193,20 @@ sub settings{ <<EOT,
     deprecate_new: 1209600              seconds an entry stays in special list new
     deprecate_bin: 1209600              seconds a deleted entry will be preserved in list bin
     start_with: (current|default)       name of displayed list on app start
-    sorted_by: (current|default)        sorting criterion of list on app start
-    default_name: use                   name of default list
-    default_sort: position              default sorting criterion
+    name_default: use                   name of default list
     name:                             setting personal names to special lists
       all:                              contains every entry (deleted too)
       bin:                              contains only deleted, not yet scrapped
       idle:                             dormant projects
       new:                              only newly created entries
       stale:                            entries with none existing direcories
+      special:                          content of special entries
       use:                              active projects
+    sorted_by: (current|default)        sorting criterion of list on app start
+    sort_default: position              default sorting criterion
   entry:                              properties of entry lists
     max_name_length: 5                  maximal entry name length
-    default_position: -1                when list position is omitted take this
+    position_default: -1                when list position is omitted take this
     prefer_in_name_conflict: (new|old)  How resolve name conflict (one entry looses it) ?
     prefer_in_dir_conflict: (new|old)   Create a new entry with already use dir or del old ?
   syntax:                             syntax of command line interface
@@ -244,7 +247,7 @@ my %command = ( add => \&add,
                move => \&move,
                copy => \&copy,
                name => \&name,
-               dir => \&dir,
+                dir => \&dir,
                edit => \&edit,
                list => \&list,
                sort => \&sort,
@@ -271,7 +274,7 @@ sub add {
     If <dir> is already stored in any list, entry.prefer_in_dir_conflict decides if new or old entry is kept.
     If <name> is already used by any entry, entry.prefer_in_name_conflict decides if new or old entry will keep it.
     If <dir>  is omitted, it defaults to the directory gt is called from. <name> defaults to the empty (no) name.
-    A missing <entryID> defaults to the default position ($config->{'entry'}{'default_position'}) in the current list.
+    A missing <entryID> defaults to the default position ($config->{'entry'}{position_default}) in the current list.
 
  USAGE:
 
@@ -321,7 +324,7 @@ sub delete {
 
  EXAMPLES:
 
-  --delete                   removing entry on default position ($config->{'entry'}{'default_position'}) of current list from all lists
+  --delete                   removing entry on default position ($config->{'entry'}{'position_default'}) of current list from all lists
   --del [#]2                 deleting second entry of current list
   --del idle#-2              deleting second last entry of list 'idle'
   --del good#1..3            deleting first, second and third entry of list named 'good'
@@ -359,7 +362,7 @@ sub remove {
 
  EXAMPLES:
 
-  --remove                   removing entry on default position ($config->{'entry'}{'default_position'}) of current list
+  --remove                   removing entry on default position ($config->{'entry'}{'position_default'}) of current list
   --rm -1                    removing entry from last position of current list
   --rm good#4                removing entry from fourth position of list named 'good'
   --rm good#4..-1            removing entries from second to last position of list 'good'
@@ -400,7 +403,7 @@ sub move {
 
  EXAMPLES:
 
-  --move > idle#3            moving from default position ($config->{'entry'}{'default_position'}) of current list to third pos. of list 'idle'
+  --move > idle#3            moving from default position ($config->{'entry'}{'position_default'}) of current list to third pos. of list 'idle'
    -$sc$arg                    moving entry from second to last position in current list
   --mv good#4 > better#2     moving entry from fourth position of list 'good' to second pos. of 'better'
   --mv good#1..5 > better#2  moving entries 1 to 5 of list 'good' to second pos. of 'better'
@@ -440,7 +443,7 @@ sub copy {
 
  EXAMPLES:
 
-  --copy > idle#3            copy from default position ($config->{'entry'}{'default_position'}) of current list to third position of 'idle'
+  --copy > idle#3            copy from default position ($config->{'entry'}{'position_default'}) of current list to third position of 'idle'
    -$sc$arg                    copy from second to last position in current list (produces dir_conflict!)
   --cp all#4 > better#2      copy entry from fourth position of list 'all' to second pos. of 'better'
   --cp all#1..4 > better#2   copy first four entries of list 'all' to second pos. of 'better'
@@ -478,7 +481,7 @@ sub name {
 
  EXAMPLES:
 
-  --name                     delete name of entry on default position ($config->{'entry'}{'default_position'}) of current list
+  --name                     delete name of entry on default position ($config->{'entry'}{'position_default'}) of current list
   --name :do                 set name of default entry to 'do'
   --name idle#3:re           give entry on third position of list 'idle' the name 're'
    -$sc$arg                   rename entry 'mi' to 'fa'
@@ -511,7 +514,7 @@ sub dir {
 
  EXAMPLES:
 
-  --dir ~/perl/project            set path of default entry ($config->{'entry'}{'default_position'}) in current list to '~/perl/project'
+  --dir ~/perl/project            set path of default entry ($config->{'entry'}{'position_default'}) in current list to '~/perl/project'
    -$sc/usr/temp                    change <dir> of default entry in current list to '/usr/temp'
   --dir :sol /usr/bin             set path of entry named 'sol' to /usr/bin
   --dir idle#3 /bin/da            set path of third entry in list 'idle' to /bin/da
@@ -545,7 +548,7 @@ sub edit {
 
  EXAMPLES:
 
-  --edit 'say "dance"'       set code of default entry ($config->{'entry'}{'default_position'}) in current list to 'say "dance"'
+  --edit 'say "dance"'       set code of default entry ($config->{'entry'}{'position_default'}) in current list to 'say "dance"'
   --edit :sol 'say "gg"'     set landing script code of entry bamed 'sol' to 'say "gg"'
   --edit idle#3 'say f2()'   set code of third entry in list 'idle' to 'say f2()'
    -$sc\'say 99'                change <code> of default entry in current list to 'say 99'
@@ -579,7 +582,7 @@ sub list {
 
  EXAMPLES:
 
-    gt --list a --list b       display list named 'a' and 'b' in the shell
+    gt --list a b         display list named 'a' and 'b' and set current list to 'b'
 
     List names contain only word character (A-Z,a-z,0-9,_) and start with a letter.
 EOT
@@ -593,40 +596,41 @@ sub sort {
   gt --sort      set list sorting criterion
  -------------------------------------------
 
-    Selecting the sorting criterion used by --list to display any <dir> entry list.
-    The default criterion ($config->{list}{default_sort}) is set by the config key: list.default_sort in goto_dir_config.yml.
-    If the key: list.sorted_by ($config->{list}{sorted_by}) is set to 'current', than the set criterion is remembered.
-    Otherwise it will fall back to default, when the program shuts down.
-    Calling --sort without an option also triggers that fallback.
-    Starting the option with '!' means: reversed order.
-    Like the command itself, every option has a short version too.
+    Set the sorting criterion applied at the next use of --list (displays an entry list).
+    After the list is displayed, the criterion switches back to default,
+    unless the config key: list.sorted_by ($config->{list}{sorted_by}) is set to 'current'.
+    The default criterion ($config->{list}{sort_default}) is set by the config key: list.sort_default.
+    Calling --sort without an option also resets the criterion to default.
+    Putting a '!' in front of the criterion means: reversed order.
+    Every option has a short alias.
 
  USAGE:
 
-  --sort              -$sc        set to default criterion ($config->{list}{default_sort})
-  --sort=position     -$sc$opt->{position}       obey user defined positional ordering of list
-  --sort=dir          -$sc$opt->{dir}        alphanumeric ordering of directories
-  --sort=name         -$sc$opt->{name}       alphanumeric ordering of entry names, unnamed last
-  --sort=visits       -$sc$opt->{visits}       number of visits, most visited first
-  --sort=last_visit   -$sc$opt->{last_visit}       time of last visit, the very last first
-  --sort=created      -$sc$opt->{created}       time of creation, oldest first
-  --sort=!created     -$sc!$opt->{created}      time of creation, newest first
+   -$sc   --sort                  set to default criterion ($config->{list}{sort_default})
+   -$sc$opt->{position}  --sort=position         obey user defined positional ordering of list
+   -$sc$opt->{dir}  --sort=dir              alphanumeric ordering of directories
+   -$sc$opt->{name}  --sort=name             alphanumeric ordering of entry names, unnamed last
+   -$sc$opt->{visits}  --sort=visits           number of visits, most visited first
+   -$sc$opt->{last_visit}  --sort=last_visit       time of last visit, the very last first
+   -$sc$opt->{created}  --sort=created          time of creation, oldest first
+   -$sc!$opt->{created} --sort=!created         time of creation, newest first
 EOT
 
 }
 sub llists {
     my $config = shift;
+    my $sc = $config->{'syntax'}{'command_shortcut'}{'list-lists'};
     <<EOT;
 
   gt --list-lists      all list names
  -------------------------------------
 
-    Display overview with all list names. The special ones are marked with '*' and their function.
+    Display overview with all list names. The special ones are marked with '$config->{syntax}{sigil}{special_list}' and their function.
 
  USAGE:
 
-  --list-list    long command name
-   -$config->{'syntax'}{'command_shortcut'}{'list-list'}          short alias
+  --list-lists    long command name
+   -$sc           short alias
 EOT
 }
 sub ladd {
@@ -715,6 +719,7 @@ sub text {
     return overview( $config ) unless defined $category;
     if    ($category eq 'option') { defined $option{$name} ? $option{$name}( $config ) : "there is no Goto::Dir help topic: '$name'" }
     elsif ($category eq 'command'){ defined $command{$name} ? $command{$name}( $config ) : "there is no Goto::Dir command $name" }
-    else                            { overview() }
+    else                          {                                overview( $config) }
 }
+
 1;
