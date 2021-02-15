@@ -97,12 +97,12 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 ## commands for managing lists:
 
 - `--list-add <lname> . . . . . create a new list (-l-a)`
-- `--list-del <lname> . . . . . delete list of <lname> (has to be empty) (-l-d)`
+- `--list-del[ete] <lname>. . . delete list of <lname> (has to be empty) (-l-d)`
 - `--list-name <old> > <new>. . rename list, conflicts not allowed (-l-n)`
-- `--list-lists. . . . . . .  . <lname> and <lpos> of available lists (short -l-l)`
+- `--list-lists . . . . . . .  . <lname> and <lpos> of available lists (short -l-l)`
 
 
 # planned features
 
-- simpel undo
+- simple undo
 
