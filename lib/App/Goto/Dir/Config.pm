@@ -34,10 +34,10 @@ our $default = {
           syntax => {           sigil => {
                                     command => '-',
                                  entry_name => ':',
-                             entry_position => '#',
+                             entry_position => '^',
                                target_entry => '>',
                               special_entry => '+',
-                               special_list => '&',
+                               special_list => '@',
                                 },
                         special_entry => {
                                        last => '_',

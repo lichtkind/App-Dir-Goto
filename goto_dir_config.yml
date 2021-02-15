@@ -56,9 +56,9 @@ syntax:
   sigil:
     command: '-'
     entry_name: ':'
-    entry_position: '#'
+    entry_position: '^'
     special_entry: +
-    special_list: '&'
+    special_list: '@'
     target_entry: '>'
   special_entry:
     last: _

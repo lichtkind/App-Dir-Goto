@@ -45,20 +45,21 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `<ID>. . . . = <name> or :<name> or <lpos> (entry identifier)`
 - `--. . . . . starting characters of any command in long form (--add)`
 - `- . . . . . starting character of any command in short form (-add)`
-- `# . . . . . (read number) separates <lname> and <pos> in full adress of an entry`
+- `^ . . . . . (read number) separates <lname> and <pos> in full adress of an entry`
 - `: . . . . . precedes, separates <name>,  (see -add, -name)`
-- `* . . . . . start name of special entry like *last`
+- `+ . . . . . start name of special entry like +last`
+- `@ . . . . . start name of special list like @all`
 - `> . . . . . separates a source (left) and its destination (right) (see -add, -move, -copy)`
 - `<Space> . . ' ' separates long commands and args, allowed around > and before : #`
 
 ## commands for changing directory:
 
 - `[:]<name> . . . . . . . go to dir with <name> (right beside <pos> in list)`
-- `[#]<pos>. . . . . . . . go to dir listed on <pos> (in []) of current list`
+- `[^]<pos>. . . . . . . . go to dir listed on <pos> (in []) of current list`
 - `<lname>#<pos> . . . . . go to directory at <pos> in list <lname>`
-- `*last . . . . . . . . . go to dir gone to last time (in short: '_')`
-- `*previous . . . . . . . go to dir gone previously (short '-', like cd -)`
-- `*new. . . . . . . . . . go to dir added last (*)`
+- `+last . . . . . . . . . go to dir gone to last time (in short: '_')`
+- `+previous . . . . . . . go to dir gone previously (short '-', like cd -)`
+- `+new. . . . . . . . . . go to dir added last (*)`
 - `<ID>/sub/dir. . . . . . go to subdirectory of a stored dir`
 - `<Enter> . . . . . . . . exit interactive mode and stay in current dir`
 
