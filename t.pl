@@ -17,12 +17,11 @@ my $app = App::Goto::Dir->new();
 #$data->write( $config );
 
 
-App::Goto::Dir::Command::run('--help');
+#App::Goto::Dir::Command::run('--help');
 #App::Goto::Dir::Command::run('--help', 'basics');
 #App::Goto::Dir::Command::run('--help', 'commands');
 #App::Goto::Dir::Command::run('--help', 'install');
-App::Goto::Dir::Command::run('--help', 'version');
-
+#App::Goto::Dir::Command::run('--help', 'version');
 #App::Goto::Dir::Command::run('--help', '--add');
 #App::Goto::Dir::Command::run('--help', '--delete');
 #App::Goto::Dir::Command::run('--help', '--remove');

@@ -771,7 +771,7 @@ EOT
 
 sub text {
     my ($config, $ID) = @_;
-    defined $text{$ID} ? $text{$ID}( $config ) : overview( $config );
+    (defined $ID and defined $text{$ID}) ? $text{$ID}( $config ) : overview( $config );
 }
 
 1;
