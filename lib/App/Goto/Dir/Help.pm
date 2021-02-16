@@ -4,12 +4,29 @@ use File::Spec;
 
 package App::Goto::Dir::Help;
 
-my %option = ( overview => \&overview,
-               basics   => \&basics,
-               commands => \&commands,
-               install  => \&install,
-               settings => \&settings,
-               version  => \&version,
+my %text = ( overview => \&overview,
+             basics   => \&basics,
+             commands => \&commands,
+             install  => \&install,
+             settings => \&settings,
+             version  => \&version,
+              '--add' => \&add,
+           '--delete' => \&delete,
+           '--remove' => \&remove,
+             '--move' => \&move,
+             '--copy' => \&copy,
+             '--name' => \&name,
+              '--dir' => \&dir,
+             '--edit' => \&edit,
+             '--list' => \&list,
+             '--sort' => \&sort,
+       '--list-lists' => \&llists,
+     '--list-special' => \&lspecial,
+         '--list-add' => \&ladd,
+      '--list-delete' => \&ldelete,
+        '--list-name' => \&lname,
+ '--list-description' => \&ldescription,
+             '--help' => \&help,
 );
 sub overview {
     my $config = shift;
@@ -245,24 +262,6 @@ sub version {
 EOT
 }
 
-my %command = ( add => \&add,
-             delete => \&delete,
-             remove => \&remove,
-               move => \&move,
-               copy => \&copy,
-               name => \&name,
-                dir => \&dir,
-               edit => \&edit,
-               list => \&list,
-               sort => \&sort,
-       'list-lists' => \&llists,
-     'list-special' => \&lspecial,
-         'list-add' => \&ladd,
-      'list-delete' => \&ldelete,
-        'list-name' => \&lname,
- 'list-description' => \&ldescription,
-               help => \&help,
-);
 sub add {
     my $config = shift;
     my $lname = $config->{'list'}{'name'};
@@ -771,11 +770,8 @@ EOT
 }
 
 sub text {
-    my ($config, $category, $name) = @_;
-    return overview( $config ) unless defined $category;
-    if    ($category eq 'option') { defined $option{$name} ? $option{$name}( $config ) : "there is no Goto::Dir help topic: '$name'" }
-    elsif ($category eq 'command'){ defined $command{$name} ? $command{$name}( $config ) : "there is no Goto::Dir command $name" }
-    else                          {                                overview( $config) }
+    my ($config, $ID) = @_;
+    defined $text{$ID} ? $text{$ID}( $config ) : overview( $config );
 }
 
 1;

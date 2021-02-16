@@ -20,6 +20,7 @@ sub new {
     my $config = App::Goto::Dir::Config::load();
     my $data = App::Goto::Dir::Data->new( $config );
     App::Goto::Dir::Parser::init( $config );
+    App::Goto::Dir::Command::init( $config, $data );
     bless { config => $config, data => $data};
 }
 

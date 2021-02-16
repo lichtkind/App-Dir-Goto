@@ -4,7 +4,8 @@ use warnings;
 package App::Goto::Dir::Formater;
 
 sub lists {
-    my ($data) = @_;
+    my ($data, $config) = @_;
+
 }
 
 sub entries {
