@@ -67,6 +67,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 - `--list . . . . . . . . . display current list (not needed in interactive) (short -l)`
 - `--list <lname> . . . . . set <lname> as current list and display it (-l<name>)`
+- `--list-special . . . . . display special entries (long for -l-s)`
 - `--list-lists . . . . . . display available list names (long for -l-l)`
 - `--sort=position. . . . . sort displayed list by position (default) (-s, -so)`
 - `--sort=dir . . . . . . . sort by dir path (-si)`
@@ -96,13 +97,14 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 ## commands for managing lists:
 
-- `--list-add <lname> . . . . . create a new list (-l-a)`
+- `--list-add <name> ? <des.> . create a new list (-l-a)`
 - `--list-del[ete] <lname>. . . delete list of <lname> (has to be empty) (-l-d)`
 - `--list-name <old> > <new>. . rename list, conflicts not allowed (-l-n)`
-- `--list-lists . . . . . . .  . <lname> and <lpos> of available lists (short -l-l)`
+- `--list-description <name>?<D> rename list, conflicts not allowed (-l-D)`
+- `--list-lists . . . . . . . . <lname> and <lpos> of available lists (short -l-l)`
 
 
 # planned features
 
 - simple undo
-
+- async usage

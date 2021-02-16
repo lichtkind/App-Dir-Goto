@@ -8,8 +8,9 @@ package App::Goto::Dir::Data::List; # index: 1 .. count
 
 #### constructor #######################################################
 sub new {
-    my ($pkg, $name, $config, @elems) = @_;
-    my $self = bless { entry => \@elems, name => $name, config => $config, pos_by_name => {}, pos_by_dir => {} };
+    my ($pkg, $name, $description, $config, @elems) = @_;
+    my $self = bless { entry => \@elems, name => $name, description => $description,
+                       config => $config, pos_by_name => {}, pos_by_dir => {}       };
     refresh_reverse_hashes( $self );
     $self;
 }
@@ -34,9 +35,11 @@ sub get_entry {
     return "'$ID' is not a valid dir path, name or position of the current list" if not $pos;
     $self->{'entry'}[$pos-1], $pos;
 }
-sub all_entries { @{$_[0]->{'entry'}} }
-sub count       { int @{$_[0]->{'entry'}} }
-sub get_name    { $_[0]->{'name'} }
+sub all_entries     { @{$_[0]->{'entry'}} }
+sub count           { int @{$_[0]->{'entry'}} }
+sub get_name        { $_[0]->{'name'} }
+sub get_description { $_[0]->{'description'} }
+sub set_description { $_[0]->{'description'} = $_[1] if  defined $_[1] and $_[1] }
 
 #### elem API ##########################################################
 sub _insert_entry { splice @{$_[0]->{'entry'}}, $_[2]-1, 0, $_[1] }

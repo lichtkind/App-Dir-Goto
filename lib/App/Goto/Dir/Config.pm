@@ -19,14 +19,19 @@ our $default = {
                         deprecate_bin => 1209600,
                            start_with => 'current',
                          name_default => 'use',
-                                 name => {
+                         special_name => {
                                         all => 'all',
                                         bin => 'bin',
-                                       idle => 'idle',
                                         new => 'new',
                                       stale => 'stale',
-                                    special => 'special',
-                                        use => 'use',
+                                      named => 'named',
+                             },
+                      special_comment => {
+                                        all => 'all',
+                                        bin => 'bin',
+                                        new => 'new',
+                                      stale => 'stale',
+                                      named => '',
                              },
                             sorted_by => 'current',
                          sort_default => 'position',
@@ -34,6 +39,7 @@ our $default = {
           syntax => {           sigil => {
                                     command => '-',
                                  entry_name => ':',
+                                       help => '?',
                              entry_position => '^',
                                target_entry => '>',
                               special_entry => '+',
@@ -54,10 +60,12 @@ our $default = {
                                        edit => 'e',
                                        sort => 's',
                                        list => 'l',
+                             'list-special' => 'l-s',
                                'list-lists' => 'l-l',
-                                 'list-add' => 'l-s',
+                                 'list-add' => 'l-a',
                               'list-delete' => 'l-d',
                                 'list-name' => 'l-n',
+                         'list-description' => 'l-D',
                                        help => 'h',
                                 },
                       option_shortcut => {
@@ -91,6 +99,11 @@ sub load {
 sub reset {
     YAML::DumpFile( $file, $default );
     YAML::DumpFile( $dfile, $default );
+}
+
+sub save {
+    $loaded = shift if ref $_[0] eq 'HASH';
+    YAML::DumpFile( $file, $loaded );
 }
 
 1;

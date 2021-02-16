@@ -23,6 +23,11 @@ sub new {
     bless { config => $config, data => $data};
 }
 
+sub exit {
+    my $self = shift;
+    $self->{'data'}->write( $self->{'config'} );
+    App::Goto::Dir::Config::save( $self->{'config'} );
+}
 
 sub new_entry {
     my ($self, $dir, $name, $list_name, $list_pos) = @_;

@@ -149,30 +149,34 @@ sub commands {
   all gt commands in long and short form
  ----------------------------------------
 
-   commands to modify entries:
+  display commands:
 
-  -$sc->{dir} --dir [<ID>] <dir>             change directory of one or more entries
-  -$sc->{name} --name [<ID>] [:<name>]        (re-, un-) name entry
-  -$sc->{edit} --edit [<ID>] '<code>'         edit project landing script
+  -$sc->{help} --help[=$hopt| <command>]     topic or command specific help texts
+  -$sc->{sort} --sort=$sopt              set sorting criterion of list display
+  -$sc->{list}  --list [<listname>]            change current list and display it
+  -$sc->{'list-special'} --list-special                display all special entries
 
-   commands to manage entries:
+  commands to manage lists:
 
-  -$sc->{add} --add <dir>[:<name>] [> <ID>]  add directory <dir> under <name> to a list
-  -$sc->{delete} --del[ete] [<ID>]              delete dir entries from all regular lists
-  -$sc->{remove} --rem[ove] [<ID>]              remove dir entries from a chosen lists
-  -$sc->{move} --move [<IDa>] > <IDb>         move dir entry <IDa> to (position of) <IDb>
-  -$sc->{copy} --copy [<IDa>] > <IDb>         copy entry <IDa> to (position of) <IDb>
+  -$sc->{'list-lists'} --list-lists                  display available list names
+  -$sc->{'list-add'} --list-add <name> ? <Desc.>   create a new list
+  -$sc->{'list-delete'} --list-del[ete] <name>        delete list with <listname> (has to be empty)
+  -$sc->{'list-name'} --list-name <name>:<newname>  rename list, conflicts not allowed
+  -$sc->{'list-description'} --list-description <name>?<D> change list description
 
-   commands to manage entry lists:
+  commands to manage list entries:
 
-  -$sc->{sort} --sort=$sopt             set sorting criterion of list display
-  -$sc->{list}  --list [<listname>]           change current list and display it
-  -$sc->{'list-lists'} --list-lists                 display available list names
-  -$sc->{'list-add'} --list-add <listname>        create a new list
-  -$sc->{'list-delete'} --list-del[ete] <listname>   delete list with <listname> (has to be empty)
-  -$sc->{'list-name'} --list-name <lID>:<listname> rename list, conflicts not allowed
+  -$sc->{add} --add <dir>[:<name>] [> <ID>]   add directory <dir> under <name> to a list
+  -$sc->{delete} --del[ete] [<ID>]               delete dir entries from all regular lists
+  -$sc->{remove} --rem[ove] [<ID>]               remove dir entries from a chosen lists
+  -$sc->{move} --move [<IDa>] > <IDb>          move dir entry <IDa> to (position of) <IDb>
+  -$sc->{copy} --copy [<IDa>] > <IDb>          copy entry <IDa> to (position of) <IDb>
 
-  -$sc->{help} --help[=$hopt| <command>]    topic or command specific help texts
+  commands to modify entries:
+
+  -$sc->{dir} --dir [<ID>] <dir>              change directory of one or more entries
+  -$sc->{name} --name [<ID>] [:<name>]         (re-, un-) name entry
+  -$sc->{edit} --edit [<ID>] '<code>'          edit project landing script
 EOT
 }
 
@@ -194,16 +198,15 @@ sub settings{ <<EOT,
     deprecate_bin: 1209600              seconds a deleted entry will be preserved in list bin
     start_with: (current|default)       name of displayed list on app start
     name_default: use                   name of default list
-    name:                             setting personal names to special lists
+    special_name:                     setting personal names to special lists
       all:                              contains every entry (deleted too)
       bin:                              contains only deleted, not yet scrapped
       idle:                             dormant projects
       new:                              only newly created entries
-      stale:                            entries with none existing direcories
-      special:                          content of special entries
-      use:                              active projects
-    sorted_by: (current|default)        sorting criterion of list on app start
-    sort_default: position              default sorting criterion
+      named:                            entries with a shortcut name
+    special_description:              description texts of special lists
+    sorted_by: (current|default)      sorting criterion of list on app start
+    sort_default: position            default sorting criterion
   entry:                              properties of entry lists
     max_name_length: 5                  maximal entry name length
     position_default: -1                when list position is omitted take this
@@ -253,9 +256,11 @@ my %command = ( add => \&add,
                list => \&list,
                sort => \&sort,
        'list-lists' => \&llists,
+     'list-special' => \&lspecial,
          'list-add' => \&ladd,
       'list-delete' => \&ldelete,
         'list-name' => \&lname,
+ 'list-description' => \&ldescription,
                help => \&help,
 );
 sub add {
@@ -621,6 +626,22 @@ sub sort {
 EOT
 
 }
+sub lspecial {
+    my $config = shift;
+    my $sc = $config->{'syntax'}{'command_shortcut'}{'list-special'};
+    <<EOT;
+
+  gt --list-special      all list names
+ ---------------------------------------
+
+    Display overview with all special entries and their directory.
+
+ USAGE:
+
+  --list-special    long command name
+   -$sc             short alias
+EOT
+}
 sub llists {
     my $config = shift;
     my $sc = $config->{'syntax'}{'command_shortcut'}{'list-lists'};
@@ -640,31 +661,40 @@ EOT
 sub ladd {
     my $config = shift;
     my $sc = $config->{'syntax'}{'command_shortcut'}{'list-add'};
+    my $sig = $config->{'syntax'}{'sigil'};
     <<EOT;
 
   gt --list-add      create a list
  ----------------------------------
 
-    Create a new and empty list for path entries. It's mandatory name has to be not taken yet.
+    Create a new empty regular list for path entries. It's mandatory <name> can't be taken by another list.
+    It also needs a description text (in single quotes).
 
  USAGE:
 
-  --list-add  <name>    long command name
-   -$sc<name>           short alias
+  --list-add  <name> [$sig->{help}] <description>    long command name
+   -$sc<name>[$sig->{help}]<description>             short alias
+
+
+ EXAMPLES:
+
+  --list-add  bear 'only the best entries'    creates a new list named 'bear'
 
     Space (' ') after --list-add is required, but after -$sc optional.
-    List names have to be unique, contain only word character (A-Z,a-z,0-9,_) and start with a letter.
+    List names have to be unique, contain only word character (A-Za-z0-9_) and start with a letter.
 EOT
 }
 sub ldelete {
     my $config = shift;
     my $sc = $config->{'syntax'}{'command_shortcut'}{'list-delete'};
+    my $sig = $config->{'syntax'}{'sigil'};
     <<EOT;
 
    gt --list-delete      remove an empty list
   --------------------------------------------
 
-    Deletes an empty, none special (user created) list. There is no undelete, but --list-add.
+    Deletes an empty, not special (user created) list. There is no undelete, but --list-add.
+    To emty a list use --move <name>$sig->{entry_position}.. $sig->{target_entry} <targetID> or --remove <name>$sig->{entry_position}.. (or --delete).
 
  USAGE:
 
@@ -673,18 +703,19 @@ sub ldelete {
    -$sc<name>              short alias
 
     Space (' ') after --list-delete and --list-del is required, but after -$sc optional.
-    List names have to be unique, contain only word character (A-Z,a-z,0-9,_) and start with a letter.
+    List names have to be unique, contain only word character (A-Za-z0-9_) and start with a letter.
 EOT
 }
 sub lname {
     my $config = shift;
     my $sc = $config->{'syntax'}{'command_shortcut'}{'list-name'};
+    my $sig = $config->{'syntax'}{'sigil'};
     <<EOT;
 
   gt --list-name      rename a list
  -----------------------------------
 
-    Change name of any list, even the special ones. Does not work when <newname> is taken.
+    Change name of any list, even the special ones (start with $sig->{special_list}). Does not work when <newname> is taken.
 
  USAGE:
 
@@ -692,8 +723,29 @@ sub lname {
    -$sc <oldname> : <newname>           short alias
 
 
-    Space (' ') after --list-name is required, but after -$sc and around '>' optional.
-    List names have to be unique, contain only word character (A-Z,a-z,0-9,_) and start with a letter.
+    Space (' ') after --list-name is required, but after -$sc and around '$sig->{target_entry}' and '$sig->{entry_name}' optional.
+    List names have to be unique, contain only word character (A-Za-z0-9_) and start with a letter.
+EOT
+}
+sub ldescription {
+    my $config = shift;
+    my $sc = $config->{'syntax'}{'command_shortcut'}{'list-name'};
+    my $sig = $config->{'syntax'}{'sigil'};
+    <<EOT;
+
+  gt --list-description      change description of list
+ -------------------------------------------------------
+
+    Change description text of a list, even the special ones (start with $sig->{special_list}). Does not work when <newname> is taken.
+
+ USAGE:
+
+  --list-name  <name> [$sig->{help}] '<description>'    long command name
+   -$sc <name>[$sig->{help}]'<description>'             short alias
+
+
+    Space (' ') after --list-name is required, but after -$sc and around '$sig->{target_entry}' and '$sig->{entry_name}' optional.
+    List names have to be unique, contain only word character (A-Za-z0-9_) and start with a letter.
 EOT
 }
 sub help {

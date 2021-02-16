@@ -13,29 +13,45 @@ sub new {
     my ($pkg, $config) = @_;
     return unless ref $config eq 'HASH';
     my $file = $config->{'file'}{'data'};
-    my $lname = $config->{'list'}{'name'};
+    my $sls = $config->{'syntax'}{'sigil'}{'special_list'};
+    my %sl_name = map { $_ => $sls.$config->{'list'}{'special_name'}{$_} } keys %{$config->{'list'}{'special_name'}};
     my $data = (-r $file) ? YAML::LoadFile($file)
-                          : { entry => [],  list => { name => [ keys %{$lname}], current => $lname->{'use'}, sorted_by => 'position', } ,
+                          : { entry => [],  list => { name => [ keys %sl_name, 'use', 'idle'], current => 'use', sorted_by => 'position', } ,
                               visits => {last_dir => '',last_subdir => '', previous_dir => '', previous_subdir => ''},  history => [0],};
 
-    @{ $data->{'entry'}} = map  { $_->add_to_list( $lname->{'stale'}, -1 ) unless $_->get_list_pos($lname->{'stale'}) or -d $_->full_dir; $_}
-                           map  { $_->remove_from_list( $lname->{'stale'} ) if $_->get_list_pos($lname->{'stale'}) and -d $_->full_dir; $_}
-                           map  { $_->remove_from_list( $lname->{'new'} ) if $_->age() > $config->{'list'}{'deprecate_new'}; $_ }
-                           grep { $_->overdue() < $config->{'list'}{'deprecate_bin'} }
+    @{ $data->{'entry'}} = map  { $_->add_to_list( $sl_name{'stale'}, -1 ) unless $_->get_list_pos( $sl_name{'stale'}) or -d $_->full_dir; $_}
+                           map  { $_->remove_from_list( $sl_name{'stale'} ) if $_->get_list_pos( $sl_name{'stale'}) and -d $_->full_dir; $_}
+                           map  { $_->remove_from_list( $sl_name{'new'} ) if $_->age() > $config->{'list'}{'deprecate_new'}; $_ }
+                           grep { $_->overdue() < $config->{'list'}{'deprecate_bin'} } # scrap long deleted
                            map  { App::Goto::Dir::Data::Entry->restate($_)}                  @{ $data->{'entry'} };
+    my %sln_tr; # special list name translator
+    for my $list_name (keys %{$data->{'list'}{'description'}}){
+        next if substr($list_name, 0, 1) =~ /\w/ or substr($list_name, 0, 1) eq $sls;
+        my $new_name = $sls . substr($list_name, 1);
+        $data->{'list'}{'description'}{$new_name} = $data->{'list'}{'description'}{$list_name};
+        delete $data->{'list'}{'description'}{$list_name};
+        $sln_tr{ $list_name } = $new_name;
+    }
     my %list;
     for my $entry (@{ $data->{'entry'}}){
         for my $list_name ($entry->member_of_lists) {
-            $list{$list_name}[ $entry->get_list_pos($list_name) ] = $entry;
+            if (exists $sln_tr{$list_name}){
+                $list{ $sln_tr{ $list_name } }[ $entry->get_list_pos($list_name) ] = $entry;
+                $entry->remove_from_list($list_name);
+            } else {
+                $list{$list_name}[ $entry->get_list_pos($list_name) ] = $entry;
+            }
         }
     }
-    for my $list_name (keys %list) {
-        $data->{'list_object'}{ $list_name } = App::Goto::Dir::Data::List->new( $list_name, $config->{'entry'}, grep {ref $_} @{$list{$list_name}} );
+    for my $list_name (keys %list) { # create lists with entries
+        $data->{'list_object'}{ $list_name } = App::Goto::Dir::Data::List->new( $list_name, $data->{'list'}{'description'}{$list_name},
+                                                                                $config->{'entry'}, grep {ref $_} @{$list{$list_name}} );
     }
-    for my $list_name (keys %$lname, @{$data->{'lists'}}) { # empty lists
+    for my $list_name (values %sl_name, keys %{$data->{'list'}{'description'}}) { # create empty lists too
         next if exists $data->{'list_object'}{ $list_name };
-        $data->{'list_object'}{ $list_name } = App::Goto::Dir::Data::List->new( $list_name, $config->{'entry'} );
+        $data->{'list_object'}{ $list_name } = App::Goto::Dir::Data::List->new( $list_name, $data->{'list'}{'description'}{$list_name}, $config->{'entry'} );
     }
+    $data->{'special_list'} = \%sl_name;
     $data->{'config'} = $config;
     bless $data;
 }
@@ -43,8 +59,8 @@ sub new {
 sub write {
     my ($self, $config) = @_;
     my $state                = { map { $_ => $self->{$_}} qw/visits list/ }; # history ?
-    $state->{'entry'}         = [ map { $_->state } $self->{'list_object'}{ $config->{'list'}{'name'}{'all'} }->all_entries ];
-    $state->{'list'}{'name'}   = [ keys %{ $self->{'list_object'} } ];
+    $state->{'entry'}         = [ map { $_->state } $self->get_special_lists('all')->all_entries ];
+    $state->{'list'}{'description'} = { map {$_->get_name => $_->get_description} values %{ $self->{'list_object'} } };
     $state->{'list'}{'current'} = $config->{'list'}{'default_name'} if  $config->{'list'}{'start_with'} eq 'default';
 
     rename $config->{'file'}{'data'}, $config->{'file'}{'backup'};
@@ -64,7 +80,7 @@ sub remove_list {
     my ($self, $list_name) = @_;
     return 'need a list name' unless defined $list_name;
     return "list '$list_name' already exists" if $self->list_exists( $list_name );
-    return "can not delete special list $list_name" if $list_name ~~ [@{$self->{'config'}{'list'}{'name'}}{qw/new bin all/}];
+    return "can not delete special list $list_name" if substr($list_name, 0, 1) =~ /\W/;
     return "can not delete none empty list $list_name" if $self->{'list_object'}{ $list_name }->count();
     delete $self->{'list_object'}{ $list_name };
 }
@@ -73,13 +89,14 @@ sub change_current_list {
     return 0 unless $self->list_exists( $new_list );
     $self->{'list'}{'current'} = $new_list;
 }
+sub list_exists           { defined $_[1] and exists $_[0]->{'list_object'}{$_[1]}      }
 sub get_current_list      {        $_[0]->{'list_object'}{ $_[0]->{'list'}{'current'} } }
 sub get_current_list_name {                                $_[0]->{'list'}{'current'}   }
 sub get_all_list_name     { keys %{$_[0]->{'list_object'}}                              }
 sub get_list              { $_[0]->{'list_object'}{$_[1]} if exists $_[0]->{'list_object'}{$_[1]} }
-sub get_special_lists     { my $self = shift; @{$self->{'list_object'}}{ @{$self->{'config'}{'list'}{'name'}}{@_} } }
-sub get_special_list_names{ my $self = shift; @{$self->{'config'}{'list'}{'name'}}{@_} }
-sub list_exists           { defined $_[1] and exists $_[0]->{'list_object'}{$_[1]}      }
+sub get_special_lists     {
+    my $self = shift;  @{ $self->{'list_object'}}{ $self->get_special_list_names(@_) } }
+sub get_special_list_names{ my $self = shift; @{$self->{'special_list'}}{@_} }
 
 #### entry API #########################################################
 sub add_entry {
@@ -157,7 +174,7 @@ sub copy_entry {
     $to_list->insert_entry( $entry, $to_ID );
 }
 
-sub rename_entry { # delete name when name arg omitted
+sub rename_entry { # delete name when name arg omitted observe @named
     my ($self, $list_name, $entry_ID, $new_name) = @_;
     my ($entry, $list) = $self->get_entry( $entry_ID );
     return $entry unless ref $entry;
