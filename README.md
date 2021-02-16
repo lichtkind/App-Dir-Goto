@@ -99,8 +99,8 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 - `--list-add <name> ? <des.> . create a new list (-l-a)`
 - `--list-del[ete] <lname>. . . delete list of <lname> (has to be empty) (-l-d)`
-- `--list-name <old> > <new>. . rename list, conflicts not allowed (-l-n)`
-- `--list-description <name>?<D> rename list, conflicts not allowed (-l-D)`
+- `--list-name <old> > <new>. . rename any list, conflicts not allowed (-l-n)`
+- `--list-description <name>?<D> change description of any list (-l-D)`
 - `--list-lists . . . . . . . . <lname> and <lpos> of available lists (short -l-l)`
 
 

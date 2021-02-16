@@ -720,16 +720,16 @@ sub lname {
  USAGE:
 
   --list-name  <oldname> : <newname>    long command name
-   -$sc <oldname> : <newname>           short alias
+   -$sc<oldname> : <newname>            short alias
 
 
-    Space (' ') after --list-name is required, but after -$sc and around '$sig->{target_entry}' and '$sig->{entry_name}' optional.
+    Space (' ') after --list-name is required, but after -$sc and around '$sig->{entry_name}' optional.
     List names have to be unique, contain only word character (A-Za-z0-9_) and start with a letter.
 EOT
 }
 sub ldescription {
     my $config = shift;
-    my $sc = $config->{'syntax'}{'command_shortcut'}{'list-name'};
+    my $sc = $config->{'syntax'}{'command_shortcut'}{'list-description'};
     my $sig = $config->{'syntax'}{'sigil'};
     <<EOT;
 
@@ -740,11 +740,11 @@ sub ldescription {
 
  USAGE:
 
-  --list-name  <name> [$sig->{help}] '<description>'    long command name
-   -$sc <name>[$sig->{help}]'<description>'             short alias
+  --list-description  <name> [$sig->{help}] '<description>'    long command name
+   -$sc<name>[$sig->{help}]'<description>'                     short alias
 
 
-    Space (' ') after --list-name is required, but after -$sc and around '$sig->{target_entry}' and '$sig->{entry_name}' optional.
+    Space (' ') after --list-name is required, but after -$sc and around '$sig->{help}' optional.
     List names have to be unique, contain only word character (A-Za-z0-9_) and start with a letter.
 EOT
 }
