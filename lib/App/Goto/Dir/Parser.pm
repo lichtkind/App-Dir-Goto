@@ -66,6 +66,11 @@ sub init {
 
 }
 
+sub is_name {
+    my ($name) = @_;
+
+}
+
 sub eval_command {
     my (@parts) = @_;
     my @cmd = split  "-", join ' ', @parts;

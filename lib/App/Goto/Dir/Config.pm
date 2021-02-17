@@ -19,6 +19,7 @@ our $default = {
                         deprecate_bin => 1209600,
                            start_with => 'current',
                          name_default => 'use',
+                         name_length_max => 6,
                          special_name => {
                                         all => 'all',
                                         bin => 'bin',

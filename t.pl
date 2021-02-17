@@ -40,8 +40,13 @@ my $app = App::Goto::Dir->new();
 #App::Goto::Dir::Command::run('--help', '--list-description');
 #App::Goto::Dir::Command::run('--help', '--help');
 
-#App::Goto::Dir::Command::run('--list-special');
+App::Goto::Dir::Command::run('--list-special');
 App::Goto::Dir::Command::run('--list-lists');
+App::Goto::Dir::Command::run('--list-add', 'a');
+App::Goto::Dir::Command::run('--list-lists');
+App::Goto::Dir::Command::run('--list-delete', 'a');
+App::Goto::Dir::Command::run('--list-lists');
+App::Goto::Dir::Command::run('--list-delete', '@all');
 #App::Goto::Dir::Command::run('--sort','position');
 #App::Goto::Dir::Command::run('--list','@all', '@new');
 #App::Goto::Dir::Config::reset();

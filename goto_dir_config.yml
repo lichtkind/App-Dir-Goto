@@ -12,6 +12,7 @@ list:
   deprecate_bin: 1209600
   deprecate_new: 1209600
   name_default: use
+  name_length_max: 6
   sort_default: position
   sorted_by: current
   special_comment:
