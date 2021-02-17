@@ -9,10 +9,12 @@ sub lists {
     my $c = $data->get_current_list_name();
     my $sig = $config->{'syntax'}{'sigil'}{'special_list'};
     my $nl = $config->{'list'}{'name_length_max'} +1;
-    say "  all list on Goto::Dir (name, elements, description, c = current):";
-    say " -----------------------------------------------------------------";
-    say sprintf ("  %-".$nl."s. %s . %02u . %s", (substr($_->[1], 0, 1) eq $sig ? '' : ' ' ).$_->[1], $_->[1] eq $c ? 'c': '.', $_->[0]->count, $_->[0]->get_description ) for @l;
-    say '';
+
+    my $ret = "  all list on Goto::Dir (name, elements, description, c = current):\n".
+              " -----------------------------------------------------------------\n";
+    $ret .= sprintf ("  %-".$nl."s. %s . %02u . %s\n",
+             (substr($_->[1], 0, 1) eq $sig ? '' : ' ' ).$_->[1], $_->[1] eq $c ? 'c': '.', $_->[0]->elems, $_->[0]->get_description ) for @l;
+    $ret."\n";
 }
 
 sub special_entries {
@@ -21,10 +23,10 @@ sub special_entries {
     my $c = $data->get_current_list_name();
     my $sig = $config->{'syntax'}{'sigil'}{'special_entry'};
     my $space = '. 'x(3+int($config->{'list'}{'name_length_max'}/2));
-    say "  special entries on Goto::Dir (start with $sig):";
-    say " --------------------------------------------";
-    say '  '. $sig . $_ . substr($space, length $_) . $data->get_special_dir($_) for qw/last previous add delete remove move copy dir name edit/;
-    say '';
+    my $ret = "  special entries on Goto::Dir (start with $sig):\n".
+              " --------------------------------------------\n";
+    $ret .= '  '.$sig.$_.substr($space, length $_).$data->get_special_dir($_)."\n" for qw/last previous add delete remove move copy dir name edit/;
+    $ret."\n";
 }
 
 sub entries {
@@ -35,5 +37,11 @@ sub entries {
     say " ----------------------------------------------------------------------";
     say '';
 }
+
+sub set_sort {
+    my ($config, $data, $criterion) = @_;
+
+}
+
 
 1;

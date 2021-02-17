@@ -36,7 +36,7 @@ sub get_entry {
     $self->{'entry'}[$pos-1], $pos;
 }
 sub all_entries     { @{$_[0]->{'entry'}} }
-sub count           { int @{$_[0]->{'entry'}} }
+sub elems           { int @{$_[0]->{'entry'}} }
 sub get_name        { $_[0]->{'name'} }
 sub get_description { $_[0]->{'description'} }
 sub set_description { $_[0]->{'description'} = $_[1] if  defined $_[1] and $_[1] }
@@ -106,12 +106,12 @@ sub pos_from_name { exists $_[0]->{'pos_by_name'}{ $_[1] } ? $_[0]->{'pos_by_nam
 sub pos_from_dir  { exists $_[0]->{'pos_by_dir'}{ $_[1] } ? $_[0]->{'pos_by_dir'}{ $_[1] } : 0 }
 sub is_pos     {
     my ($self, $i) = @_;
-    my $c = $self->count;
+    my $c = $self->elems;
     $i == int $i and (($i > 0 and $i <= $c) or ($i < 0 and $i >= -$c))
 }
 sub is_new_pos {
     my ($self, $i) = @_;
-    my $c = $self->count;
+    my $c = $self->elems;
     $i == int $i and (($i > 0 and $i <= $c+1) or ($i < 0 and $i >= -$c-1))
 }
 

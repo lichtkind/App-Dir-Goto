@@ -19,11 +19,13 @@ sub new {
                           : { entry => [],  list => { name => [ keys %sl_name, 'use', 'idle'], current => 'use', sorted_by => 'position', } ,
                               visits => {last_dir => '',last_subdir => '', previous_dir => '', previous_subdir => ''},  history => [0],};
 
-    @{ $data->{'entry'}} = map  { $_->add_to_list( $sl_name{'stale'}, -1 ) unless $_->get_list_pos( $sl_name{'stale'}) or -d $_->full_dir; $_}
-                           map  { $_->remove_from_list( $sl_name{'stale'} ) if $_->get_list_pos( $sl_name{'stale'}) and -d $_->full_dir; $_}
-                           map  { $_->remove_from_list( $sl_name{'new'} ) if $_->age() > $config->{'list'}{'deprecate_new'}; $_ }
-                           grep { $_->overdue() < $config->{'list'}{'deprecate_bin'} } # scrap long deleted
-                           map  { App::Goto::Dir::Data::Entry->restate($_)}                  @{ $data->{'entry'} };
+    $data->{'entry'} = [ grep { $_->overdue() < $config->{'list'}{'deprecate_bin'} } # scrap long deleted
+                         map  { App::Goto::Dir::Data::Entry->restate($_)           } @{ $data->{'entry'} }  ];
+
+    map { $_->add_to_list( $sl_name{'stale'}, -1 ) unless $_->get_list_pos( $sl_name{'stale'}) or -d $_->full_dir } @{ $data->{'entry'} };
+    map { $_->remove_from_list( $sl_name{'stale'} ) if $_->get_list_pos( $sl_name{'stale'}) and -d $_->full_dir } @{ $data->{'entry'} };
+    map { $_->remove_from_list( $sl_name{'new'} ) if $_->age() > $config->{'list'}{'deprecate_new'} } @{ $data->{'entry'} };
+
     my %sln_tr; # special list name translator
     for my $list_name (keys %{$data->{'list'}{'description'}}){
         next if substr($list_name, 0, 1) =~ /\w/ or substr($list_name, 0, 1) eq $sls;
@@ -32,6 +34,7 @@ sub new {
         delete $data->{'list'}{'description'}{$list_name};
         $sln_tr{ $list_name } = $new_name;
     }
+
     my %list;
     for my $entry (@{ $data->{'entry'}}){
         for my $list_name ($entry->member_of_lists) {
@@ -43,13 +46,13 @@ sub new {
             }
         }
     }
+
     for my $list_name (keys %list) { # create lists with entries
-        $data->{'list_object'}{ $list_name } = App::Goto::Dir::Data::List->new( $list_name, $data->{'list'}{'description'}{$list_name},
-                                                                                $config->{'entry'}, grep {ref $_} @{$list{$list_name}} );
+        new_list( $data, $list_name, $data->{'list'}{'description'}{$list_name}, $config->{'entry'}, grep {ref $_} @{$list{$list_name}} );
     }
     for my $list_name (values %sl_name, keys %{$data->{'list'}{'description'}}) { # create empty lists too
         next if exists $data->{'list_object'}{ $list_name };
-        $data->{'list_object'}{ $list_name } = App::Goto::Dir::Data::List->new( $list_name, $data->{'list'}{'description'}{$list_name}, $config->{'entry'} );
+        new_list( $data, $list_name, $data->{'list'}{'description'}{$list_name}, $config->{'entry'} );
     }
     $data->{'special_list'} = \%sl_name;
     $data->{'config'} = $config;
@@ -70,33 +73,19 @@ sub write {
 }
 
 #### list API ###########################################################
-sub add_list {
-    my ($self, $list_name) = @_;
-    return 'need a list name' unless defined $list_name;
-    return "list '$list_name' does not exist" unless $self->list_exists( $list_name );
-    $self->{'list_object'}{ $list_name } = App::Goto::Dir::Data::List->new( $list_name, $self->{'config'}{'entry'} );
+sub new_list {
+    my ($self, $list_name, $description, $config, @elems) = @_;
+    $self->{'list_object'}{ $list_name } = App::Goto::Dir::Data::List->new( $list_name, $description, $config, @elems );
 }
-sub remove_list {
-    my ($self, $list_name) = @_;
-    return 'need a list name' unless defined $list_name;
-    return "list '$list_name' already exists" if $self->list_exists( $list_name );
-    return "can not delete special list $list_name" if substr($list_name, 0, 1) =~ /\W/;
-    return "can not delete none empty list $list_name" if $self->{'list_object'}{ $list_name }->count();
-    delete $self->{'list_object'}{ $list_name };
-}
-sub change_current_list {
-    my ($self, $new_list) = @_;
-    return 0 unless $self->list_exists( $new_list );
-    $self->{'list'}{'current'} = $new_list;
-}
-sub list_exists           { defined $_[1] and exists $_[0]->{'list_object'}{$_[1]}      }
-sub get_current_list      {        $_[0]->{'list_object'}{ $_[0]->{'list'}{'current'} } }
-sub get_current_list_name {                                $_[0]->{'list'}{'current'}   }
-sub get_all_list_name     { keys %{$_[0]->{'list_object'}}                              }
+sub remove_list           { delete $_[0]->{'list_object'}{ $_[1] }                          }
+sub change_current_list   { $_[0]->{'list'}{'current'} = $_[1] if exists $_[0]->{'list_object'}{$_[1]} }
+sub list_exists           { defined $_[1] and exists $_[0]->{'list_object'}{$_[1]}          }
+sub get_current_list      {        $_[0]->{'list_object'}{ $_[0]->{'list'}{'current'} }     }
+sub get_current_list_name {                                $_[0]->{'list'}{'current'}       }
+sub get_all_list_name     { keys %{$_[0]->{'list_object'}}                                  }
 sub get_list              { $_[0]->{'list_object'}{$_[1]} if exists $_[0]->{'list_object'}{$_[1]} }
-sub get_special_lists     {
-    my $self = shift;  @{ $self->{'list_object'}}{ $self->get_special_list_names(@_) } }
-sub get_special_list_names{ my $self = shift; @{$self->{'special_list'}}{@_} }
+sub get_special_lists     { my $self = shift; @{ $self->{'list_object'}}{ $self->get_special_list_names(@_) } if @_}
+sub get_special_list_names{ my $self = shift; @{ $self->{'special_list'}}{ @_ }                }
 
 #### entry API #########################################################
 sub add_entry {
@@ -245,7 +234,7 @@ sub get_special_dir {
 }
 sub set_special_dir {
     my ($self, $name, $dir) = @_;
-    return say 'can not set last and previous directory in this way' if $name eq 'last' or $name eq 'previous';
+    return 'can not set last and previous directory in this way' if $name eq 'last' or $name eq 'previous';
     $self->{'special_dir'}{$name} = $dir;
 }
 

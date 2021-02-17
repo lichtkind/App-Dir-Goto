@@ -2,9 +2,9 @@ use v5.18;
 use warnings;
 use File::Spec;
 
-package App::Goto::Dir::Parser;
+package App::Goto::Dir::Parse;
 
-my %command = ('add' => [0, 0, 0, 0], # 0 option 1st arg required
+my %command = ('add' => [0, 0, 0, 0], # i: 0 - option ; 1..n - arg required?
                'del' => 'delete',
             'delete' => [0, 0],
                 'rm' => 'remove',
@@ -68,7 +68,10 @@ sub init {
 
 sub is_name {
     my ($name) = @_;
-
+    return 0 unless defined $name and $name;
+    return 0 if $name =~ /\W/;
+    return 0 if substr($name,0,1) =~ /[\d_]/;
+    1;
 }
 
 sub eval_command {
