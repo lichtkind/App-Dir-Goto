@@ -15,9 +15,11 @@ sub new {
     my $file = $config->{'file'}{'data'};
     my $sls = $config->{'syntax'}{'sigil'}{'special_list'};
     my %sl_name = map { $_ => $sls.$config->{'list'}{'special_name'}{$_} } keys %{$config->{'list'}{'special_name'}};
+    my %sl_desc = map { $sl_name{$_} => $config->{'list'}{'special_description'}{$_}} keys %sl_name;
     my $data = (-r $file) ? YAML::LoadFile($file)
-                          : { entry => [],  list => { name => [ keys %sl_name, 'use', 'idle'], current => 'use', sorted_by => 'position', } ,
-                              visits => {last_dir => '',last_subdir => '', previous_dir => '', previous_subdir => ''},  history => [0],};
+                          : { list => { description => [%sl_desc, 'use'=> 'projects currently worked on', 'idle'=> 'dormant or put back projects'],
+                                        current => 'use', sorted_by => 'position', } , entry => [],
+                              visits => {last_dir => '',last_subdir => '', previous_dir => '', previous_subdir => ''},  history => [0],  };
 
     $data->{'entry'} = [ grep { $_->overdue() < $config->{'list'}{'deprecate_bin'} } # scrap long deleted
                          map  { App::Goto::Dir::Data::Entry->restate($_)           } @{ $data->{'entry'} }  ];
@@ -78,12 +80,18 @@ sub new_list {
     $self->{'list_object'}{ $list_name } = App::Goto::Dir::Data::List->new( $list_name, $description, $config, @elems );
 }
 sub remove_list           { delete $_[0]->{'list_object'}{ $_[1] }                          }
-sub change_current_list   { $_[0]->{'list'}{'current'} = $_[1] if exists $_[0]->{'list_object'}{$_[1]} }
+sub get_list              { $_[0]->{'list_object'}{$_[1]} if exists $_[0]->{'list_object'}{$_[1]} }
 sub list_exists           { defined $_[1] and exists $_[0]->{'list_object'}{$_[1]}          }
+sub change_list_name      {
+    my ($self, $old_name, $new_name) =  @_;
+    return unless $self->list_exists( $old_name ) and not $self->list_exists( $new_name );
+    my $list = $self->{'list_object'}{$new_name} = delete $self->{'list_object'}{$old_name};
+    $list->set_name( $new_name );
+}
+sub change_current_list   { $_[0]->{'list'}{'current'} = $_[1] if exists $_[0]->{'list_object'}{$_[1]} }
 sub get_current_list      {        $_[0]->{'list_object'}{ $_[0]->{'list'}{'current'} }     }
 sub get_current_list_name {                                $_[0]->{'list'}{'current'}       }
 sub get_all_list_name     { keys %{$_[0]->{'list_object'}}                                  }
-sub get_list              { $_[0]->{'list_object'}{$_[1]} if exists $_[0]->{'list_object'}{$_[1]} }
 sub get_special_lists     { my $self = shift; @{ $self->{'list_object'}}{ $self->get_special_list_names(@_) } if @_}
 sub get_special_list_names{ my $self = shift; @{ $self->{'special_list'}}{ @_ }                }
 

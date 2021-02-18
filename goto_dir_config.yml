@@ -21,6 +21,7 @@ list:
     named: ''
     new: new
     stale: stale
+  special_description: {}
   special_name:
     all: all
     bin: bin

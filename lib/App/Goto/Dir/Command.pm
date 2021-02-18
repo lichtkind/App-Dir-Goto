@@ -38,7 +38,7 @@ sub run {
 
 sub add_list {
     my ($list_name, $decription) = @_;
-    return 'need a list name as first argument' unless defined $list_name;
+    return 'need an unused list name as first argument' unless defined $list_name;
     return 'need the lists description as second  argument' unless defined $decription and $decription;
     return "can not create special lists" if substr ($list_name, 0, 1 ) =~ /\W/;
     return "'$list_name' is not a regular list name (only [A-Za-z0-9_] start with letter)" unless App::Goto::Dir::Parse::is_name($list_name);
@@ -49,7 +49,7 @@ sub add_list {
 
 sub delete_list {
     my ($list_name) = @_;
-    return 'need a list name as first argument' unless defined $list_name;
+    return 'need a name of an existing, regular list as first argument' unless defined $list_name;
     return "can not delete special lists" if substr ($list_name, 0, 1 ) =~ /\W/;
     return "list '$list_name' does not exists" unless $data->list_exists( $list_name );
     return "can not delete none empty list $list_name" if $data->get_list( $list_name )->elems();
@@ -59,13 +59,35 @@ sub delete_list {
 
 sub name_list {
     my ($old_name, $new_name) = @_;
-
+    return 'need a name of an existing list as first argument' unless defined $old_name;
+    return 'need an unused list name as second argument' unless defined $new_name;
+    my $list = $data->get_list( $old_name );
+    return "there is no list named '$old_name'" unless ref $list;
+    my $sig = $config->{'syntax'}{'sigil'}{'special_list'};
+    if (substr ($old_name, 0, 1 ) eq $sig and substr ($new_name, 0, 1 ) eq $sig){
+        my $on = substr $old_name, 0, 1;
+        my $nn = substr $new_name, 0, 1;
+        return "'$nn' is not a list name (only [A-Za-z0-9_] start with letter)" unless App::Goto::Dir::Parse::is_name($nn);
+        for my $key (keys %{$config->{'list'}{'special_name'}}){
+            $config->{'list'}{'special_name'}{$key} = $nn if $config->{'list'}{'special_name'}{$key} eq $on;
+        }
+    } else {
+        return "'$new_name' is not a regular list name (only [A-Za-z0-9_] start with letter)" unless App::Goto::Dir::Parse::is_name($new_name);
+    }
+    $data->change_list_name( $old_name, $new_name );
+    "renamed list '$old_name' to '$new_name'";
 }
 
 sub describe_list {
     my ($list_name, $list_description) = @_;
-
+    return 'need a list name as first argument' unless defined $list_name;
+    return 'need a list description as second argument' unless defined $list_description;
+    my $list = $data->get_list( $list_name );
+    return "there is no list named '$list_name'" unless ref $list;
+    $list->set_description( $list_description );
+    " set description of list '$list_name': '$list_description'";
 }
+
 
 sub add_entry {
     my ($dir, $name, $target) = @_;

@@ -38,8 +38,9 @@ sub get_entry {
 sub all_entries     { @{$_[0]->{'entry'}} }
 sub elems           { int @{$_[0]->{'entry'}} }
 sub get_name        { $_[0]->{'name'} }
+sub set_name        { $_[0]->{'name'} = $_[1] if defined $_[1] and $_[1] }
 sub get_description { $_[0]->{'description'} }
-sub set_description { $_[0]->{'description'} = $_[1] if  defined $_[1] and $_[1] }
+sub set_description { $_[0]->{'description'} = $_[1] if defined $_[1] and $_[1] }
 
 #### elem API ##########################################################
 sub _insert_entry { splice @{$_[0]->{'entry'}}, $_[2]-1, 0, $_[1] }

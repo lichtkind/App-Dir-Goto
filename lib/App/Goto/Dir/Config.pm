@@ -27,12 +27,12 @@ our $default = {
                                       stale => 'stale',
                                       named => 'named',
                              },
-                      special_comment => {
-                                        all => 'all',
-                                        bin => 'bin',
-                                        new => 'new',
-                                      stale => 'stale',
-                                      named => '',
+                  special_description => {
+                                        all => 'all entries, even deleted ones',
+                                        bin => 'recycling bin of deleted entries',
+                                        new => 'recently created entries',
+                                      stale => 'entries with not existing directories',
+                                      named => 'entries with names',
                              },
                             sorted_by => 'current',
                          sort_default => 'position',
