@@ -11,7 +11,7 @@ sub lists {
     my $nl = $config->{'list'}{'name_length_max'} +1;
 
     my $ret = "  all list on Goto::Dir (name, elements, description, c = current):\n".
-              " -----------------------------------------------------------------\n";
+              " ------------------------------------------------------------------\n";
     $ret .= sprintf ("  %-".$nl."s. %s . %02u . %s\n",
              (substr($_->[1], 0, 1) eq $sig ? '' : ' ' ).$_->[1], $_->[1] eq $c ? 'c': '.', $_->[0]->elems, $_->[0]->get_description ) for @l;
     $ret."\n";
@@ -24,24 +24,75 @@ sub special_entries {
     my $sig = $config->{'syntax'}{'sigil'}{'special_entry'};
     my $space = '. 'x(3+int($config->{'list'}{'name_length_max'}/2));
     my $ret = "  special entries on Goto::Dir (start with $sig):\n".
-              " --------------------------------------------\n";
+              " ---------------------------------------------\n";
     $ret .= '  '.$sig.$_.substr($space, length $_).$data->get_special_dir($_)."\n" for qw/last previous add delete remove move copy dir name edit/;
     $ret."\n";
 }
 
+sub list_entries {
+    my ($config, $data, @l) = @_;
+    join '', map {entries($config, $data, $_) } @l;
+}
 sub entries {
     my ($config, $data, $list_name) = @_;
-    my $l = $data->get_list($_);
-    return say $l unless ref $l;
-    say "  all list on App::Goto::Dir (name, elements, description, c = current):";
-    say " ----------------------------------------------------------------------";
-    say '';
+    return 'need a name of an existing list' unless defined $list_name;
+    my $list = $data->get_list($list_name);
+    return "list '$list_name' unknown" unless ref $list;
+    $data->set_current_list_name( $list_name );
+    my $pos = 1;
+    my @el = map {{el => $_, pos => $pos++}} $list->all_entries;
+    my $sorted = $data->{'list'}{'sorted_by'};
+    @el = sort { $a->{'el'}->full_dir     cmp $b->{'el'}->full_dir     } @el if $sorted eq 'dir';
+    @el = sort { $a->{'el'}->name         cmp $b->{'el'}->name         } @el if $sorted eq 'name';
+    @el = sort { $b->{'el'}->visit_count  <=> $a->{'el'}->visit_count  } @el if $sorted eq 'visits';
+    @el = sort { $a->{'el'}->visit_stamp  <=> $b->{'el'}->visit_stamp  } @el if $sorted eq 'last_visit';
+    @el = sort { $a->{'el'}->create_stamp <=> $b->{'el'}->create_stamp } @el if $sorted eq 'created';
+    @el = reverse @el if $data->{'list'}{'sort_reversed'};
+    my $nl = $config->{'entry'}{'name_length_max'} + 1;
+    my $rev = $data->{'list'}{'sort_reversed'} ? 'reversed '  : '';
+    my $ret = "  entries of list '$list_name' (pos., name, "
+             .($sorted eq 'visits'     ? 'visits, ':
+               $sorted eq 'last_visit' ? 'time, '  :
+               $sorted eq 'created'    ? 'time, '  : '')."dir) sorted by $rev$sorted:";
+    $ret .= "\n ".('-'x (length($ret) -1))."\n";
+    my $max_dir_length = 70 - $config->{'entry'}{'name_length_max'};
+    $max_dir_length -=  4 if $sorted eq 'visits';
+    $max_dir_length -= 22 if $sorted eq 'last_visit' or $sorted eq 'created';
+    map { $_->{'dir'} = length $_->{'el'}->dir > $max_dir_length ? substr($_->{'el'}->dir,0,int($max_dir_length/2)-1).'..'.substr($_->{'el'}->dir, -int($max_dir_length/2))
+                                                                 : $_->{'el'}->dir} @el;
+
+    if    ($sorted eq 'visits')    { $ret .= sprintf ("  [%02u]  %-".$nl."s %02u  %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'el'}->visit_count, $_->{'dir'} ) for @el }
+    elsif ($sorted eq 'last_visit'){ $ret .= sprintf ("  [%02u]  %-".$nl."s %s  %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'el'}->visit_time, $_->{'dir'} ) for @el }
+    elsif ($sorted eq 'created')   { $ret .= sprintf ("  [%02u]  %-".$nl."s %s  %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'el'}->create_time, $_->{'dir'} ) for @el }
+    else                           { $ret .= sprintf ("  [%02u]  %-".$nl."s  %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'dir'} ) for @el }
+    $ret."\n";
 }
 
+my %sopt;
 sub set_sort {
     my ($config, $data, $criterion) = @_;
-
+    my @opt = keys %{$config->{'syntax'}{'option_shortcut'}{'sort'}};
+    unless (%sopt){
+        for my $key (@opt){
+            for my $l (1 .. length $key){
+                my $pk = substr $key, 0, $l;
+                if (exists $sopt{$pk}){ $sopt{$pk} = 0 }
+                else                  { $sopt{$pk} = $key }
+            }
+        }
+    }
+    $criterion = $config->{'list'}{'sort_default'} if not defined $criterion or $criterion eq 'default';
+    my $reverse = 0;
+    if (substr( $criterion, 0, 1) eq '!') {
+        $reverse = 1;
+        $criterion = substr $criterion, 1;
+    }
+    $criterion = $sopt{ $criterion } if exists $sopt{ $criterion } and $sopt{ $criterion };
+    return "unknown list sorting criterion: '$criterion', use [!]".join '|', @opt, 'default'
+        unless exists $config->{'syntax'}{'option_shortcut'}{'sort'}{$criterion};
+    $data->{'list'}{'sorted_by'} = $criterion;
+    $data->{'list'}{'sort_reversed'} = $reverse;
+    "set list sorting criterion to '$criterion' ".($reverse ? '(reversed)' : '');
 }
-
 
 1;

@@ -86,7 +86,6 @@ input:  print ">";
             }
             when (/^$command{'delete'}$sep?($char*)$/){
                 my $pos = check_ID($dir_list, $1);
-say "--- $pos";
                 error ("identifier $1 is not a valid list position or name $pos") unless defined $pos;
                 my $entry = splice @$dir_list, $pos, 1;
                 delete $pos_of_name{ $entry->{'name'} } if exists $entry->{'name'};

@@ -15,8 +15,8 @@ sub init { ($config, $data) = @_ }
 sub run {
    my ($cmd, @arg) = @_;
    if      ($cmd eq '--help')            { App::Goto::Dir::Help::text(              $config,        $arg[0])}
-     elsif ($cmd eq '--sort')            { App::Goto::Dir::Format::set_sort(        $config, $data, @arg )  }
-     elsif ($cmd eq '--list')            { App::Goto::Dir::Format::entries(         $config, $data, @arg )  }
+     elsif ($cmd eq '--sort')            { App::Goto::Dir::Format::set_sort(        $config, $data, $arg[0])}
+     elsif ($cmd eq '--list')            { App::Goto::Dir::Format::list_entries(    $config, $data, @arg )  }
      elsif ($cmd eq '--list-special')    { App::Goto::Dir::Format::special_entries( $config, $data       )  }
      elsif ($cmd eq '--list-lists')      { App::Goto::Dir::Format::lists(           $config, $data       )  }
      elsif ($cmd eq '--list-add')        {                         add_list(                        @arg )  }

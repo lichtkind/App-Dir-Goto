@@ -14,7 +14,7 @@ list:
   name_default: use
   name_length_max: 6
   sort_default: position
-  sorted_by: current
+  sorted_by: position
   special_comment:
     all: all
     bin: bin
