@@ -11,29 +11,26 @@ my $data;
 my $config;
 
 sub init { ($config, $data) = @_ }
-
 sub run {
    my ($cmd, @arg) = @_;
-   if      ($cmd eq '--help')            { App::Goto::Dir::Help::text(              $config,        $arg[0])}
-     elsif ($cmd eq '--sort')            { App::Goto::Dir::Format::set_sort(        $config, $data, $arg[0])}
-     elsif ($cmd eq '--list')            { App::Goto::Dir::Format::list_entries(    $config, $data, @arg )  }
-     elsif ($cmd eq '--list-special')    { App::Goto::Dir::Format::special_entries( $config, $data       )  }
-     elsif ($cmd eq '--list-lists')      { App::Goto::Dir::Format::lists(           $config, $data       )  }
-     elsif ($cmd eq '--list-add')        {                         add_list(                        @arg )  }
-     elsif ($cmd eq '--list-delete')     {                         delete_list(                     @arg )  }
-     elsif ($cmd eq '--list-name')       {                         name_list(                       @arg )  }
-     elsif ($cmd eq '--list-description'){                         describe_list(                   @arg )  }
-     elsif ($cmd eq '--add')             {                         add_entry(                       @arg )  }
-     elsif ($cmd eq '--delete'){
-   } elsif ($cmd eq '--remove'){
-   } elsif ($cmd eq '--move'){
-   } elsif ($cmd eq '--copy'){
-   } elsif ($cmd eq '--dir'){
-   } elsif ($cmd eq '--name'){
-   } elsif ($cmd eq '--edit'){
-   } else {
-      # goto dir
-   }
+   if    ($cmd eq '--help')            { App::Goto::Dir::Help::text(              $config,        $arg[0])}
+   elsif ($cmd eq '--sort')            { App::Goto::Dir::Format::set_sort(        $config, $data, $arg[0])}
+   elsif ($cmd eq '--list')            { App::Goto::Dir::Format::list_entries(    $config, $data, @arg )  }
+   elsif ($cmd eq '--list-special')    { App::Goto::Dir::Format::special_entries( $config, $data       )  }
+   elsif ($cmd eq '--list-lists')      { App::Goto::Dir::Format::lists(           $config, $data       )  }
+   elsif ($cmd eq '--list-add')        {                         add_list(                        @arg )  }
+   elsif ($cmd eq '--list-delete')     {                         delete_list(                     @arg )  }
+   elsif ($cmd eq '--list-name')       {                         name_list(                       @arg )  }
+   elsif ($cmd eq '--list-description'){                         describe_list(                   @arg )  }
+   elsif ($cmd eq '--add')             {                         add_entry(                       @arg )  }
+   elsif ($cmd eq '--delete')          {                         delete_entry(                    @arg )  }
+   elsif ($cmd eq '--remove')          {                         remove_entry(                    @arg )  }
+   elsif ($cmd eq '--move')            {                         move_entry(                      @arg )  }
+   elsif ($cmd eq '--copy')            {                         copy_entry(                      @arg )  }
+   elsif ($cmd eq '--dir')             {                         dir_entry(                       @arg )  }
+   elsif ($cmd eq '--name')            {                         name_entry(                      @arg )  }
+   elsif ($cmd eq '--edit')            {                         edit_entry(                      @arg )  }
+   else                                {                         goto_entry(                      @arg )  }
 }
 
 sub add_list {
@@ -46,7 +43,6 @@ sub add_list {
     $data->new_list( $list_name, $decription, $config->{'entry'} );
     "created list '$list_name' : '$decription'";
 }
-
 sub delete_list {
     my ($list_name) = @_;
     return 'need a name of an existing, regular list as first argument' unless defined $list_name;
@@ -56,7 +52,6 @@ sub delete_list {
     my $list = $data->remove_list( $list_name );
     "deleted list '$list_name' : '".$list->get_description."'";
 }
-
 sub name_list {
     my ($old_name, $new_name) = @_;
     return 'need a name of an existing list as first argument' unless defined $old_name;
@@ -77,7 +72,6 @@ sub name_list {
     $data->change_list_name( $old_name, $new_name );
     "renamed list '$old_name' to '$new_name'";
 }
-
 sub describe_list {
     my ($list_name, $list_description) = @_;
     return 'need a list name as first argument' unless defined $list_name;
@@ -91,6 +85,46 @@ sub describe_list {
 
 sub add_entry {
     my ($dir, $name, $target) = @_;
+    # [list pos]
+    # [name]
+}
+
+sub delete_entry {
+    my ($target) = @_;
+
+}
+
+sub remove_entry {
+    my ($target) = @_;
+
+}
+
+sub move_entry {
+    my ($source, $target) = @_;
+
+}
+
+sub copy_entry {
+    my ($source, $target) = @_;
+
+}
+
+sub dir_entry {
+    my ($target, $dir) = @_;
+
+}
+sub name_entry {
+    my ($target, $name) = @_;
+
+}
+
+sub edit_entry {
+    my ($target, $script) = @_;
+
+}
+
+sub goto_entry {
+    my ($source, $target) = @_;
 
 }
 

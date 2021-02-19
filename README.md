@@ -70,7 +70,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `--list-special . . . . . display special entries (long for -l-s)`
 - `--list-lists . . . . . . display available list names (long for -l-l)`
 - `--sort=position. . . . . sort displayed list by position (default) (-s, -so)`
-- `--sort=dir . . . . . . . sort by dir path (-si)`
+- `--sort=dir . . . . . . . sort by dir path (-sD)`
 - `--sort=name. . . . . . . change sorting criterion to <name> (-sn)`
 - `--sort=visits. . . . . . sort by number of times gone to dir (-sv)`
 - `--sort=last_visit. . . . sort by time of last visit (earlier first, -sl)`

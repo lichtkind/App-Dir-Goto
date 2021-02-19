@@ -60,11 +60,11 @@ sub entries {
     $max_dir_length -= 22 if $sorted eq 'last_visit' or $sorted eq 'created';
     map { $_->{'dir'} = length $_->{'el'}->dir > $max_dir_length ? substr($_->{'el'}->dir,0,int($max_dir_length/2)-1).'..'.substr($_->{'el'}->dir, -int($max_dir_length/2))
                                                                  : $_->{'el'}->dir} @el;
-
-    if    ($sorted eq 'visits')    { $ret .= sprintf ("  [%02u]  %-".$nl."s %02u  %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'el'}->visit_count, $_->{'dir'} ) for @el }
-    elsif ($sorted eq 'last_visit'){ $ret .= sprintf ("  [%02u]  %-".$nl."s %s  %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'el'}->visit_time, $_->{'dir'} ) for @el }
-    elsif ($sorted eq 'created')   { $ret .= sprintf ("  [%02u]  %-".$nl."s %s  %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'el'}->create_time, $_->{'dir'} ) for @el }
-    else                           { $ret .= sprintf ("  [%02u]  %-".$nl."s  %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'dir'} ) for @el }
+    my $formstart = "  [%02u]  %-".$nl."s ";
+    if    ($sorted eq 'visits')    {$ret.= sprintf ("$formstart%02u  %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'el'}->visit_count, $_->{'dir'}) for @el }
+    elsif ($sorted eq 'last_visit'){$ret.= sprintf ("$formstart%s  %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'el'}->visit_time, $_->{'dir'}) for @el }
+    elsif ($sorted eq 'created')   {$ret.= sprintf ("$formstart%s  %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'el'}->create_time, $_->{'dir'}) for @el }
+    else                           {$ret.= sprintf ("$formstart %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'dir'} ) for @el }
     $ret."\n";
 }
 

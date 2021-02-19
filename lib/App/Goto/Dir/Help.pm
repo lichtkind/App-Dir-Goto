@@ -264,7 +264,7 @@ EOT
 
 sub add {
     my $config = shift;
-    my $lname = $config->{'list'}{'name'};
+    my $lname = $config->{'list'}{'special_name'};
     my $d = $config->{'list'}{'deprecate_new'} / 86400;
     my $sc = $config->{'syntax'}{'command_shortcut'}{'add'};
     my $sig = $config->{'syntax'}{'sigil'};
@@ -306,7 +306,7 @@ EOT
 }
 sub delete {
     my $config = shift;
-    my $lname = $config->{'list'}{'name'};
+    my $lname = $config->{'list'}{'special_name'};
     my $d = $config->{'list'}{'deprecate_bin'} / 86400;
     my $sig = $config->{'syntax'}{'sigil'};
     my $sc = $config->{'syntax'}{'command_shortcut'}{'delete'};
@@ -346,7 +346,7 @@ EOT
 }
 sub remove {
     my $config = shift;
-    my $lname = $config->{'list'}{'name'};
+    my $lname = $config->{'list'}{'special_name'};
     my $sc = $config->{'syntax'}{'command_shortcut'}{'remove'};
     my $sig = $config->{'syntax'}{'sigil'};
     my $arg = "good$sig->{entry_name}ll";
@@ -384,7 +384,7 @@ EOT
 }
 sub move {
     my $config = shift;
-    my $lname = $config->{'list'}{'name'};
+    my $lname = $config->{'list'}{'special_name'};
     my $sc = $config->{'syntax'}{'command_shortcut'}{'move'};
     my $sig = $config->{'syntax'}{'sigil'};
     my $arg = "2$sig->{target_entry}-1";
@@ -426,7 +426,7 @@ EOT
 }
 sub copy {
     my $config = shift;
-    my $lname = $config->{'list'}{'name'};
+    my $lname = $config->{'list'}{'special_name'};
     my $sc = $config->{'syntax'}{'command_shortcut'}{'copy'};
     my $sig = $config->{'syntax'}{'sigil'};
     my $arg = "2$sig->{target_entry}-1";

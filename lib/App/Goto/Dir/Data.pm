@@ -24,21 +24,17 @@ sub new {
     $data->{'entry'} = [ grep { $_->overdue() < $config->{'list'}{'deprecate_bin'} } # scrap long deleted
                          map  { App::Goto::Dir::Data::Entry->restate($_)           } @{ $data->{'entry'} }  ];
 
-    map { $_->add_to_list( $sl_name{'stale'}, -1 ) unless $_->get_list_pos( $sl_name{'stale'}) or -d $_->full_dir } @{ $data->{'entry'} };
-    map { $_->remove_from_list( $sl_name{'stale'} ) if $_->get_list_pos( $sl_name{'stale'}) and -d $_->full_dir } @{ $data->{'entry'} };
-    map { $_->remove_from_list( $sl_name{'new'} ) if $_->age() > $config->{'list'}{'deprecate_new'} } @{ $data->{'entry'} };
-
-    my %sln_tr; # special list name translator
+    my %sln_tr; # special list name translator in case sigil changed
     for my $list_name (keys %{$data->{'list'}{'description'}}){
         next if substr($list_name, 0, 1) =~ /\w/ or substr($list_name, 0, 1) eq $sls;
         my $new_name = $sls . substr($list_name, 1);
-        $data->{'list'}{'description'}{$new_name} = $data->{'list'}{'description'}{$list_name};
-        delete $data->{'list'}{'description'}{$list_name};
+        $data->{'list'}{'description'}{$new_name} = delete $data->{'list'}{'description'}{$list_name};
         $sln_tr{ $list_name } = $new_name;
     }
-
     my %list;
     for my $entry (@{ $data->{'entry'}}){
+        $entry->remove_from_list($sl_name{'new'})   if $entry->age() > $config->{'list'}{'deprecate_new'};
+        $entry->remove_from_list($sl_name{'stale'}) if -d $entry->full_dir;
         for my $list_name ($entry->member_of_lists) {
             if (exists $sln_tr{$list_name}){
                 $list{ $sln_tr{ $list_name } }[ $entry->get_list_pos($list_name) ] = $entry;
@@ -48,7 +44,11 @@ sub new {
             }
         }
     }
-
+    for my $entry (@{ $data->{'entry'}}){
+        next if $entry->get_list_pos( $sl_name{'stale'}) or -d $entry->full_dir;
+        $entry->add_to_list( $sl_name{'stale'}, 1 );
+        push @{ $list{ $sl_name{'stale'} }}, $entry;
+    }
     for my $list_name (keys %list) { # create lists with entries
         new_list( $data, $list_name, $data->{'list'}{'description'}{$list_name}, $config->{'entry'}, grep {ref $_} @{$list{$list_name}} );
     }

@@ -1,10 +1,19 @@
 use v5.18;
 use lib 'lib';
 use Benchmark;
-my $t;
-BEGIN { $t = Benchmark->new(); }
+use Cwd;
+use FindBin;
+use File::UserConfig;
 
+my ($t, $cwd);
+BEGIN {
+    $t = Benchmark->new();
+    our $cwd = Cwd::cwd();
+    chdir $FindBin::Bin;
+}
 use App::Goto::Dir;
+# $configdir = File::UserConfig->configdir;
+
 
 my $app = App::Goto::Dir->new();
 #my $file = "goto_dir_config.yml";
@@ -22,7 +31,7 @@ my $app = App::Goto::Dir->new();
 #App::Goto::Dir::Command::run('--help', 'commands');
 #App::Goto::Dir::Command::run('--help', 'install');
 #App::Goto::Dir::Command::run('--help', 'version');
-#App::Goto::Dir::Command::run('--help', '--add');
+say App::Goto::Dir::Command::run('--help', '--add');
 #App::Goto::Dir::Command::run('--help', '--delete');
 #App::Goto::Dir::Command::run('--help', '--remove');
 #App::Goto::Dir::Command::run('--help', '--move');
@@ -44,7 +53,7 @@ my $app = App::Goto::Dir->new();
 #say App::Goto::Dir::Command::run('--list-lists');
 #say App::Goto::Dir::Command::run('--list-add', 'a', 'test list');
 #say App::Goto::Dir::Command::run('--list-add', 'use', 'test list');
-#say App::Goto::Dir::Command::run('--list-lists');
+say App::Goto::Dir::Command::run('--list-lists');
 #say App::Goto::Dir::Command::run('--list-name', 'a', 'b');
 #say App::Goto::Dir::Command::run('--list-lists');
 #say App::Goto::Dir::Command::run('--list-delete', 'b');
@@ -52,9 +61,9 @@ my $app = App::Goto::Dir->new();
 #say App::Goto::Dir::Command::run('--list-add',  '@all', 'all');
 #say App::Goto::Dir::Command::run('--list-delete', '@all');
 #App::Goto::Dir::Command::run('--sort','position');
-#App::Goto::Dir::Command::run('--list','@all', '@new');
+#say App::Goto::Dir::Command::run('--list','@all', '@new');
 #App::Goto::Dir::Config::reset();
-say App::Goto::Dir::Command::run('--sort', 'cre');
+say App::Goto::Dir::Command::run('--sort', 'vis');
 say App::Goto::Dir::Command::run('--list', '@all');
 
 say '   run goto test in ', sprintf("%.4f",timediff( Benchmark->new, $t)->[1]), ' sec';
