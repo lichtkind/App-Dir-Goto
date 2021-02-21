@@ -80,9 +80,8 @@ sub describe_list {
     $list->set_description( $list_description );
     " - set description of list '$list_name': '$list_description'";
 }
-
-
-sub add_entry {
+########################################################################
+sub add_entry { # todo special dir
     my ($dir, $name, $target_list, $target_entry) = @_;
     if (ref $dir eq 'ARRAY') {
         return ' ! subdirectory of existing entry is missing' if @$dir < 2;
@@ -168,7 +167,7 @@ sub remove_entry {
 }
 
 sub move_entry {
-    my ($source, $target) = @_;
+    my ($source_list, $source_entry, $target_list, $target_entry) = @_;
   #  my ($self, $from_list_name, $from_ID, $to_list_name, $to_ID) = @_;
   #  return "missing source ID of entry to move" unless defined $from_ID;
  #   $from_list_name //= $self->get_current_list_name;
@@ -189,22 +188,58 @@ sub move_entry {
 }
 
 sub copy_entry {
-    my ($source, $target) = @_;
-
+    my ($source_list, $source_entry, $target_list, $target_entry) = @_;
+#    my ($self, $from_list_name, $from_ID, $to_list_name, $to_ID) = @_;
+#    return "missing source ID of entry to move" unless defined $from_ID;
+#    $from_list_name //= $self->get_current_list_name;
+#    $to_list_name //= $self->get_current_list_name;
+#    my ($from_list, $to_list)  = @{$self->{'list_object'}}{ $from_list_name, $to_list_name };
+#    return "unknown source list name: $from_list_name" unless ref $from_list;
+#    return "unknown target list name: $to_list_name" unless ref $to_list;
+#    return "can not copy entries to special lists: new, bin and all" if $to_list_name ~~ [$self->get_special_list_names(qw/new bin all/)];
+#    my $entry = $from_list->get_entry( $from_ID );
+#    return $entry unless ref $entry;
+#    $to_list->insert_entry( $entry, $to_ID );
 }
 
 sub dir_entry {
     my ($target, $dir) = @_;
-
+#    my ($self, $list_name, $entry_ID, $new_dir) = @_;
+#    return "missing source ID of entry to change dir path" unless defined $new_dir;
+#    return "directory $new_dir is already used" if ref $self->{'list_object'}{ $self->{'config'}{'list'}{'name'}{'all'} }->get_entry( $new_dir );
+#    my ($entry, $list) = $self->get_entry( $entry_ID );
+#    return $entry unless ref $entry;
+#    my $old_dir = $entry->full_dir;
+#    $entry->redirect($new_dir);
+#    $self->get_list( $_)->refresh_reverse_hashes for $entry->member_of_lists;
+#    ($entry, $old_dir);
 }
 sub name_entry {
-    my ($target, $name) = @_;
-
+#    my ($target, $name) = @_;
+#    my ($self, $list_name, $entry_ID, $new_name) = @_;
+#    my ($entry, $list) = $self->get_entry( $entry_ID );
+#    return $entry unless ref $entry;
+#    $new_name //= '';
+#    my $all_entry = $self->get_special_lists('all');
+#    my $sibling = $all_entry->get_entry( $new_name );
+#    if ($new_name and ref $sibling){
+#        return "name $new_name is already taken" if $self->{'config'}{'entry'}{'prefer_in_name_conflict'} eq 'old';
+#        $self->rename_entry( undef, $new_name, '');
+#    }
+#    my $old_name = $entry->name;
+#    $entry->rename( $new_name );
+#    $self->get_list( $_)->refresh_reverse_hashes for $entry->member_of_lists;
+#    ($entry, $old_name);
 }
 
 sub edit_entry {
     my ($target, $script) = @_;
-
+#    my ($self, $list_name, $entry_ID, $script) = @_;
+#    $script //= '';
+#    my ($entry, $list) = $self->get_entry( $entry_ID );
+#    return $entry unless ref $entry;
+#    my $old_script = $entry->script;
+#    ($entry, $old_script);
 }
 
 sub goto_entry {
