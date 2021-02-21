@@ -73,6 +73,7 @@ sub is_name {
     return 0 if substr($name,0,1) =~ /[\d_]/;
     1;
 }
+sub is_position { defined $_[0] and $_[0] =~ /-?+\d/ }
 
 sub eval_command {
     my (@parts) = @_;

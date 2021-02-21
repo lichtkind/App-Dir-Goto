@@ -93,7 +93,7 @@ sub move_entry {
 sub pos_from_ID {
     my ($self, $ID) = @_;
     return 0 unless defined $ID;
-    if ($ID =~ /-?\d+/){
+    if (App::Goto::Dir::Parse::is_position( $ID )){
         my $c = int @{$self->{'entry'}};
         $ID += $c + 1 if $ID < 0;
         return $ID if $ID > 0 and $ID <= $c;

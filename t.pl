@@ -8,14 +8,14 @@ use File::UserConfig;
 my ($t, $cwd);
 BEGIN {
     $t = Benchmark->new();
-    our $cwd = Cwd::cwd();
+    $cwd = Cwd::cwd();
     chdir $FindBin::Bin;
 }
 use App::Goto::Dir;
 # $configdir = File::UserConfig->configdir;
 
 
-my $app = App::Goto::Dir->new();
+my $app = App::Goto::Dir->new( $cwd );
 #my $file = "goto_dir_config.yml";
 #my $config = App::Goto::Dir::Config::load();
 #my $data = App::Goto::Dir::Data->new( $config );
@@ -53,7 +53,9 @@ say App::Goto::Dir::Command::run('--help', '--add');
 #say App::Goto::Dir::Command::run('--list-lists');
 #say App::Goto::Dir::Command::run('--list-add', 'a', 'test list');
 #say App::Goto::Dir::Command::run('--list-add', 'use', 'test list');
-say App::Goto::Dir::Command::run('--list-lists');
+
+#say App::Goto::Dir::Command::run('--list-lists');
+
 #say App::Goto::Dir::Command::run('--list-name', 'a', 'b');
 #say App::Goto::Dir::Command::run('--list-lists');
 #say App::Goto::Dir::Command::run('--list-delete', 'b');

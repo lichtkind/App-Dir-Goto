@@ -294,6 +294,7 @@ sub add {
   --add /path$sig->{entry_name}p $sig->{target_entry} [$sig->{entry_position}]3       add named path to current list on third position
   --add /path $sig->{target_entry} good$sig->{entry_position}4       add unnamed path to list named 'good' on fourth position
   --add /path $sig->{target_entry} good$sig->{entry_name}s       add unnamed path to list 'good' on position of entry named 's'
+  --add good$sig->{entry_position}2/sub/dir:gg    add subdirectory of entry nr.2 in list 'good' under name 'gg' at default pos.
 
     Space (' ') is after '$sig->{entry_position}' and '$sig->{entry_name}' not allowed, but after --add required.
     Space before '$sig->{entry_position}' and '$sig->{entry_name}', around: '$sig->{target_entry}' and after '-$sc' is optional.

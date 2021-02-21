@@ -17,11 +17,13 @@ our $VERSION = 0.4;
 my $file = "goto_dir_config.yml";
 
 sub new {
+    my $pkg = shift;
     my $config = App::Goto::Dir::Config::load();
     my $data = App::Goto::Dir::Data->new( $config );
+    my $cwd = shift;
     App::Goto::Dir::Parse::init( $config );
-    App::Goto::Dir::Command::init( $config, $data );
-    bless { config => $config, data => $data};
+    App::Goto::Dir::Command::init( $config, $data, $cwd );
+    bless { config => $config, data => $data, cwd => $cwd};
 }
 
 sub exit {

@@ -97,46 +97,6 @@ sub get_special_lists     { my $self = shift; @{ $self->{'list_object'}}{ $self-
 sub get_special_list_names{ my $self = shift; @{ $self->{'special_list'}}{ @_ }       }
 
 #### entry API #########################################################
-sub add_entry {
-    my ($self, $dir, $name, $list_name, $list_pos) = @_;
-    return 'Data::new_entry misses first required argument: a valid path' unless defined $dir;
-    return "entry name name $name is too long, max chars are ".$self->{'config'}{'entry'}{'name_length_max'}
-        if defined $name and length($name) > $self->{'config'}{'entry'}{'name_length_max'};
-    $list_name //= $self->get_current_list_name;
-    return "entry list with name '$list_name' does not exist" unless $self->list_exists( $list_name );
-    my $entry = App::Goto::Dir::Data::Entry->new($dir, $name);
-    my $list  = $self->get_list( $list_name );
-    my ($all_entry, $new_entry) = $self->get_special_lists('all', 'new');
-    my $ret = $all_entry->insert_entry( $entry, $list eq $all_entry ? $list_pos : undef ); # sorting out names too
-    return $ret unless ref $ret; # return error msg: could not inserted because not allowed overwrite entry with same dir
-    $new_entry->insert_entry( $entry, $list eq $new_entry ? $list_pos : undef );
-    $list->insert_entry( $entry, $list_pos ) unless $list eq $all_entry or $list eq $new_entry;
-    $entry;
-}
-
-sub delete_entry { # remove from all lists (-all) & move to bin
-    my ($self, $list_name, $entry_ID) = @_;
-    my ($entry, $list) = $self->get_entry( $entry_ID );
-    return $entry unless ref $entry;
-    my ($all_list, $bin_list) = $self->get_special_lists('all', 'bin');
-    for my $list (values %{$self->{'list_object'}}) {
-        next if $list eq $all_list or $list eq $bin_list;
-        $list->remove_entry( $entry );
-    }
-    unless ($entry->overdue()){
-        $entry->delete();
-        $bin_list->insert_entry( $entry );
-    }
-    $entry;
-}
-
-sub remove_entry { # from one list
-    my ($self, $list_name, $entry_ID) = @_;
-    my ($entry, $list) = $self->get_entry( $entry_ID );
-    return $entry unless ref $entry;
-    return "can not remove entries from special lists: new, bin and all" if $list_name ~~ [$self->get_special_list_names(qw/new bin all/)];
-    $list->remove_entry( $entry_ID );
-}
 
 sub move_entry {
     my ($self, $from_list_name, $from_ID, $to_list_name, $to_ID) = @_;
