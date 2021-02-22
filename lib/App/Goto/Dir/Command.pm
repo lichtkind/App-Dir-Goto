@@ -81,16 +81,22 @@ sub describe_list {
     " - set description of list '$list_name': '$list_description'";
 }
 ########################################################################
-sub add_entry { # todo special dir
+sub add_entry {
     my ($dir, $name, $target_list, $target_entry) = @_;
     if (ref $dir eq 'ARRAY') {
         return ' ! subdirectory of existing entry is missing' if @$dir < 2;
         return ' ! too many arguments for building a directory to add' if @$dir > 3;
         my $entry;
         if (@$dir == 2){ # [name subdir]
-            $entry = $data->get_entry( undef, $dir->[0] );
-            return " ! there is no entry with name '$dir->[0]'" unless ref $entry;
-            $dir = File::Spec->catdir( $entry->full_dir, $dir->[1] );
+            if (substr( $dir->[0], 0, 1) eq $config->{'syntax'}{'sigil'}{'special_entry'}){
+                my $sd = $data->get_special_entry_dir( substr $target_entry, 1 );
+                return " ! there is no special entry named '$dir->[0]'" unless ref $sd;
+                $dir = File::Spec->catdir( $sd, $dir->[1] );
+            } else {
+                $entry = $data->get_entry( undef, $dir->[0] );
+                return " ! there is no entry named '$dir->[0]'" unless ref $entry;
+                $dir = File::Spec->catdir( $entry->full_dir, $dir->[1] );
+            }
         } else { # [list pos subdir]
             return " ! there is no list named '$dir->[0]'" unless $data->list_exists( $dir->[0] );
             $entry = $data->get_entry( $dir->[0], $dir->[1] );

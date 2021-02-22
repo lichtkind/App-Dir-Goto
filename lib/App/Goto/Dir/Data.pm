@@ -56,6 +56,9 @@ sub new {
         next if exists $data->{'list_object'}{ $list_name };
         new_list( $data, $list_name, $data->{'list'}{'description'}{$list_name}, $config->{'entry'} );
     }
+    my $all = $data->{'list_object'}{ $sl_name{'all'} };
+    $data->{'special_entry'}{'last'}   = $all->get_entry( $all->pos_from_dir( $data->{'visits'}{'last_dir'} ) );
+    $data->{'special_entry'}{'previous'} = $all->get_entry( $all->pos_from_dir( $data->{'visits'}{'previous_dir'} ) );
     $data->{'special_list'} = \%sl_name;
     $data->{'config'} = $config;
     bless $data;
@@ -106,23 +109,25 @@ sub visit_entry {
     $entry->visit();
     ($self->{'visits'}{'previous_dir'},$self->{'visits'}{'previous_subdir'}) =
         ($self->{'visits'}{'last_dir'},$self->{'visits'}{'last_subdir'});
-    my $dir = $self->{'visits'}{'last_dir'} = $entry->full_dir();
+    $self->{'special_entry'}{'previous'} = $self->{'special_entry'}{'last'};
+    $self->{'special_entry'}{'last'} = $entry;
+    $self->{'visits'}{'last_dir'} = $entry->full_dir();
     $self->{'visits'}{'last_subdir'} = defined $sub_dir ? $sub_dir : '';
     $entry, $list;
 }
-sub visit_last_entry     { $_[0]->visit_entry( undef, $_[0]->{'visits'}{'last_dir'},     $_[0]->{'visits'}{'last_subdir'} ) }
-sub visit_previous_entry { $_[0]->visit_entry( undef, $_[0]->{'visits'}{'previous_dir'}, $_[0]->{'visits'}{'previous_subdir'} ) }
+sub visit_last_entry     { $_[0]->visit_entry( undef, $_[0]->{'special_entry'}{'last'},     $_[0]->{'visits'}{'last_subdir'} ) }
+sub visit_previous_entry { $_[0]->visit_entry( undef, $_[0]->{'special_entry'}{'previous'}, $_[0]->{'visits'}{'previous_subdir'} ) }
 
-sub get_special_dir {
+sub get_special_entry_dir {
     my ($self, $name) = @_;
     if    ($name eq 'last')     { File::Spec->catdir( $self->{'visits'}{'last_dir'},     $self->{'visits'}{'last_subdir'})  }
     elsif ($name eq 'previous') { File::Spec->catdir( $self->{'visits'}{'previous_dir'}, $self->{'visits'}{'previous_subdir'})  }
-    else                        { exists $self->{'special_dir'}{$name} ? $self->{'special_dir'}{$name} :  File::Spec->catdir('') }
+    else                        { exists $self->{'special_entry'}{$name} ? $self->{'special_entry'}{$name}->full_dir() : File::Spec->catdir('') }
 }
-sub set_special_dir {
+sub set_special_entry {
     my ($self, $name, $dir) = @_;
     return 'can not set last and previous directory in this way' if $name eq 'last' or $name eq 'previous';
-    $self->{'special_dir'}{$name} = $dir;
+    $self->{'special_entry'}{$name} = $dir;
 }
 
 ########################################################################
