@@ -27,18 +27,20 @@ my $app = App::Goto::Dir->new( $cwd );
 
 
 #App::Goto::Dir::Command::run('--help');
-say App::Goto::Dir::Command::run('--help', 'basics');
-#App::Goto::Dir::Command::run('--help', 'commands');
+#say App::Goto::Dir::Command::run('--help', 'basics');
+#say App::Goto::Dir::Command::run('--help', 'commands');
 #App::Goto::Dir::Command::run('--help', 'install');
 #App::Goto::Dir::Command::run('--help', 'version');
 say App::Goto::Dir::Command::run('--help', '--add');
-#App::Goto::Dir::Command::run('--help', '--delete');
+#say App::Goto::Dir::Command::run('--help', '--delete');
+#say App::Goto::Dir::Command::run('--help', '--undelete');
 #App::Goto::Dir::Command::run('--help', '--remove');
 #App::Goto::Dir::Command::run('--help', '--move');
 #App::Goto::Dir::Command::run('--help', '--copy');
-#App::Goto::Dir::Command::run('--help', '--name');
-#App::Goto::Dir::Command::run('--help', '--dir');
-#App::Goto::Dir::Command::run('--help', '--edit');
+say App::Goto::Dir::Command::run('--help', '--name');
+#say App::Goto::Dir::Command::run('--help', '--dir');
+say App::Goto::Dir::Command::run('--help', '--redir');
+#say App::Goto::Dir::Command::run('--help', '--edit');
 #App::Goto::Dir::Command::run('--help', '--list');
 #App::Goto::Dir::Command::run('--help', '--sort');
 #App::Goto::Dir::Command::run('--help', '--list-special');
@@ -65,8 +67,8 @@ say App::Goto::Dir::Command::run('--help', '--add');
 #App::Goto::Dir::Command::run('--sort','position');
 #say App::Goto::Dir::Command::run('--list','@all', '@new');
 #App::Goto::Dir::Config::reset();
-say App::Goto::Dir::Command::run('--sort', 'vis');
-say App::Goto::Dir::Command::run('--list', '@all');
+#say App::Goto::Dir::Command::run('--sort', 'vis');
+#say App::Goto::Dir::Command::run('--list', '@all');
 
 say '   run goto test in ', sprintf("%.4f",timediff( Benchmark->new, $t)->[1]), ' sec';
 

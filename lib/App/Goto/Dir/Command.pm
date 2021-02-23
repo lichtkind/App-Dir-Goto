@@ -4,11 +4,9 @@ no warnings  qw/experimental::smartmatch/;
 use feature qw/switch/;
 use File::Spec;
 
-
 package App::Goto::Dir::Command;
 
-my ($config, $data,  $cwd);
-
+my         ($config, $data, $cwd);
 sub init { ($config, $data, $cwd) = @_ }
 sub run {
    my ($cmd, @arg) = @_;
@@ -31,7 +29,7 @@ sub run {
    elsif ($cmd eq '--edit')            {                         edit_entry(                      @arg )  }
    else                                {                         goto_entry(                      @arg )  }
 }
-
+#### LIST COMMANDS #####################################################
 sub add_list {
     my ($list_name, $decription) = @_;
     return ' ! need an unused list name as first argument' unless defined $list_name;
@@ -80,7 +78,7 @@ sub describe_list {
     $list->set_description( $list_description );
     " - set description of list '$list_name': '$list_description'";
 }
-########################################################################
+#### LIST ADMIN COMMANDS ###############################################
 sub add_entry {
     my ($dir, $name, $target_list, $target_entry) = @_;
     if (ref $dir eq 'ARRAY') {
@@ -114,13 +112,17 @@ sub add_entry {
     return " ! target list name '$target_list' does not exist, check --list-lists" unless ref $list;
     my $pos = $list->pos_from_ID( $target_entry );
     return " ! position or name '$target_entry' does not exist in list '$target_list'" unless $pos;
+    $pos++ if $target_entry < 0;
 
     my $entry = App::Goto::Dir::Data::Entry->new($dir, $name);
     my ($all_entry, $new_entry) = $data->get_special_lists('all', 'new');
-    my $ret = $all_entry->insert_entry( $entry, $list eq $all_entry ? $pos : undef ); # sorting out names too
+    # INSERT into all on pos???
+
+    my $ret = $all_entry->insert_entry( $entry, $list eq $all_entry ? $target_entry : undef ); # sorting out names too
     return $ret unless ref $ret; # return error msg: could not inserted because not allowed overwrite entry with same dir
     $new_entry->insert_entry( $entry, $list eq $new_entry ? $pos : undef );
-    $list->insert_entry( $entry, $pos ) unless $list eq $all_entry or $list eq $new_entry;
+    $list->insert_entry( $entry, $target_entry ) unless $list eq $all_entry or $list eq $new_entry;
+    $data->set_special_entry( 'add', $new_entry );
     " - added dir '$dir' to list '$target_list' on position $pos";
 }
 
@@ -158,6 +160,47 @@ sub delete_entry {
         my $entry_adress = App::Goto::Dir::Parse::is_position( $entry_ID ) ? $list_name.$config->{'syntax'}{'sigil'}{'entry_position'}.$pos
                                                                            : $config->{'syntax'}{'sigil'}{'entry_name'}.$entry_ID;
         $ret .= $was_del ? " ! '$entry_adress' was already deleted\n" : " - deleted entry '$entry_adress' from lists: $lnames \n";
+        $data->set_special_entry( 'del', $entry );
+    }
+    chomp($ret);
+    $ret;
+}
+
+sub undelete_entry {
+    my ($list_name, $entry_ID) = @_; # ID can be [min, max] # range
+    $entry_ID  //= $config->{'entry'}{'position_default'};
+    $list_name  //= App::Goto::Dir::Parse::is_position( $entry_ID ) ? $data->get_current_list_name : $data->get_special_list_names('all');
+    my $list  = $data->get_list( $list_name );
+    return " ! list name '$list_name' does not exist, check --list-lists" unless ref $list;
+    if (ref $entry_ID eq 'ARRAY'){
+        $entry_ID->[0] //= 1;
+        $entry_ID->[1] //= $list->elems;
+        return " ! '$entry_ID->[0]' is not a valid position in list '$list_name'" unless $list->pos_from_ID( $entry_ID->[0] );
+        return " ! '$entry_ID->[1]' is not a valid position in list '$list_name'" unless $list->pos_from_ID( $entry_ID->[1] );
+    } else { $entry_ID = [$entry_ID] }
+    my $ret = '';
+    for my $ID (@$entry_ID){
+        my $pos = $list->pos_from_ID( $entry_ID );
+        return " ! position or name '$entry_ID' does not exist in list '$list_name'" unless $pos;
+        my $entry = $list->get_entry($pos);
+        my $lnames =  '';
+        for my $list_name ($entry->member_of_lists) {
+            next unless App::Goto::Dir::Parse::is_name( $list_name );
+            $data->get_list( $list_name )->remove_entry( $entry->get_list_pos( $list_name ) );
+            $lnames .= "$list_name, ";
+        }
+        chop $lnames;
+        chop $lnames;
+        my $was_del = $entry->overdue();
+        unless ($entry->overdue()){
+            $entry->delete();
+            my ($bin_list) = $data->get_special_lists('bin');
+            $bin_list->insert_entry( $entry );
+        }
+        my $entry_adress = App::Goto::Dir::Parse::is_position( $entry_ID ) ? $list_name.$config->{'syntax'}{'sigil'}{'entry_position'}.$pos
+                                                                           : $config->{'syntax'}{'sigil'}{'entry_name'}.$entry_ID;
+        $ret .= $was_del ? " ! '$entry_adress' was already deleted\n" : " - deleted entry '$entry_adress' from lists: $lnames \n";
+        $data->set_special_entry( 'del', $entry );
     }
     chomp($ret);
     $ret;
@@ -170,6 +213,7 @@ sub remove_entry {
 #    return $entry unless ref $entry;
 #    return "can not remove entries from special lists: new, bin and all" if $list_name ~~ [$self->get_special_list_names(qw/new bin all/)];
 #    $list->remove_entry( $entry_ID );
+#    $data->set_special_entry( 'remove', $entry );
 }
 
 sub move_entry {
@@ -191,6 +235,7 @@ sub move_entry {
 #    $entry->undelete();
 #    return $entry unless ref $entry;
 #    $to_list->insert_entry( $entry, $to_ID );
+#    $data->set_special_entry( 'move', $entry );
 }
 
 sub copy_entry {
@@ -209,6 +254,19 @@ sub copy_entry {
 }
 
 sub dir_entry {
+    my ($target, $dir) = @_;
+#    my ($self, $list_name, $entry_ID, $new_dir) = @_;
+#    return "missing source ID of entry to change dir path" unless defined $new_dir;
+#    return "directory $new_dir is already used" if ref $self->{'list_object'}{ $self->{'config'}{'list'}{'name'}{'all'} }->get_entry( $new_dir );
+#    my ($entry, $list) = $self->get_entry( $entry_ID );
+#    return $entry unless ref $entry;
+#    my $old_dir = $entry->full_dir;
+#    $entry->redirect($new_dir);
+#    $self->get_list( $_)->refresh_reverse_hashes for $entry->member_of_lists;
+#    ($entry, $old_dir);
+}
+
+sub redir_entry {
     my ($target, $dir) = @_;
 #    my ($self, $list_name, $entry_ID, $new_dir) = @_;
 #    return "missing source ID of entry to change dir path" unless defined $new_dir;

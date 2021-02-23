@@ -12,11 +12,13 @@ my %text = ( overview => \&overview,
              version  => \&version,
               '--add' => \&add,
            '--delete' => \&delete,
+         '--undelete' => \&undelete,
            '--remove' => \&remove,
              '--move' => \&move,
              '--copy' => \&copy,
              '--name' => \&name,
               '--dir' => \&dir,
+            '--redir' => \&redir,
              '--edit' => \&edit,
              '--list' => \&list,
              '--sort' => \&sort,
@@ -112,17 +114,16 @@ sub basics {
 
   $sig->{special_entry}last                   destination of last gt call (with subdir)
   $sig->{special_entry}prev[ious]             destination of second last gt call (with subdir)
-  $sig->{special_entry}new                    <dir> of most recently created entry
   $sig->{special_entry}add|del|[re]move|copy  every command has special entry with same name,
-                           an alias to the entry touched by the command most recently
+                          an alias to the entry touched by the command most recently
 
  SPECIAL LISTS:
 
   $sig->{special_list}all                    entries from all lists, even $sig->{special_list}bin
   $sig->{special_list}new                    newly created entries (configure how old, --help=settings)
   $sig->{special_list}bin                    deleted entries (scrapped after configured period)
-  $sig->{special_list}stale                  entries with defunct (not existing) directories
-  $sig->{special_list}special                content of all special entries
+  $sig->{special_list}stale                  all entries with defunct (not existing) directory
+  $sig->{special_list}named                  all entries with names
 EOT
 }
 sub install{
@@ -172,10 +173,10 @@ sub commands {
   -$sc->{sort} --sort=$sopt              set sorting criterion of list display
   -$sc->{list}  --list [<listname>]            change current list and display it
   -$sc->{'list-special'} --list-special                display all special entries
+  -$sc->{'list-lists'} --list-lists                  display available list names
 
   commands to manage lists:
 
-  -$sc->{'list-lists'} --list-lists                  display available list names
   -$sc->{'list-add'} --list-add <name> ? <Desc.>   create a new list
   -$sc->{'list-delete'} --list-del[ete] <name>        delete list with <listname> (has to be empty)
   -$sc->{'list-name'} --list-name <name>:<newname>  rename list, conflicts not allowed
@@ -185,13 +186,15 @@ sub commands {
 
   -$sc->{add} --add <dir>[:<name>] [> <ID>]   add directory <dir> under <name> to a list
   -$sc->{delete} --del[ete] [<ID>]               delete dir entries from all regular lists
+  -$sc->{undelete} --undel[ete] [<ID>]             undelete dir entries from bin
   -$sc->{remove} --rem[ove] [<ID>]               remove dir entries from a chosen lists
   -$sc->{move} --move [<IDa>] > <IDb>          move dir entry <IDa> to (position of) <IDb>
   -$sc->{copy} --copy [<IDa>] > <IDb>          copy entry <IDa> to (position of) <IDb>
 
   commands to modify entries:
 
-  -$sc->{dir} --dir [<ID>] <dir>              change directory of one or more entries
+  -$sc->{dir} --dir [<ID>] <dir>              change directory of one entry
+  -$sc->{redir} --redir <old_dir> >> <newdir>   change root directory of more entries
   -$sc->{name} --name [<ID>] [:<name>]         (re-, un-) name entry
   -$sc->{edit} --edit [<ID>] '<code>'          edit project landing script
 EOT
@@ -229,6 +232,7 @@ sub settings{ <<EOT,
     position_default: -1                when list position is omitted take this
     prefer_in_name_conflict: (new|old)  How resolve name conflict (one entry looses it) ?
     prefer_in_dir_conflict: (new|old)   Create a new entry with already use dir or del old ?
+    move_dir                            allow --redir to rename dir in file system
   syntax:                             syntax of command line interface
     sigil:                              special character that start a kind of input
       command: '-'                        first char of short command
@@ -273,18 +277,22 @@ sub add {
   gt --add      create a new entry
  ----------------------------------
 
-    Creates a new entry to store the directory <dir> in a list named <list> at a position <pos>
-    and maybe also under a name <name>. The entry will also appear in special lists $sig->{special_list}$lname->{all} and $sig->{special_list}$lname->{new}
-    and will remain in $sig->{special_list}$lname->{new} for $d days (to be configured via key entry.deprecate_new in goto_dir_config.yml).
-    If <dir> is already stored in any list, entry.prefer_in_dir_conflict decides if new or old entry is kept.
-    If <name> is already used by any entry, entry.prefer_in_name_conflict decides if new or old entry will keep it.
-    If <dir>  is omitted, it defaults to the directory gt is called from. <name> defaults to the empty (no) name.
+    Creates a new entry to store the directory <dir> in. The new entry may get a <name>
+    and may be inserted into a list named <list> at a position <pos>. In any case will
+    the entry appear in special lists, including $sig->{special_list}$lname->{all} (all entries, even the deleted ones)
+    and $sig->{special_list}$lname->{new} (all newly created entries). It will remain in $sig->{special_list}$lname->{new} for $d days
+    (to be configured via key entry.deprecate_new in goto_dir_config.yml).
+    If <dir> is already stored in any list, entry.prefer_in_dir_conflict decides,
+    if new or old entry is kept.
+    If <dir> is omitted, it defaults to the directory gt is called from.
+    If <name> is already used by any entry, entry.prefer_in_name_conflict decides,
+    if new or old entry will keep it. <name> defaults to the empty (no) name.
     A missing <entryID> defaults to the default position ($config->{'entry'}{position_default}) in the current list.
 
  USAGE:
 
   --add  [<dir>] [$sig->{entry_name}<name>] [> <entryID>]    long command name
-   -$sc\[<dir>] [$sig->{entry_name}<name>] [> <entryID>]        short alias
+   -$sc\[<dir>] [$sig->{entry_name}<name>] [> <entryID>]        short form alias
 
 
  EXAMPLES:
@@ -294,7 +302,8 @@ sub add {
   --add /path$sig->{entry_name}p $sig->{target_entry} [$sig->{entry_position}]3       add named path to current list on third position
   --add /path $sig->{target_entry} good$sig->{entry_position}4       add unnamed path to list named 'good' on fourth position
   --add /path $sig->{target_entry} good$sig->{entry_name}s       add unnamed path to list 'good' on position of entry named 's'
-  --add good$sig->{entry_position}2/sub/dir:gg    add subdirectory of entry nr.2 in list 'good' under name 'gg' at default pos.
+  --add /path $sig->{target_entry} $sig->{special_list}$lname->{all}         add new entry to no regular list
+  --add good$sig->{entry_position}2/sub/dir:gg    combine <dir> of entry nr.2 in list 'good' with subdirectory '/sub/dir'
 
     Space (' ') is after '$sig->{entry_position}' and '$sig->{entry_name}' not allowed, but after --add required.
     Space before '$sig->{entry_position}' and '$sig->{entry_name}', around: '$sig->{target_entry}' and after '-$sc' is optional.
@@ -316,16 +325,16 @@ sub delete {
   gt --delete      delete entry from store
  ------------------------------------------
 
-    Deletes a specified <dir> entry from all lists except the special lists $sig->{special_list}$lname->{all} and $sig->{special_list}$lname->{bin}.
-    The entry will also moved be to the special list $sig->{special_list}$lname->{bin} and scrapped fully after $d days.
+    Deletes a specified <dir> entry from all lists except the special lists liks $sig->{special_list}$lname->{all}.
+    The entry will also be moved to the special list $sig->{special_list}$lname->{bin} and scrapped fully after $d days.
     This duration may be configured via the config entry: entry.deprecate_bin in goto_dir_config.yml.
-    Use --move to undelete entries.
+    Use --undelete to move entries back into regular lists.
 
  USAGE:
 
   --delete  [<entryID>]      long command name
   --del  [<entryID>]         shorter alias
-   -$sc\[<entryID>]             short alias
+   -$sc\[<entryID>]             short form alias
 
 
  EXAMPLES:
@@ -337,6 +346,44 @@ sub delete {
   --del good$sig->{entry_position}..              delete all entries list 'good'
   --del $sig->{special_entry}new                 deleting a previosly created entry
    -$sc\[$sig->{entry_name}]fm$sig->{entry_name}pm                delete entry named 'fm' and entry named 'pm'
+
+    Space (' ') is after '$sig->{entry_position}' and '$sig->{entry_name}' not allowed, but after --del[ete] required.
+    Space before '$sig->{entry_position}', '$sig->{entry_name}' and after '-$sc' is optional.
+    Entry names are globally unique (over all lists). Like list names, they contain only
+    word character (A-Z,a-z,0-9,_) and have to start with a letter.
+    List position can be negative, counting from the last position.
+EOT
+}
+sub undelete {
+    my $config = shift;
+    my $lname = $config->{'list'}{'special_name'};
+    my $d = $config->{'list'}{'deprecate_bin'} / 86400;
+    my $sig = $config->{'syntax'}{'sigil'};
+    my $sc = $config->{'syntax'}{'command_shortcut'}{'undelete'};
+     <<EOT;
+
+  gt --undelete      restore deleted entry
+ ------------------------------------------
+
+    Removes a specified <dir> entry from the special list $sig->{special_list}$lname->{bin} and also stops the
+    countdown to scrap the entry ($d days) after deletion.
+    The entry may also be moved into a regular list like with --move.
+
+ USAGE:
+
+  --undelete  <entryID> [$sig->{target_entry} <targetID>]     long command name
+  --undel  <entryID> [$sig->{target_entry} <targetID>]        shorter alias
+   -$sc\<entryID>[$sig->{target_entry}<targetID>]               short form alias
+
+
+ EXAMPLES:
+
+  --undelete                 undelete entry on default position in $sig->{special_list}$lname->{bin}
+  --undel [$sig->{entry_position}]2               undelete second entry in $sig->{special_list}$lname->{bin}
+  --undel 2 $sig->{target_entry} idle$sig->{entry_position}-1        undelete second entry and insert it as last entry of list 'idle'
+  --undel [$sig->{entry_position}]1..3            undelete first, second and third entry of $sig->{special_list}$lname->{bin}
+  --undel [$sig->{entry_name}]good            undelete entry named 'good'
+   -$sc\[$sig->{entry_name}]fm$sig->{target_entry}sound$sig->{entry_name}pm          undelete 'fm' and move to postion of 'pm' in list 'sound'
 
     Space (' ') is after '$sig->{entry_position}' and '$sig->{entry_name}' not allowed, but after --del[ete] required.
     Space before '$sig->{entry_position}', '$sig->{entry_name}' and after '-$sc' is optional.
@@ -363,7 +410,7 @@ sub remove {
 
   --remove  [<entryID>]      long command name
   --rm  [<entryID>]          shorter alias
-   -$sc\[<entryID>]             short alias
+   -$sc\[<entryID>]             short form alias
 
 
  EXAMPLES:
@@ -404,7 +451,7 @@ sub move {
 
   --move  [<sourceID>] $sig->{target_entry} <targetID>    long command name
   --mv  [<sourceID>] $sig->{target_entry} <targetID>      shorter alias
-   -$sc\[<sourceID>] $sig->{target_entry} <targetID>         short alias
+   -$sc\[<sourceID>] $sig->{target_entry} <targetID>         short form alias
 
 
  EXAMPLES:
@@ -444,7 +491,7 @@ sub copy {
 
   --copy  [<sourceID>] $sig->{target_entry} <targetID>    long command name
   --cp  [<sourceID>] $sig->{target_entry} <targetID>      shorter alias
-   -$sc\[<sourceID>] $sig->{target_entry} <targetID>         short alias
+   -$sc\[<sourceID>] $sig->{target_entry} <targetID>         short form alias
 
 
  EXAMPLES:
@@ -467,6 +514,7 @@ EOT
 }
 sub name {
     my $config = shift;
+    my $lname = $config->{'list'}{'special_name'};
     my $sc = $config->{'syntax'}{'command_shortcut'}{'name'};
     my $sig = $config->{'syntax'}{'sigil'};
     my $arg = "mi$sig->{entry_name}fa";
@@ -475,10 +523,12 @@ sub name {
   gt --name      change entry name
  ----------------------------------
 
-    Find a <dir> entry and change its unique name (applies to all entries holding same path).
-    If <name> is omitted, it defaults to an empty string, which results in deleting the entry name.
-    If <name> is already used by another entry, the config key entry.prefer_in_name_conflict in goto_dir_config.yml
-    decides, if the new (this) or old (other) entry will keep it.
+    Change the unique name (throughout all lists) of an entry. If <name> is omitted,
+    it defaults to an empty string, which results in deleting the name.
+    If <name> is already used by another entry, the config key:
+    entry.prefer_in_name_conflict in goto_dir_config.yml decides,
+    if the new (this) or old (other) entry will keep it.
+    All entries with a name appear in the special list: $sig->{special_list}$lname->{named}.
 
  USAGE:
 
@@ -510,14 +560,14 @@ sub dir {
   gt --dir      change dir path of entry
  ----------------------------------------
 
-    Change <dir> of one or more entries. gt switches into <dir>, when entry is selected.
+    Change directory <dir> of one spcified entry. gt switches into <dir>, when entry is selected.
     If <dir> is already stored in any other entry, the config key entry.prefer_in_dir_conflict
     in goto_dir_config.yml decides, if this ('new') or  the other ('old') entry is kept.
 
  USAGE:
 
-  --dir  [<entryID> | <old_dir> >>] <dir>    long command name
-   -$sc\[<entryID> | <old_dir>>>]<dir>          short alias
+  --dir  [<entryID>] <dir>    long command name
+   -$sc\[<entryID>] <dir>        short alias
 
 
  EXAMPLES:
@@ -526,15 +576,46 @@ sub dir {
    -$sc/usr/temp                    change <dir> of default entry in current list to '/usr/temp'
   --dir $sig->{entry_name}sol /usr/bin             set path of entry named 'sol' to /usr/bin
   --dir idle$sig->{entry_position}3 /bin/da            set path of third entry in list 'idle' to /bin/da
-  --dir /code/purl >> /code/perl  replace '/code/purl' with '/code/perl' in every entry <dir>
 
     Space (' ') is after '$sig->{entry_position}' and '$sig->{entry_name}' not allowed, but after --dir required.
-    Space before '$sig->{entry_position}' or '$sig->{entry_name}', around '>>'  and after -$sc is optional.
+    Space before '$sig->{entry_position}' or '$sig->{entry_name}' and after -$sc is optional.
     <dir> has to start with '/', '\\' or '~'. If <dir> contains space (' '), '$sig->{target_entry}' or '$sig->{entry_name}',
     it has to be set in single quotes ('/a path').
     Entry names are globally unique (over all lists). Like list names, they contain only
     word character (A-Z,a-z,0-9,_) and have to start with a letter.
     List position may be negative, counting from the last position.
+EOT
+}
+sub redir {
+    my $config = shift;
+    my $lname = $config->{'list'}{'special_name'};
+    my $sc = $config->{'syntax'}{'command_shortcut'}{'redir'};
+    my $sig = $config->{'syntax'}{'sigil'};
+    <<EOT;
+
+  gt --redir      change root dir of entries
+ --------------------------------------------
+
+    Change directory <dir> of several entries by replacing the first part of the
+    stored path (<old_dir>) with a new path (<new_dir>). This comes handy when a
+    directory in the file system was renamed (like with mv). --redir is just a way
+    to announce this change to gt so that all entries can change <dir> accordingly.
+    Entries with <dir> that no longer exists appear in special list $sig->{special_list}$lname->{stale}.
+    if --redir changes <dir> that do exist, gt will also rename the <old_dir> to
+    <new_dir> in the file system, unless config key: entry.move_dir is zero/empty.
+
+ USAGE:
+
+  --dir  <old_dir> >> <new_dir>    long command name
+   -$sc\<old_dir>>><new_dir>          short alias
+
+
+ EXAMPLES:
+
+  --redir /code/purl >> /code/perl  replace '/code/purl' with '/code/perl' in every entry <dir>
+
+    Space (' ') around '>>'  and after -$sc is optional. <dir> has to start with '/', '\\' or '~'.
+    If <dir> contains space (' '), '$sig->{target_entry}' or '$sig->{entry_name}', it has to be set in single quotes ('/a path').
 EOT
 }
 sub edit {
@@ -551,19 +632,22 @@ sub edit {
 
  USAGE:
 
-  --edit  [<entryID>] '<code>'    long command name
-   -$sc\[<entryID>] '<code>'         short alias
+  --edit  [<entryID>] '<code>'|<file>    long command name
+   -$sc\[<entryID>] '<code>'|<file>         short alias
 
 
  EXAMPLES:
 
   --edit 'say "dance"'       set code of default entry ($config->{'entry'}{'position_default'}) in current list to 'say "dance"'
   --edit $sig->{entry_name}sol 'say "gg"'     set landing script code of entry bamed 'sol' to 'say "gg"'
+  --edit $sig->{entry_name}sol /dir/code.pl   set code of entry to content of file '/dir/code.pl'
   --edit idle$sig->{entry_position}3 'say f2()'   set code of third entry in list 'idle' to 'say f2()'
    -$sc\'say 99'                change <code> of default entry in current list to 'say 99'
 
     Space (' ') is after '$sig->{entry_position}' and '$sig->{entry_name}' not allowed, but after --path required.
     Space before '$sig->{entry_position}' or '$sig->{entry_name}' and after -$sc is optional.
+    <file> has to start with '/', '\\' or '~'. If <file> contains space (' '), '$sig->{target_entry}' or '$sig->{entry_name}',
+    it has to be set in single quotes ('/a path/file.pl').
     Entry names are globally unique (over all lists). Like list names, they contain only
     word character (A-Z,a-z,0-9,_) and have to start with a letter.
     List position may be negative, counting from the last position.

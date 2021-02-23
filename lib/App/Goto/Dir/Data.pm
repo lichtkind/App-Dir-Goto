@@ -125,9 +125,10 @@ sub get_special_entry_dir {
     else                        { exists $self->{'special_entry'}{$name} ? $self->{'special_entry'}{$name}->full_dir() : File::Spec->catdir('') }
 }
 sub set_special_entry {
-    my ($self, $name, $dir) = @_;
+    my ($self, $name, $entry) = @_;
     return 'can not set last and previous directory in this way' if $name eq 'last' or $name eq 'previous';
-    $self->{'special_entry'}{$name} = $dir;
+    return if ref $entry ne 'App::Goto::Dir::Data::Entry';
+    $self->{'special_entry'}{$name} = $entry;
 }
 
 ########################################################################

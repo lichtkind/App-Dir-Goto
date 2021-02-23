@@ -15,12 +15,12 @@ list:
   name_length_max: 6
   sort_default: position
   sorted_by: current
-  special_comment:
-    all: all
-    bin: bin
-    named: ''
-    new: new
-    stale: stale
+  special_description:
+    all: 'all entries, even deleted ones'
+    bin: recycling bin of deleted entries
+    named: entries with names
+    new: recently created entries
+    stale: entries with not existing directories
   special_name:
     all: all
     bin: bin
@@ -34,7 +34,7 @@ syntax:
     copy: c
     delete: d
     dir: D
-    edit: e
+    edit: E
     help: h
     list: l
     list-add: l-a
@@ -44,9 +44,11 @@ syntax:
     list-name: l-n
     list-special: l-s
     move: m
-    name: n
+    name: N
+    redir: R
     remove: r
     sort: s
+    undelete: u
   option_shortcut:
     help:
       basics: b
