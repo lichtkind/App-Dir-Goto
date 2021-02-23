@@ -70,6 +70,11 @@ sub init {
 
 }
 
+sub is_dir {
+    my ($dir) = @_;
+    return 0 unless defined $dir and $dir;
+    substr($dir, 0, 1) =~ m|[/\\~]|;
+}
 sub is_name {
     my ($name) = @_;
     return 0 unless defined $name and $name;

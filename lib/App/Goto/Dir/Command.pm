@@ -80,14 +80,14 @@ sub describe_list {
 }
 #### LIST ADMIN COMMANDS ###############################################
 sub add_entry {
-    my ($dir, $name, $target_list, $target_entry) = @_;
+    my ($dir, $name, $target_list, $target_ID) = @_;
     if (ref $dir eq 'ARRAY') {
         return ' ! subdirectory of existing entry is missing' if @$dir < 2;
         return ' ! too many arguments for building a directory to add' if @$dir > 3;
         my $entry;
         if (@$dir == 2){ # [name subdir]
             if (substr( $dir->[0], 0, 1) eq $config->{'syntax'}{'sigil'}{'special_entry'}){
-                my $sd = $data->get_special_entry_dir( substr $target_entry, 1 );
+                my $sd = $data->get_special_entry_dir( substr $target_ID, 1 );
                 return " ! there is no special entry named '$dir->[0]'" unless ref $sd;
                 $dir = File::Spec->catdir( $sd, $dir->[1] );
             } else {
@@ -104,25 +104,25 @@ sub add_entry {
     }
     $dir  //= $cwd;
     $name //= '';
-    $target_entry  //= $config->{'entry'}{'position_default'};
-    $target_list   //= App::Goto::Dir::Parse::is_position( $target_entry ) ? $data->get_current_list_name : $data->get_special_list_names('all');
+    $target_ID  //= $config->{'entry'}{'position_default'};
+    $target_list   //= App::Goto::Dir::Parse::is_position( $target_ID ) ? $data->get_current_list_name : $data->get_special_list_names('all');
     return " ! '$name' is not an entry name (only [a-zA-Z0-9_] starting with letter)" if $name and not App::Goto::Dir::Parse::is_name($name);
     return " ! entry name '$name' is too long, max length is $config->{entry}{name_length_max} character" if $name and length($name) > $config->{'entry'}{'name_length_max'};
     my $list  = $data->get_list( $target_list );
     return " ! target list name '$target_list' does not exist, check --list-lists" unless ref $list;
-    my $pos = $list->pos_from_ID( $target_entry );
-    return " ! position or name '$target_entry' does not exist in list '$target_list'" unless $pos;
-    $pos++ if $target_entry < 0;
-
+    my $pos = $list->pos_from_ID( $target_ID );
+    return " ! position or name '$target_ID' does not exist in list '$target_list'" unless $pos;
+    $pos++ if $target_ID < 0;
     my $entry = App::Goto::Dir::Data::Entry->new($dir, $name);
-    my ($all_entry, $new_entry) = $data->get_special_lists('all', 'new');
-    # INSERT into all on pos???
-
-    my $ret = $all_entry->insert_entry( $entry, $list eq $all_entry ? $target_entry : undef ); # sorting out names too
-    return $ret unless ref $ret; # return error msg: could not inserted because not allowed overwrite entry with same dir
-    $new_entry->insert_entry( $entry, $list eq $new_entry ? $pos : undef );
-    $list->insert_entry( $entry, $target_entry ) unless $list eq $all_entry or $list eq $new_entry;
-    $data->set_special_entry( 'add', $new_entry );
+    my ($all, $new, $named, $stale) = $data->get_special_lists(qw/all new named stale/);
+    ($list, $pos) = ($all, $config->{'entry'}{'position_default'}) unless $list eq $all or App::Goto::Dir::Parse::is_name( $list->get_name );
+    my $ret = $all->insert_entry( $entry, $list eq $all ? $target_ID : undef ); # sorting out names too
+    return " ! $ret" unless ref $ret; # return error msg: could not inserted because not allowed overwrite entry with same dir
+    $new->insert_entry( $entry, undef );
+    $named->insert_entry( $entry, undef ) if $entry->name;
+    $stale->insert_entry( $entry, undef ) unless -d $entry->full_dir;
+    $list->insert_entry( $entry, $target_ID ) unless $list eq $all;
+    $data->set_special_entry( 'add', $entry );
     " - added dir '$dir' to list '$target_list' on position $pos";
 }
 
@@ -135,11 +135,14 @@ sub delete_entry {
     if (ref $entry_ID eq 'ARRAY'){
         $entry_ID->[0] //= 1;
         $entry_ID->[1] //= $list->elems;
-        return " ! '$entry_ID->[0]' is not a valid position in list '$list_name'" unless $list->pos_from_ID( $entry_ID->[0] );
-        return " ! '$entry_ID->[1]' is not a valid position in list '$list_name'" unless $list->pos_from_ID( $entry_ID->[1] );
+        my $start_pos = $list->pos_from_ID( $entry_ID->[0] );
+        my $end_pos = $list->pos_from_ID( $entry_ID->[1] );
+        return " ! '$entry_ID->[0]' is not a valid position in list '$list_name'" unless $start_pos;
+        return " ! '$entry_ID->[1]' is not a valid position in list '$list_name'" unless $end_pos;
+        $entry_ID = [$start_pos .. $end_pos];
     } else { $entry_ID = [$entry_ID] }
     my $ret = '';
-    for my $ID (@$entry_ID){
+    for my $ID (reverse @$entry_ID){
         my $pos = $list->pos_from_ID( $entry_ID );
         return " ! position or name '$entry_ID' does not exist in list '$list_name'" unless $pos;
         my $entry = $list->get_entry($pos);
@@ -157,57 +160,57 @@ sub delete_entry {
             my ($bin_list) = $data->get_special_lists('bin');
             $bin_list->insert_entry( $entry );
         }
-        my $entry_adress = App::Goto::Dir::Parse::is_position( $entry_ID ) ? $list_name.$config->{'syntax'}{'sigil'}{'entry_position'}.$pos
-                                                                           : $config->{'syntax'}{'sigil'}{'entry_name'}.$entry_ID;
-        $ret .= $was_del ? " ! '$entry_adress' was already deleted\n" : " - deleted entry '$entry_adress' from lists: $lnames \n";
+        my $entry_address = App::Goto::Dir::Parse::is_position( $entry_ID ) ? $list_name.$config->{'syntax'}{'sigil'}{'entry_position'}.$pos
+                                                                            : $config->{'syntax'}{'sigil'}{'entry_name'}.$entry_ID;
+        $ret .= $was_del ? " ! '$entry_address' was already deleted\n"
+                         : " - deleted entry '$entry_address' ".App::Goto::Dir::Format::dir($entry->full_dir(),20)." from lists: $lnames\n";
         $data->set_special_entry( 'del', $entry );
+        $data->set_special_entry( 'delete', $entry );
     }
     chomp($ret);
     $ret;
 }
 
 sub undelete_entry {
-    my ($list_name, $entry_ID) = @_; # ID can be [min, max] # range
+    my ($entry_ID, $target_list, $target_ID) = @_; # ID can be [min, max] # range
     $entry_ID  //= $config->{'entry'}{'position_default'};
-    $list_name  //= App::Goto::Dir::Parse::is_position( $entry_ID ) ? $data->get_current_list_name : $data->get_special_list_names('all');
-    my $list  = $data->get_list( $list_name );
-    return " ! list name '$list_name' does not exist, check --list-lists" unless ref $list;
+    $target_list //= $data->get_current_list_name;
+    my $list  = $data->get_list( $target_list );
+    return " ! list name '$target_list' does not exist, check --list-lists" unless ref $list;
+    return " ! target list '$target_list' hast to be regular, check --list-lists" unless ref $list->get_name;
+    my $target_pos = $list->pos_from_ID( $target_ID );
+    return " ! position or name '$target_ID' does not exist in list '$target_list'" unless $target_pos;
+    $target_pos++ if $target_ID < 0;
+    my $target_address = App::Goto::Dir::Parse::is_position( $target_ID ) ? $target_list.$config->{'syntax'}{'sigil'}{'entry_position'}.$target_ID
+                                                                          : $target_list.$config->{'syntax'}{'sigil'}{'entry_name'}.$target_ID;
+    my ($bin) = $data->get_special_lists(qw/bin/);
     if (ref $entry_ID eq 'ARRAY'){
         $entry_ID->[0] //= 1;
         $entry_ID->[1] //= $list->elems;
-        return " ! '$entry_ID->[0]' is not a valid position in list '$list_name'" unless $list->pos_from_ID( $entry_ID->[0] );
-        return " ! '$entry_ID->[1]' is not a valid position in list '$list_name'" unless $list->pos_from_ID( $entry_ID->[1] );
+        my $start_pos = $bin->pos_from_ID( $entry_ID->[0] );
+        my $end_pos = $bin->pos_from_ID( $entry_ID->[1] );
+        return " ! '$entry_ID->[0]' is not a valid position in list '".$bin->get_name."'" unless $start_pos;
+        return " ! '$entry_ID->[1]' is not a valid position in list '".$bin->get_name."'" unless $end_pos;
+        $entry_ID = [$start_pos .. $end_pos];
     } else { $entry_ID = [$entry_ID] }
     my $ret = '';
-    for my $ID (@$entry_ID){
+    for my $ID (reverse @$entry_ID){
         my $pos = $list->pos_from_ID( $entry_ID );
-        return " ! position or name '$entry_ID' does not exist in list '$list_name'" unless $pos;
         my $entry = $list->get_entry($pos);
-        my $lnames =  '';
-        for my $list_name ($entry->member_of_lists) {
-            next unless App::Goto::Dir::Parse::is_name( $list_name );
-            $data->get_list( $list_name )->remove_entry( $entry->get_list_pos( $list_name ) );
-            $lnames .= "$list_name, ";
-        }
-        chop $lnames;
-        chop $lnames;
-        my $was_del = $entry->overdue();
-        unless ($entry->overdue()){
-            $entry->delete();
-            my ($bin_list) = $data->get_special_lists('bin');
-            $bin_list->insert_entry( $entry );
-        }
-        my $entry_adress = App::Goto::Dir::Parse::is_position( $entry_ID ) ? $list_name.$config->{'syntax'}{'sigil'}{'entry_position'}.$pos
-                                                                           : $config->{'syntax'}{'sigil'}{'entry_name'}.$entry_ID;
-        $ret .= $was_del ? " ! '$entry_adress' was already deleted\n" : " - deleted entry '$entry_adress' from lists: $lnames \n";
-        $data->set_special_entry( 'del', $entry );
+        $entry->undelete();
+        $list->insert_entry( $entry, $target_pos );
+        my $src_address = App::Goto::Dir::Parse::is_position( $entry_ID ) ? $bin->get_name.$config->{'syntax'}{'sigil'}{'entry_position'}.$entry_ID
+                                                                          : $bin->get_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$entry_ID;
+        $ret .= " - undeleted entry '$src_address' ".App::Goto::Dir::Format::dir($entry->full_dir(),20)." and moved to '$target_address'\n";
+        $data->set_special_entry( 'undel', $entry );
+        $data->set_special_entry( 'undelete', $entry );
     }
     chomp($ret);
     $ret;
 }
 
 sub remove_entry {
-    my ($target_list, $target_entry) = @_;
+    my ($list_name, $entry_ID) = @_;  # ID can be [min, max] # range
 #        my ($self, $list_name, $entry_ID) = @_;
 #    my ($entry, $list) = $self->get_entry( $entry_ID );
 #    return $entry unless ref $entry;

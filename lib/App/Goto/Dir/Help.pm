@@ -114,16 +114,16 @@ sub basics {
 
   $sig->{special_entry}last                   destination of last gt call (with subdir)
   $sig->{special_entry}prev[ious]             destination of second last gt call (with subdir)
-  $sig->{special_entry}add|del|[re]move|copy  every command has special entry with same name,
-                          an alias to the entry touched by the command most recently
+  $sig->{special_entry}add|[un]del[ete]       every command has special entry with same name,
+  $sig->{special_entry}\[re]move|copy          an alias to the entry touched by the command most recently
 
  SPECIAL LISTS:
 
   $sig->{special_list}all                    entries from all lists, even $sig->{special_list}bin
   $sig->{special_list}new                    newly created entries (configure how old, --help=settings)
   $sig->{special_list}bin                    deleted entries (scrapped after configured period)
-  $sig->{special_list}stale                  all entries with defunct (not existing) directory
   $sig->{special_list}named                  all entries with names
+  $sig->{special_list}stale                  all entries with defunct (not existing) directory
 EOT
 }
 sub install{
@@ -287,7 +287,8 @@ sub add {
     If <dir> is omitted, it defaults to the directory gt is called from.
     If <name> is already used by any entry, entry.prefer_in_name_conflict decides,
     if new or old entry will keep it. <name> defaults to the empty (no) name.
-    A missing <entryID> defaults to the default position ($config->{'entry'}{position_default}) in the current list.
+    A missing target <entryID> defaults to the default position ($config->{'entry'}{position_default}) in the current list.
+    Name the special list $sig->{special_list}$lname->{all} as target, so the new entry enters no regular list.
 
  USAGE:
 

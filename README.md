@@ -91,9 +91,10 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `--move [<IDa>] > <IDb>. . . . . move entry <IDa> to (position of) <IDb> (-m)`
 - `--copy [<IDa>] > <IDb>. . . . . copy entry <IDa> to (position of) <IDb> (-c)`
 - `--name [<ID>]:<name>. . . . . . (re-)name entry, resolve conflict like configured (-n)`
-- `--name [<ID>] . . . . . . . . . delete name of entry (-n)`
-- `--dir [<ID>] <dir>. . . . . . . change directory of entry with <ID> (-i)`
-- `--edit [<ID>] '<code>'. . . . . edit script, that is run when gone to dir (-e)`
+- `--name [<ID>] . . . . . . . . . delete name of entry (-N)`
+- `--dir [<ID>] <dir>. . . . . . . change directory of entry with <ID> (-D)`
+- `--redir <old> >> <dir>. . . . . change directory <old> to <dir> in all entries (-R)`
+- `--edit [<ID>] '<code>'. . . . . edit script, that is run when gone to dir (-E)`
 
 ## commands for managing lists:
 

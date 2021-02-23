@@ -26,37 +26,36 @@ my $app = App::Goto::Dir->new( $cwd );
 #$data->write( $config );
 
 
-#App::Goto::Dir::Command::run('--help');
+#say App::Goto::Dir::Command::run('--help');
 #say App::Goto::Dir::Command::run('--help', 'basics');
 #say App::Goto::Dir::Command::run('--help', 'commands');
-#App::Goto::Dir::Command::run('--help', 'install');
-#App::Goto::Dir::Command::run('--help', 'version');
-say App::Goto::Dir::Command::run('--help', '--add');
+#say App::Goto::Dir::Command::run('--help', 'install');
+#say App::Goto::Dir::Command::run('--help', 'version');
+#say App::Goto::Dir::Command::run('--help', '--add');
 #say App::Goto::Dir::Command::run('--help', '--delete');
 #say App::Goto::Dir::Command::run('--help', '--undelete');
-#App::Goto::Dir::Command::run('--help', '--remove');
-#App::Goto::Dir::Command::run('--help', '--move');
-#App::Goto::Dir::Command::run('--help', '--copy');
-say App::Goto::Dir::Command::run('--help', '--name');
+#say App::Goto::Dir::Command::run('--help', '--remove');
+#say App::Goto::Dir::Command::run('--help', '--move');
+#say App::Goto::Dir::Command::run('--help', '--copy');
+#say App::Goto::Dir::Command::run('--help', '--name');
 #say App::Goto::Dir::Command::run('--help', '--dir');
-say App::Goto::Dir::Command::run('--help', '--redir');
+#say App::Goto::Dir::Command::run('--help', '--redir');
 #say App::Goto::Dir::Command::run('--help', '--edit');
-#App::Goto::Dir::Command::run('--help', '--list');
-#App::Goto::Dir::Command::run('--help', '--sort');
-#App::Goto::Dir::Command::run('--help', '--list-special');
-#App::Goto::Dir::Command::run('--help', '--list-lists');
-#App::Goto::Dir::Command::run('--help', '--list-add');
-#App::Goto::Dir::Command::run('--help', '--list-delete');
-#App::Goto::Dir::Command::run('--help', '--list-name');
-#App::Goto::Dir::Command::run('--help', '--list-description');
-#App::Goto::Dir::Command::run('--help', '--help');
+#say App::Goto::Dir::Command::run('--help', '--list');
+#say App::Goto::Dir::Command::run('--help', '--sort');
+#say App::Goto::Dir::Command::run('--help', '--list-special');
+#say App::Goto::Dir::Command::run('--help', '--list-lists');
+#say App::Goto::Dir::Command::run('--help', '--list-add');
+#say App::Goto::Dir::Command::run('--help', '--list-delete');
+#say App::Goto::Dir::Command::run('--help', '--list-name');
+#say App::Goto::Dir::Command::run('--help', '--list-description');
+#say App::Goto::Dir::Command::run('--help', '--help');
 
 #say App::Goto::Dir::Command::run('--list-special');
 #say App::Goto::Dir::Command::run('--list-lists');
 #say App::Goto::Dir::Command::run('--list-add', 'a', 'test list');
 #say App::Goto::Dir::Command::run('--list-add', 'use', 'test list');
 
-#say App::Goto::Dir::Command::run('--list-lists');
 
 #say App::Goto::Dir::Command::run('--list-name', 'a', 'b');
 #say App::Goto::Dir::Command::run('--list-lists');
@@ -64,11 +63,16 @@ say App::Goto::Dir::Command::run('--help', '--redir');
 #say App::Goto::Dir::Command::run('--list-lists');
 #say App::Goto::Dir::Command::run('--list-add',  '@all', 'all');
 #say App::Goto::Dir::Command::run('--list-delete', '@all');
-#App::Goto::Dir::Command::run('--sort','position');
-#say App::Goto::Dir::Command::run('--list','@all', '@new');
-#App::Goto::Dir::Config::reset();
+say App::Goto::Dir::Command::run('--sort','position');
+say App::Goto::Dir::Command::run('--list','@all', '@new', 'use');
+#say App::Goto::Dir::Config::reset();
 #say App::Goto::Dir::Command::run('--sort', 'vis');
 #say App::Goto::Dir::Command::run('--list', '@all');
+
+#say App::Goto::Dir::Parse::is_dir('/');
+#say App::Goto::Dir::Parse::is_position('4');
+
+say App::Goto::Dir::Command::run('--list-lists');
 
 say '   run goto test in ', sprintf("%.4f",timediff( Benchmark->new, $t)->[1]), ' sec';
 

@@ -2,7 +2,7 @@ use v5.18;
 use warnings;
 use File::Spec;
 use App::Goto::Dir::Data::Entry;
-my $el_class = 'App::Goto::Dir::Data::Entry';
+our $elem_class = 'App::Goto::Dir::Data::Entry';
 
 package App::Goto::Dir::Data::List; # index: 1 .. count
 
@@ -46,7 +46,7 @@ sub set_description { $_[0]->{'description'} = $_[1] if defined $_[1] and $_[1] 
 sub _insert_entry { splice @{$_[0]->{'entry'}}, $_[2]-1, 0, $_[1] }
 sub insert_entry {
     my ($self, $entry, $pos) = @_;
-    return "need an $el_class object as argument!" unless ref $entry eq $el_class;
+    return "need an $elem_class object as argument!" unless ref $entry eq $elem_class;
     $pos = $self->{'config'}{'position_default'} unless defined $pos;
     return "'$pos' is an illegal list position for list $self->{name}" unless $self->is_new_pos($pos);
     $pos += @{$self->{'entry'}} + 2 if $pos < 0; # resolve negative pos
@@ -97,9 +97,11 @@ sub pos_from_ID {
         my $c = int @{$self->{'entry'}};
         $ID += $c + 1 if $ID < 0;
         return $ID if $ID > 0 and $ID <= $c;
+    } elsif ( App::Goto::Dir::Parse::is_dir( $ID)) {
+        $self->pos_from_dir($ID);
     } else {
         return $self->pos_from_name($ID) if length($ID) <= $self->{'config'}{'name_length_max'};
-        $self->pos_from_dir($ID);
+
     }
     0;
 }
