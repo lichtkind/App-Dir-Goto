@@ -49,6 +49,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `: . . . . . precedes, separates <name>,  (see -add, -name)`
 - `+ . . . . . start name of special entry like +last`
 - `@ . . . . . start name of special list like @all`
+- `? . . . . . starts help text (see --list-add)`
 - `> . . . . . separates a source (left) and its destination (right) (see -add, -move, -copy)`
 - `<Space> . . ' ' separates long commands and args, allowed around > and before : #`
 
@@ -69,9 +70,10 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `--list <lname> . . . . . set <lname> as current list and display it (-l<name>)`
 - `--list-special . . . . . display special entries (long for -l-s)`
 - `--list-lists . . . . . . display available list names (long for -l-l)`
-- `--sort=position. . . . . sort displayed list by position (default) (-s, -so)`
+- `--sort=position. . . . . sort displayed list by position (default) (-s, -sp)`
 - `--sort=dir . . . . . . . sort by dir path (-sD)`
-- `--sort=name. . . . . . . change sorting criterion to <name> (-sn)`
+- `--sort=name. . . . . . . change sorting criterion to <name> (-sN)`
+- `--sort=script. . . . . . change sorting criterion to <name> (-sS)`
 - `--sort=visits. . . . . . sort by number of times gone to dir (-sv)`
 - `--sort=last_visit. . . . sort by time of last visit (earlier first, -sl)`
 - `--sort=created . . . . . sort by time of entry creation (earlier first, -sc)`
@@ -86,15 +88,16 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `--add <dir>[:<name>] [> <lpos>] add <dir> under <name> and <lpos>, only <dir> is required (-a) .
 . . . . . . . . . . . . . . . . .also add to special list "new" for configured time`
 - `--del[ete] [<ID>] . . . . . . . delete entry with <ID> in all but special lists: all, bin (-d)
-. . . . . . . . . . . . . . . . . .and move to special list "bin", hard delete after configured time`
-- `--rem[ove] [<ID>] . . . . . . . remove entry from chosen, but not special lists: all, bin (-r)`
+. . . . . . . . . . . . . . . . . .and move to special list @bin, hard delete after configured time`
+- `--undel[ete] [<ID>] [> <lpos>]. remove from special list @bin  (-u)
+- `--rem[ove] [<ID>] . . . . . . . remove entry from chosen, but not special lists (-r)`
 - `--move [<IDa>] > <IDb>. . . . . move entry <IDa> to (position of) <IDb> (-m)`
 - `--copy [<IDa>] > <IDb>. . . . . copy entry <IDa> to (position of) <IDb> (-c)`
-- `--name [<ID>]:<name>. . . . . . (re-)name entry, resolve conflict like configured (-n)`
+- `--name [<ID>]:<name>. . . . . . (re-)name entry, resolve conflict like configured (-N)`
 - `--name [<ID>] . . . . . . . . . delete name of entry (-N)`
 - `--dir [<ID>] <dir>. . . . . . . change directory of entry with <ID> (-D)`
 - `--redir <old> >> <dir>. . . . . change directory <old> to <dir> in all entries (-R)`
-- `--edit [<ID>] '<code>'. . . . . edit script, that is run when gone to dir (-E)`
+- `--script [<ID>] '<code>'. . . . edit script, that is run when gone to dir (-E)`
 
 ## commands for managing lists:
 
