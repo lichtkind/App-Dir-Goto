@@ -21,6 +21,7 @@ sub run {
    elsif ($cmd eq '--list-description'){                         describe_list(                   @arg )  }
    elsif ($cmd eq '--add')             {                         add_entry(                       @arg )  }
    elsif ($cmd eq '--delete')          {                         delete_entry(                    @arg )  }
+   elsif ($cmd eq '--undelete')        {                         undelete_entry(                  @arg )  }
    elsif ($cmd eq '--remove')          {                         remove_entry(                    @arg )  }
    elsif ($cmd eq '--move')            {                         move_entry(                      @arg )  }
    elsif ($cmd eq '--copy')            {                         copy_entry(                      @arg )  }
@@ -143,9 +144,9 @@ sub delete_entry {
     } else { $entry_ID = [$entry_ID] }
     my $ret = '';
     for my $ID (reverse @$entry_ID){
-        my $pos = $list->pos_from_ID( $entry_ID );
+        my $pos = $list->pos_from_ID( $ID );
         return " ! position or name '$entry_ID' does not exist in list '$list_name'" unless $pos;
-        my $entry = $list->get_entry($pos);
+        my ($entry) = $list->get_entry( $pos );
         my $lnames =  '';
         for my $list_name ($entry->member_of_lists) {
             next unless App::Goto::Dir::Parse::is_name( $list_name );
@@ -163,7 +164,7 @@ sub delete_entry {
         my $entry_address = App::Goto::Dir::Parse::is_position( $entry_ID ) ? $list_name.$config->{'syntax'}{'sigil'}{'entry_position'}.$pos
                                                                             : $config->{'syntax'}{'sigil'}{'entry_name'}.$entry_ID;
         $ret .= $was_del ? " ! '$entry_address' was already deleted\n"
-                         : " - deleted entry '$entry_address' ".App::Goto::Dir::Format::dir($entry->full_dir(),20)." from lists: $lnames\n";
+                         : " - deleted entry '$entry_address' ".App::Goto::Dir::Format::dir($entry->full_dir(), 30)." from lists: $lnames\n";
         $data->set_special_entry( 'del', $entry );
         $data->set_special_entry( 'delete', $entry );
     }
@@ -174,15 +175,16 @@ sub delete_entry {
 sub undelete_entry {
     my ($entry_ID, $target_list, $target_ID) = @_; # ID can be [min, max] # range
     $entry_ID  //= $config->{'entry'}{'position_default'};
+    $target_ID  //= $config->{'entry'}{'position_default'};
     $target_list //= $data->get_current_list_name;
     my $list  = $data->get_list( $target_list );
     return " ! list name '$target_list' does not exist, check --list-lists" unless ref $list;
-    return " ! target list '$target_list' hast to be regular, check --list-lists" unless ref $list->get_name;
     my $target_pos = $list->pos_from_ID( $target_ID );
     return " ! position or name '$target_ID' does not exist in list '$target_list'" unless $target_pos;
     $target_pos++ if $target_ID < 0;
     my $target_address = App::Goto::Dir::Parse::is_position( $target_ID ) ? $target_list.$config->{'syntax'}{'sigil'}{'entry_position'}.$target_ID
                                                                           : $target_list.$config->{'syntax'}{'sigil'}{'entry_name'}.$target_ID;
+    my $has_target =  App::Goto::Dir::Parse::is_name( $target_list );
     my ($bin) = $data->get_special_lists(qw/bin/);
     if (ref $entry_ID eq 'ARRAY'){
         $entry_ID->[0] //= 1;
@@ -195,13 +197,13 @@ sub undelete_entry {
     } else { $entry_ID = [$entry_ID] }
     my $ret = '';
     for my $ID (reverse @$entry_ID){
-        my $pos = $list->pos_from_ID( $entry_ID );
-        my $entry = $list->get_entry($pos);
+        my $entry = $bin->remove_entry( $ID );
         $entry->undelete();
-        $list->insert_entry( $entry, $target_pos );
+        $list->insert_entry( $entry, $target_pos ) if $has_target;
         my $src_address = App::Goto::Dir::Parse::is_position( $entry_ID ) ? $bin->get_name.$config->{'syntax'}{'sigil'}{'entry_position'}.$entry_ID
                                                                           : $bin->get_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$entry_ID;
-        $ret .= " - undeleted entry '$src_address' ".App::Goto::Dir::Format::dir($entry->full_dir(),20)." and moved to '$target_address'\n";
+        $ret .= " - undeleted entry '$src_address' ".App::Goto::Dir::Format::dir($entry->full_dir(), 30)
+                .($has_target ? " and moved to '$target_address'\n" : "\n");
         $data->set_special_entry( 'undel', $entry );
         $data->set_special_entry( 'undelete', $entry );
     }
@@ -315,3 +317,4 @@ sub goto_entry {
 }
 
 1;
+

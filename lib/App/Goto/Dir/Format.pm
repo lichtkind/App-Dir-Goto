@@ -92,11 +92,11 @@ sub set_sort {
         $criterion = substr $criterion, 1;
     }
     $criterion = $sopt{ $criterion } if exists $sopt{ $criterion } and $sopt{ $criterion };
-    return "unknown list sorting criterion: '$criterion', use [!]".join '|', @opt, 'default'
+    return " ! unknown list sorting criterion: '$criterion', use [!]".join '|', @opt, 'default'
         unless exists $config->{'syntax'}{'option_shortcut'}{'sort'}{$criterion};
     $data->{'list'}{'sorted_by'} = $criterion;
     $data->{'list'}{'sort_reversed'} = $reverse;
-    "set list sorting criterion to '$criterion' ".($reverse ? '(reversed)' : '');
+    " - set list sorting criterion to '$criterion' ".($reverse ? '(reversed)' : '');
 }
 
 1;

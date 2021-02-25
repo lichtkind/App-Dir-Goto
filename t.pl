@@ -63,8 +63,12 @@ my $app = App::Goto::Dir->new( $cwd );
 #say App::Goto::Dir::Command::run('--list-lists');
 #say App::Goto::Dir::Command::run('--list-add',  '@all', 'all');
 #say App::Goto::Dir::Command::run('--list-delete', '@all');
+say App::Goto::Dir::Command::run('--add', '~/Dokumente/vortrag', 'v');
 say App::Goto::Dir::Command::run('--sort','position');
-say App::Goto::Dir::Command::run('--list','@all', '@new', 'use');
+say App::Goto::Dir::Command::run('--list','@all', '@new', '@bin', '@named', '@stale', 'use');
+#say App::Goto::Dir::Command::run('--undelete', '-1');
+#say App::Goto::Dir::Command::run('--add', '~/Dokumente/vortrag');
+#say App::Goto::Dir::Command::run('--list','@all', '@new', 'use', '@bin');
 #say App::Goto::Dir::Config::reset();
 #say App::Goto::Dir::Command::run('--sort', 'vis');
 #say App::Goto::Dir::Command::run('--list', '@all');
@@ -83,3 +87,4 @@ __END__
 all: add copy
 
 #say App::Goto::Dir::Data::Entry::_format_time_stamp(time );
+

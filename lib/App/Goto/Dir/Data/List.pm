@@ -33,7 +33,7 @@ sub get_entry {
     $ID = $ID->full_dir if ref $ID;
     my $pos = $self->pos_from_ID( $ID );
     return "'$ID' is not a valid dir path, name or position of the current list" if not $pos;
-    $self->{'entry'}[$pos-1], $pos;
+    wantarray ? ($self->{'entry'}[$pos-1], $pos) : $self->{'entry'}[$pos-1];
 }
 sub all_entries     { @{$_[0]->{'entry'}} }
 sub elems           { int @{$_[0]->{'entry'}} }
