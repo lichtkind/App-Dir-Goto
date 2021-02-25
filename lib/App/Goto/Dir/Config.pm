@@ -60,7 +60,7 @@ our $default = {
                                        copy => 'c',
                                         dir => 'D',
                                       redir => 'R',
-                                       edit => 'E',
+                                     script => 'S',
                                        name => 'N',
                                        sort => 's',
                                        list => 'l',
@@ -79,6 +79,7 @@ our $default = {
                                       'last_visit' => 'l',
                                           position => 'p',
                                               name => 'n',
+                                            script => 'S',
                                             visits => 'v',
                                         },
                                         help => {

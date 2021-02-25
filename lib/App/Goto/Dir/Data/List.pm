@@ -9,8 +9,9 @@ package App::Goto::Dir::Data::List; # index: 1 .. count
 #### constructor #######################################################
 sub new {
     my ($pkg, $name, $description, $config, @elems) = @_;
+    return unless ref $config eq 'HASH';
     my $self = bless { entry => \@elems, name => $name, description => $description,
-                       config => $config, pos_by_name => {}, pos_by_dir => {}       };
+                       config => $config, pos_by_name => {}, pos_by_dir => {}, special => App::Goto::Dir::Parse::is_name($name)  };
     refresh_reverse_hashes( $self );
     $self;
 }
@@ -41,6 +42,7 @@ sub get_name        { $_[0]->{'name'} }
 sub set_name        { $_[0]->{'name'} = $_[1] if defined $_[1] and $_[1] }
 sub get_description { $_[0]->{'description'} }
 sub set_description { $_[0]->{'description'} = $_[1] if defined $_[1] and $_[1] }
+sub is_special      { $_[0]->{'special'} }
 
 #### elem API ##########################################################
 sub _insert_entry { splice @{$_[0]->{'entry'}}, $_[2]-1, 0, $_[1] }
@@ -91,10 +93,11 @@ sub move_entry {
 
 #### utils #############################################################
 sub pos_from_ID {
-    my ($self, $ID) = @_;
+    my ($self, $ID, $new) = @_;
     return 0 unless defined $ID;
     if (App::Goto::Dir::Parse::is_position( $ID )){
         my $c = int @{$self->{'entry'}};
+        $c++ if defined $new and $new;
         $ID += $c + 1 if $ID < 0;
         return $ID if $ID > 0 and $ID <= $c;
     } elsif ( App::Goto::Dir::Parse::is_dir( $ID)) {
@@ -105,6 +108,7 @@ sub pos_from_ID {
     }
     0;
 }
+
 sub pos_from_name { exists $_[0]->{'pos_by_name'}{ $_[1] } ? $_[0]->{'pos_by_name'}{ $_[1] } : 0 }
 sub pos_from_dir  { exists $_[0]->{'pos_by_dir'}{ $_[1] } ? $_[0]->{'pos_by_dir'}{ $_[1] } : 0 }
 sub is_pos     {

@@ -1,5 +1,6 @@
 ---
 entry:
+  move_dir: 1
   name_length_max: 5
   position_default: -1
   prefer_in_dir_conflict: new
@@ -34,7 +35,6 @@ syntax:
     copy: c
     delete: d
     dir: D
-    edit: E
     help: h
     list: l
     list-add: l-a
@@ -47,6 +47,7 @@ syntax:
     name: N
     redir: R
     remove: r
+    script: S
     sort: s
     undelete: u
   option_shortcut:
@@ -61,6 +62,7 @@ syntax:
       last_visit: l
       name: n
       position: p
+      script: S
       visits: v
   sigil:
     command: '-'

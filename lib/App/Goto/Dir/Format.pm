@@ -44,6 +44,7 @@ sub entries {
     my $sorted = $data->{'list'}{'sorted_by'};
     @el = sort { $a->{'el'}->full_dir     cmp $b->{'el'}->full_dir     } @el if $sorted eq 'dir';
     @el = sort { $a->{'el'}->name         cmp $b->{'el'}->name         } @el if $sorted eq 'name';
+    @el = sort { $a->{'el'}->script       cmp $b->{'el'}->script       } @el if $sorted eq 'script';
     @el = sort { $b->{'el'}->visit_count  <=> $a->{'el'}->visit_count  } @el if $sorted eq 'visits';
     @el = sort { $a->{'el'}->visit_stamp  <=> $b->{'el'}->visit_stamp  } @el if $sorted eq 'last_visit';
     @el = sort { $a->{'el'}->create_stamp <=> $b->{'el'}->create_stamp } @el if $sorted eq 'created';
@@ -58,18 +59,22 @@ sub entries {
     my $max_dir_length = 70 - $config->{'entry'}{'name_length_max'};
     $max_dir_length -=  4 if $sorted eq 'visits';
     $max_dir_length -= 22 if $sorted eq 'last_visit' or $sorted eq 'created';
+    $max_dir_length -= 35 if $sorted eq 'script';
     map { $_->{'dir'} = dir($_->{'el'}->dir, $max_dir_length)} @el;
     my $formstart = "  [%02u]  %-".$nl."s ";
     if    ($sorted eq 'visits')    {$ret.= sprintf ("$formstart%02u  %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'el'}->visit_count, $_->{'dir'}) for @el }
     elsif ($sorted eq 'last_visit'){$ret.= sprintf ("$formstart%s  %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'el'}->visit_time, $_->{'dir'}) for @el }
     elsif ($sorted eq 'created')   {$ret.= sprintf ("$formstart%s  %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'el'}->create_time, $_->{'dir'}) for @el }
+    elsif ($sorted eq 'script')    {$ret.= sprintf ("$formstart %-31s %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'dir'},  dir($_->{'el'}->script, 35)) for @el }
     else                           {$ret.= sprintf ("$formstart %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'dir'} ) for @el }
     $ret."\n";
 }
 
 sub dir {
     my ($dir, $length) = @_;
-    length $dir > $length ? substr($dir, 0, int($length/2)-1).'..'.substr($dir, -int($length/2)) : $dir;
+    return '' unless defined $dir;
+    return $dir if length $dir < $length;
+    substr($dir, 0, int($length/2)-1) . '..' . substr $dir, -int($length/2);
 }
 
 my %sopt;

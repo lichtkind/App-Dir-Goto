@@ -19,7 +19,7 @@ my %text = ( overview => \&overview,
              '--name' => \&name,
               '--dir' => \&dir,
             '--redir' => \&redir,
-             '--edit' => \&edit,
+           '--script' => \&script,
              '--list' => \&list,
              '--sort' => \&sort,
        '--list-lists' => \&llists,
@@ -162,6 +162,7 @@ sub commands {
     my $opt = $config->{'syntax'}{'option_shortcut'};
     my $sopt = join '|', sort values %{$opt->{'sort'}};
     my $hopt = join '|', sort values %{$opt->{'help'}};
+    my $space = ' 'x (15 - length $hopt);
     <<EOT;
 
   all gt commands in long and short form
@@ -170,7 +171,7 @@ sub commands {
   display commands:
 
   -$sc->{help} --help[=$hopt| <command>]     topic or command specific help texts
-  -$sc->{sort} --sort=$sopt              set sorting criterion of list display
+  -$sc->{sort} --sort=$sopt$space    set sorting criterion of list display
   -$sc->{list}  --list [<listname>]            change current list and display it
   -$sc->{'list-special'} --list-special                display all special entries
   -$sc->{'list-lists'} --list-lists                  display available list names
@@ -196,7 +197,7 @@ sub commands {
   -$sc->{dir} --dir [<ID>] <dir>              change directory of one entry
   -$sc->{redir} --redir <old_dir> >> <newdir>   change root directory of more entries
   -$sc->{name} --name [<ID>] [:<name>]         (re-, un-) name entry
-  -$sc->{edit} --edit [<ID>] '<code>'          edit project landing script
+  -$sc->{script} --script [<ID>] '<code>'        edit project landing script
 EOT
 }
 
@@ -235,7 +236,8 @@ sub settings{ <<EOT,
     move_dir                            allow --redir to rename dir in file system
   syntax:                             syntax of command line interface
     sigil:                              special character that start a kind of input
-      command: '-'                        first char of short command
+      command: '-'                        first char of short form command
+      help: '?'                           separator for help text (see --list-add)
       entry_name: ':'                     separator for entry name
       entry_position: '^'                 separator for list position
       target_entry: '>'                   separator between source and target
@@ -619,33 +621,33 @@ sub redir {
     If <dir> contains space (' '), '$sig->{target_entry}' or '$sig->{entry_name}', it has to be set in single quotes ('/a path').
 EOT
 }
-sub edit {
+sub script {
     my $config = shift;
-    my $sc = $config->{'syntax'}{'command_shortcut'}{'edit'};
+    my $sc = $config->{'syntax'}{'command_shortcut'}{'script'};
     my $sig = $config->{'syntax'}{'sigil'};
     <<EOT;
 
-  gt --edit      change landing script
- --------------------------------------
+  gt --script      change landing script
+ ----------------------------------------
 
-    Find an entry and change its <code> property - a snippet of perl code that is run,
-    after switching into the entries <dir>. It's output will be displayed.
+    Find an entry and change its <script> property - a snippet of perl code, that
+    is run, after switching into the entries <dir>. It's output will be displayed.
 
  USAGE:
 
-  --edit  [<entryID>] '<code>'|<file>    long command name
-   -$sc\[<entryID>] '<code>'|<file>         short alias
+  --script  [<entryID>] '<code>'|<file>    long command name
+   -$sc\[<entryID>] '<code>'|<file>           short alias
 
 
  EXAMPLES:
 
-  --edit 'say "dance"'       set code of default entry ($config->{'entry'}{'position_default'}) in current list to 'say "dance"'
-  --edit $sig->{entry_name}sol 'say "gg"'     set landing script code of entry bamed 'sol' to 'say "gg"'
-  --edit $sig->{entry_name}sol /dir/code.pl   set code of entry to content of file '/dir/code.pl'
-  --edit idle$sig->{entry_position}3 'say f2()'   set code of third entry in list 'idle' to 'say f2()'
-   -$sc\'say 99'                change <code> of default entry in current list to 'say 99'
+  --script 'say "dance"'       set code of default entry ($config->{'entry'}{'position_default'}) in current list to 'say "dance"'
+  --script $sig->{entry_name}sol 'say "gg"'     set landing script code of entry bamed 'sol' to 'say "gg"'
+  --script $sig->{entry_name}sol /dir/code.pl   set code of entry to content of file '/dir/code.pl'
+  --script idle$sig->{entry_position}3 'say f2()'   set code of third entry in list 'idle' to 'say f2()'
+   -$sc\'say 99'                change <script> of default entry in current list to 'say 99'
 
-    Space (' ') is after '$sig->{entry_position}' and '$sig->{entry_name}' not allowed, but after --path required.
+    Space (' ') is after '$sig->{entry_position}' and '$sig->{entry_name}' not allowed, but after --script required.
     Space before '$sig->{entry_position}' or '$sig->{entry_name}' and after -$sc is optional.
     <file> has to start with '/', '\\' or '~'. If <file> contains space (' '), '$sig->{target_entry}' or '$sig->{entry_name}',
     it has to be set in single quotes ('/a path/file.pl').
@@ -691,12 +693,14 @@ sub sort {
  -------------------------------------------
 
     Set the sorting criterion applied at the next use of --list (displays an entry list).
+    Unless the criterion is position, name or dir, --list inserts a fourth column
+    with the values that caused the sorting order (in a human readable format).
     After the list is displayed, the criterion switches back to default,
     unless the config key: list.sorted_by ($config->{list}{sorted_by}) is set to 'current'.
     The default criterion ($config->{list}{sort_default}) is set by the config key: list.sort_default.
     Calling --sort without an option also resets the criterion to default.
     Putting a '!' in front of the criterion means: reversed order.
-    Every option has a short alias.
+    Every option has a short alias as shown in the first, leftmost column.
 
  USAGE:
 
@@ -704,6 +708,7 @@ sub sort {
    -$sc$opt->{position}  --sort=position         obey user defined positional ordering of list
    -$sc$opt->{dir}  --sort=dir              alphanumeric ordering of directories
    -$sc$opt->{name}  --sort=name             alphanumeric ordering of entry names, unnamed last
+   -$sc$opt->{script}  --sort=script           alphanumeric ordering of landing scripts
    -$sc$opt->{visits}  --sort=visits           number of visits, most visited first
    -$sc$opt->{last_visit}  --sort=last_visit       time of last visit, the very last first
    -$sc$opt->{created}  --sort=created          time of creation, oldest first
