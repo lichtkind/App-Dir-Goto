@@ -89,7 +89,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 . . . . . . . . . . . . . . . . .also add to special list "new" for configured time`
 - `--del[ete] [<ID>] . . . . . . . delete entry with <ID> in all but special lists: all, bin (-d)
 . . . . . . . . . . . . . . . . . .and move to special list @bin, hard delete after configured time`
-- `--undel[ete] [<ID>] [> <lpos>]. remove from special list @bin  (-u)
+- `--undel[ete] [<ID>] [> <lpos>]. remove from special list @bin  (-u)`
 - `--rem[ove] [<ID>] . . . . . . . remove entry from chosen, but not special lists (-r)`
 - `--move [<IDa>] > <IDb>. . . . . move entry <IDa> to (position of) <IDb> (-m)`
 - `--copy [<IDa>] > <IDb>. . . . . copy entry <IDa> to (position of) <IDb> (-c)`
