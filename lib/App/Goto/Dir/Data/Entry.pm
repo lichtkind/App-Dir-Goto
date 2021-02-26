@@ -9,6 +9,7 @@ package App::Goto::Dir::Data::Entry;
 sub new {
     my ($pkg, $dir, $name) = @_;  # return "directory $dir does not exist" unless -d $dir;
     my $now = _now();
+    $dir //= '';
     bless { name => $name // '', script => '', pos => {},
             compact_dir => _compact_home_dir($dir), full_dir => _expand_home_dir($dir),
             create_time => _format_time_stamp($now), create_stamp => $now,

@@ -85,28 +85,26 @@ sub add_entry {
     if (ref $dir eq 'ARRAY') {
         return ' ! subdirectory of existing entry is missing' if @$dir < 2;
         return ' ! too many arguments for building a directory to add' if @$dir > 3;
-        my $entry;
         if (@$dir == 2){ # [name subdir]
-            if (substr( $dir->[0], 0, 1) eq $config->{'syntax'}{'sigil'}{'special_entry'}){
-                my $sd = $data->get_special_entry_dir( substr $target_ID, 1 );
-                return " ! there is no special entry named '$dir->[0]'" unless ref $sd;
-                $dir = File::Spec->catdir( $sd, $dir->[1] );
-            } else {
-                $entry = $data->get_entry( undef, $dir->[0] );
-                return " ! there is no entry named '$dir->[0]'" unless ref $entry;
-                $dir = File::Spec->catdir( $entry->full_dir, $dir->[1] );
-            }
-        } else { # [list pos subdir]
+            my $entry = $data->get_entry( undef, $dir->[0] );
+            return " ! there is no entry named '$dir->[0]'" unless ref $entry;
+            $dir = File::Spec->catdir( $entry->full_dir, $dir->[1] );
+        } elsif (@$dir == 3) { # [list pos subdir]
             return " ! there is no list named '$dir->[0]'" unless $data->list_exists( $dir->[0] );
-            $entry = $data->get_entry( $dir->[0], $dir->[1] );
-            return " ! there is no entry '$dir->[0]' in list '$dir->[1]'" unless ref $entry;
+            my $entry = $data->get_entry( $dir->[0], $dir->[1] );
+            return " ! there is no entry with name or position '$dir->[0]' in list '$dir->[1]'" unless ref $entry;
             $dir = File::Spec->catdir( $entry->full_dir, $dir->[2] );
-        }
+        } elsif (@$dir == 4) {
+            my $entry = $data->get_special_entry_dir( $dir->[0] );
+            return " ! there is no special entry named '$dir->[0]'" unless ref $entry;
+            $dir = File::Spec->catdir( $entry->full_dir, $dir->[1] );
+        } else {}
     }
     $dir  //= $cwd;
     $name //= '';
     $target_ID  //= $config->{'entry'}{'position_default'};
     $target_list_name //= App::Goto::Dir::Parse::is_position( $target_ID ) ? $data->get_current_list_name : $data->get_special_list_names('all');
+    return " ! '$dir' is not an accessible directory" if $config->{'entry'}{'dir_exists'} and not -d $dir;
     return " ! '$name' is not an entry name (only [a-zA-Z0-9_] starting with letter)" if $name and not App::Goto::Dir::Parse::is_name($name);
     return " ! entry name '$name' is too long, max length is $config->{entry}{name_length_max} character" if $name and length($name) > $config->{'entry'}{'name_length_max'};
     my $target_list  = $data->get_list( $target_list_name );
@@ -350,22 +348,32 @@ sub dir_entry {
     my $old_dir = $entry->full_dir;
     $entry->redirect( $new_dir );
     $data->get_list( $_)->refresh_reverse_hashes for $entry->member_of_lists;
+    $data->set_special_entry( 'dir', $entry );
     my $address = App::Goto::Dir::Parse::is_name( $entry_ID ) ?            $config->{'syntax'}{'sigil'}{'entry_position'}.$entry_ID
                                                               : $list_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$entry_ID;
     " - chanded directory of entry $address from '$old_dir' to '$new_dir'";
 }
 sub redir_entry {
-    my ($old_dir, $new_dir) = @_;
-    return " ! need two directory path as arguments" unless defined $new_dir;
-#    my ($self, $list_name, $entry_ID, $new_dir) = @_;
-#    return "missing source ID of entry to change dir path" unless defined $new_dir;
-#    return "directory $new_dir is already used" if ref $self->{'list_object'}{ $self->{'config'}{'list'}{'name'}{'all'} }->get_entry( $new_dir );
-#    my ($entry, $list) = $self->get_entry( $entry_ID );
-#    return $entry unless ref $entry;
-#    my $old_dir = $entry->full_dir;
-#    $entry->redirect($new_dir);
-#    $self->get_list( $_)->refresh_reverse_hashes for $entry->member_of_lists;
-#    ($entry, $old_dir);
+    my ($old_path, $new_path) = @_;
+    return " ! need two directory paths as arguments" unless defined $new_path;
+    return " ! '$new_path' is not an accessible directory" if $config->{'entry'}{'dir_exists'} and not -d $new_path;
+    $old_path = App::Goto::Dir::Data::Entry::_expand_home_dir($old_path);
+    $new_path = App::Goto::Dir::Data::Entry::_expand_home_dir($new_path);
+    my $all = $data->get_special_lists('all');
+    my $path_length = length $old_path;
+    my $ret = "";
+    for my $entry ($all->elems){
+        my $old_dir = $entry->full_dir;
+        next unless substr $old_dir, 0, $path_length eq $old_path;
+        my $new_dir = File::Spec->catdir( $new_path, substr $old_dir, $path_length );
+        $entry->redirect($new_dir);
+        $ret .= ($entry->name ? $entry->name : 'unnamed').$config->{'syntax'}{'sigil'}{'entry_name'}." $old_dir \n";
+    }
+    $ret = $ret ? " - changed dir '$old_path' to '$new_path' in\n$ret" : " - no entry stores a subdirectory of '$old_path'";
+    $data->get_list($_)->refresh_reverse_hashes() for $data->get_all_list_name;
+    rename $old_path, $new_path if $config->{'entry'}{'dir_move'};
+    $ret .= "\n   and renamed path '$old_path' to '$new_path'" if $config->{'entry'}{'dir_move'};
+    $ret;
 }
 
 sub name_entry {
@@ -383,13 +391,15 @@ sub name_entry {
         return " ! there is already an entry named '$new_name'" if $config->{'entry'}{'prefer_in_name_conflict'} eq 'old';
         $sibling->rename( '' );
         $named->remove_entry( $sibling );
+        $data->get_list( $_ )->refresh_reverse_hashes for $sibling->member_of_lists;
     }
     my $entry = $list->get_entry( $entry_ID );
     my $old_name = $entry->name;
     $entry->rename($new_name);
     $named->insert_entry( $entry ) if $new_name and not $old_name;
     $named->remove_entry( $entry ) if $old_name and not $new_name;
-    $data->get_list( $_ )->refresh_reverse_hashes for $sibling->member_of_lists, $entry->member_of_lists;
+    $data->get_list( $_ )->refresh_reverse_hashes for $entry->member_of_lists;
+    $data->set_special_entry( 'name', $entry );
     my $address = App::Goto::Dir::Parse::is_name( $entry_ID ) ?            $config->{'syntax'}{'sigil'}{'entry_position'}.$entry_ID
                                                               : $list_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$entry_ID;
     " - renamed entry $address from '$old_name' to '$new_name'";
@@ -402,10 +412,16 @@ sub script_entry {
     $entry_ID  //= $config->{'entry'}{'position_default'};
     $list_name //= App::Goto::Dir::Parse::is_name( $entry_ID ) ? $data->get_special_list_names('all') : $data->get_current_list_name ;
     $new_script //= '';
-    my $list  = $data->get_list( $list_name );
-    return " ! list named '$list_name' does not exist, please check --list-lists" unless ref $list;
-    my $entry = $list->get_entry( $entry_ID );
-    return " ! position or name '$entry_ID' does not exist in list '$list_name'" unless ref $entry;
+    my $entry;
+    if (ref $list_name){
+        $entry = $data->get_special_entry( $entry_ID );
+        return " ! special entry named '$config->{syntax}{sigil}{special_entry}$entry_ID' does not exist, please check --list-special" unless ref $entry;
+    } else {
+        my $list  = $data->get_list( $list_name );
+        return " ! list named '$list_name' does not exist, please check --list-lists" unless ref $list;
+        $entry = $list->get_entry( $entry_ID );
+        return " ! position or name '$entry_ID' does not exist in list '$list_name'" unless ref $entry;
+    }
     if (defined $file){
         open my $FH, '<', $file;
         while (<$FH>){
@@ -415,6 +431,7 @@ sub script_entry {
     }
     my $old_script = $entry->script;
     $entry->edit( $new_script );
+    $data->set_special_entry( 'script', $entry );
     my $address = App::Goto::Dir::Parse::is_name( $entry_ID ) ?            $config->{'syntax'}{'sigil'}{'entry_position'}.$entry_ID
                                                               : $list_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$entry_ID;
     " - replaced script of entry $address from '".App::Goto::Dir::Format::text($old_script, 20)."' to '".App::Goto::Dir::Format::text($new_script, 20)."'";
@@ -422,7 +439,20 @@ sub script_entry {
 
 sub goto_entry {
     my ($list_name, $entry_ID, $sub_dir) = @_;
-
+    $entry_ID  //= $config->{'entry'}{'position_default'};
+    $list_name //= App::Goto::Dir::Parse::is_name( $entry_ID ) ? $data->get_special_list_names('all') : $data->get_current_list_name ;
+    $sub_dir //= '';
+    my $entry;
+    if (ref $list_name){
+        $entry = $data->get_special_entry( $entry_ID );
+        return " ! special entry named '$config->{syntax}{sigil}{special_entry}$entry_ID' does not exist, please check --list-special" unless ref $entry;
+    } else {
+        my $list  = $data->get_list( $list_name );
+        return " ! list named '$list_name' does not exist, please check --list-lists" unless ref $list;
+        $entry = $list->get_entry( $entry_ID );
+        return " ! position or name '$entry_ID' does not exist in list '$list_name'" unless ref $entry;
+    }
+    $data->visit_entry($entry, $sub_dir);
 }
 
 1;

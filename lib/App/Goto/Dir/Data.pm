@@ -58,7 +58,11 @@ sub new {
     }
     my $all = $data->{'list_object'}{ $sl_name{'all'} };
     $data->{'special_entry'}{'last'}   = $all->get_entry( $all->pos_from_dir( $data->{'visits'}{'last_dir'} ) );
-    $data->{'special_entry'}{'previous'} = $all->get_entry( $all->pos_from_dir( $data->{'visits'}{'previous_dir'} ) );
+    $data->{'special_entry'}{'prev'}   = $data->{'special_entry'}{'previous'} =
+                                         $all->get_entry( $all->pos_from_dir( $data->{'visits'}{'previous_dir'} ) );
+    for my $name (get_special_entry_names()){
+        $data->{'special_entry'}{$name} = App::Goto::Dir::Data::Entry->new() unless ref $data->{'special_entry'}{$name};
+    }
     $data->{'special_list'} = \%sl_name;
     $data->{'config'} = $config;
     bless $data;
@@ -101,33 +105,30 @@ sub get_special_list_names{ my $self = shift; @{ $self->{'special_list'}}{ @_ } 
 
 #### entry API #########################################################
 
+sub get_special_entry_names{ qw/last previous add delete undelete remove move copy dir name script/ }
+
 sub visit_entry {
-    my ($self, $list_name, $entry_ID, $sub_dir) = @_;
-    $list_name //= $self->{'config'}{'syntax'}{'sigil'}{'special_list'}.$self->{'config'}{'list'}{'name'}{'all'};
-    my ($entry, $list) = $self->get_entry( $list_name, $entry_ID );
+    my ($self, $entry, $sub_dir) = @_;
     return $entry unless ref $entry;
     $entry->visit();
     ($self->{'visits'}{'previous_dir'},$self->{'visits'}{'previous_subdir'}) =
         ($self->{'visits'}{'last_dir'},$self->{'visits'}{'last_subdir'});
-    $self->{'special_entry'}{'previous'} = $self->{'special_entry'}{'last'};
+    $self->{'special_entry'}{'prev'} = $self->{'special_entry'}{'previous'} = $self->{'special_entry'}{'last'};
     $self->{'special_entry'}{'last'} = $entry;
     $self->{'visits'}{'last_dir'} = $entry->full_dir();
     $self->{'visits'}{'last_subdir'} = defined $sub_dir ? $sub_dir : '';
-    $entry, $list;
+    $entry;
 }
 sub visit_last_entry     { $_[0]->visit_entry( undef, $_[0]->{'special_entry'}{'last'},     $_[0]->{'visits'}{'last_subdir'} ) }
 sub visit_previous_entry { $_[0]->visit_entry( undef, $_[0]->{'special_entry'}{'previous'}, $_[0]->{'visits'}{'previous_subdir'} ) }
 
-sub get_special_entry_dir {
+sub get_special_entry {
     my ($self, $name) = @_;
-    if    ($name eq 'last')     { File::Spec->catdir( $self->{'visits'}{'last_dir'},     $self->{'visits'}{'last_subdir'})  }
-    elsif ($name eq 'previous') { File::Spec->catdir( $self->{'visits'}{'previous_dir'}, $self->{'visits'}{'previous_subdir'})  }
-    else                        { exists $self->{'special_entry'}{$name} ? $self->{'special_entry'}{$name}->full_dir() : File::Spec->catdir('') }
+    $self->{'special_entry'}{$name} if exists $self->{'special_entry'}{$name};
 }
 sub set_special_entry {
-    my ($self, $name, $entry) = @_;
-    return 'can not set last and previous directory in this way' if $name eq 'last' or $name eq 'previous';
-    return if ref $entry ne 'App::Goto::Dir::Data::Entry';
+    my ($self, $name, $entry, $list_name) = @_;
+    return if ref $entry ne 'App::Goto::Dir::Data::Entry' or not defined $list_name or not exists $self->{'list_object'}{$list_name};
     $self->{'special_entry'}{$name} = $entry;
 }
 

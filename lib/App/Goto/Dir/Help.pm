@@ -229,11 +229,12 @@ sub settings{ <<EOT,
     sorted_by: (current|default)      sorting criterion of list on app start
     sort_default: position            default sorting criterion
   entry:                              properties of entry lists
+    dir_move                            allow --redir to rename dir in file system
+    dir_exists                          accept only existing dir
     max_name_length: 5                  maximal entry name length
     position_default: -1                when list position is omitted take this
     prefer_in_name_conflict: (new|old)  How resolve name conflict (one entry looses it) ?
     prefer_in_dir_conflict: (new|old)   Create a new entry with already use dir or del old ?
-    move_dir                            allow --redir to rename dir in file system
   syntax:                             syntax of command line interface
     sigil:                              special character that start a kind of input
       command: '-'                        first char of short form command

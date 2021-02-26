@@ -67,8 +67,8 @@ my $app = App::Goto::Dir->new( $cwd );
 #say App::Goto::Dir::Command::run('--list','@all', '@new', '@bin', '@named', '@stale', 'use');
 #say App::Goto::Dir::Command::run('--move', 'use', 'p', 'idle');
 #say App::Goto::Dir::Command::run('--add', '~/Dokumente/vortrag');
-say App::Goto::Dir::Command::run('--sort','position');
-say App::Goto::Dir::Command::run('--list','@all', '@new', 'use', '@bin');
+#say App::Goto::Dir::Command::run('--sort','position');
+#say App::Goto::Dir::Command::run('--list','@all', '@new', 'use', '@bin');
 #say App::Goto::Dir::Config::reset();
 #say App::Goto::Dir::Command::run('--sort', 'vis');
 #say App::Goto::Dir::Command::run('--list', '@all');
@@ -77,6 +77,12 @@ say App::Goto::Dir::Command::run('--list','@all', '@new', 'use', '@bin');
 #say App::Goto::Dir::Parse::is_position('4');
 
 say App::Goto::Dir::Command::run('--list-lists');
+say App::Goto::Dir::Command::run('--list-special');
+
+my $data = $app->{'data'};
+my $all = $data->get_special_lists('all');
+my $pos = $all->pos_from_name('');
+say $pos;
 
 say '   run goto test in ', sprintf("%.4f",timediff( Benchmark->new, $t)->[1]), ' sec';
 

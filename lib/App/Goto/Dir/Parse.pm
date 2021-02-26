@@ -4,11 +4,14 @@ use File::Spec;
 
 package App::Goto::Dir::Parse;
 
-my %command = ('add' => [0, 0, 0, 0], # i: 0 - option ; 1..n - arg required?
+my $config;
+my %command = ('add' => [0, 0, 0, 0, 0], # i: 0 - option ; 1..n - arg required?
                'del' => 'delete',
             'delete' => [0, 0],
+             'undel' => 'undelete',
           'undelete' => [0, 0],
                 'rm' => 'remove',
+               'rem' => 'remove',
             'remove' => [0, 0],
                 'mv' => 'move',
               'move' => [0, 0, 1],
@@ -26,10 +29,12 @@ my %command = ('add' => [0, 0, 0, 0], # i: 0 - option ; 1..n - arg required?
           'list-del' => 'list-delete',
        'list-delete' => [0, 1],
          'list-name' => [0, 1, 1],
-         'list-list' => [0],
+        'list-descr' => 'list-description',
+  'list-description' => [0, 1, 1],
+        'list-lists' => [0],
 );
-my %cmd_argument = ( 'add' => [qw/dir name target/],
-                    delete => ['source'],
+my %cmd_argument = ( 'add' => [qw/dir name list entry/],
+                    delete => ['list', 'entry'],
                   undelete => ['source', 'target'],
                     remove => ['source'],
                       move => ['source', 'target'],
@@ -37,16 +42,21 @@ my %cmd_argument = ( 'add' => [qw/dir name target/],
                       name => ['source', 'name'],
                        dir => ['source', 'dir'],
                      redir => ['dir', '>>', 'dir'],
+                    script => ['source', 'text'],
                       help => ['command'],
                 'list-add' => ['name'],
              'list-delete' => ['name'],
                'list-name' => ['name', 'name'],
+        'list-description' => ['name', 'text'],
 );
 my %cmd_option  = ( list => [qw/add del/],
                     sort => [qw/created dir last_visit position name visits/]
 );
-my %cmd_shortcut = (  add =>'a',delete =>'d', copy => 'c', move =>'m', remove =>  'r', name =>'n', path => 'p',
-                     sort =>'s',  list =>'l', 'last' =>'_', 'previous' => '-' , help =>'h' ,); # undo =>'<', redo =>'>',
+my %cmd_shortcut = (  add =>'a', delete =>'d', undelete =>'u',   copy =>'c', move =>'m', remove =>  'r',
+                     name =>'N',    dir =>'D',     edir =>'R', script =>'S',
+                     'list-add' =>'l-a', 'list-delete' =>'l-d', 'list-name' =>'l-N', 'list-description' =>'l-D',
+                     sort =>'s',  list =>'l', 'last' =>'_', 'previous' => '-' , help =>'h' ,
+                   ); # undo =>'<', redo =>'>',
 my %opt_shortcut = ( sort => { created => 'c', dir => 'd', last_visit => 'l', position => 'p',  name => 'n',  visits => 'v' },
                      help => {                all => 'a',      usage => 'u', commands => 'c', },
 );
@@ -59,7 +69,7 @@ my $sigil_enty     = '*';
 
 # - : ,
 sub init {
-    my ($config)  = @_;
+    ($config)  = @_;
     %cmd_shortcut  = %{ $config->{'syntax'}{'command_shortcut'}};
     %command_sc     = map { $cmd_shortcut{$_} => $_ } keys %cmd_shortcut;
     %opt_shortcut     = %{ $config->{'syntax'}{'option_shortcut'}};

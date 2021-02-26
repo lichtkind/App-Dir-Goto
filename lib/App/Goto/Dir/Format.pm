@@ -25,7 +25,7 @@ sub special_entries {
     my $space = '. 'x(3+int($config->{'list'}{'name_length_max'}/2));
     my $ret = "  special entries on Goto::Dir (start with $sig):\n".
               " ---------------------------------------------\n";
-    $ret .= '  '.$sig.$_.substr($space, length $_).$data->get_special_dir($_)."\n" for qw/last previous add delete remove move copy dir name edit/;
+    $ret .= '  '.$sig.$_.substr($space, length $_).$data->get_special_entry($_)->dir."\n" for $data->get_special_entry_names;
     $ret."\n";
 }
 
