@@ -60,21 +60,21 @@ sub entries {
     $max_dir_length -=  4 if $sorted eq 'visits';
     $max_dir_length -= 22 if $sorted eq 'last_visit' or $sorted eq 'created';
     $max_dir_length -= 35 if $sorted eq 'script';
-    map { $_->{'dir'} = dir($_->{'el'}->dir, $max_dir_length)} @el;
+    map { $_->{'dir'} = text( $_->{'el'}->dir, $max_dir_length) } @el;
     my $formstart = "  [%02u]  %-".$nl."s ";
     if    ($sorted eq 'visits')    {$ret.= sprintf ("$formstart%02u  %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'el'}->visit_count, $_->{'dir'}) for @el }
     elsif ($sorted eq 'last_visit'){$ret.= sprintf ("$formstart%s  %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'el'}->visit_time, $_->{'dir'}) for @el }
     elsif ($sorted eq 'created')   {$ret.= sprintf ("$formstart%s  %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'el'}->create_time, $_->{'dir'}) for @el }
-    elsif ($sorted eq 'script')    {$ret.= sprintf ("$formstart %-31s %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'dir'},  dir($_->{'el'}->script, 35)) for @el }
+    elsif ($sorted eq 'script')    {$ret.= sprintf ("$formstart %-31s %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'dir'},  text($_->{'el'}->script, 35)) for @el }
     else                           {$ret.= sprintf ("$formstart %s\n", $_->{'pos'}, $_->{'el'}->name, $_->{'dir'} ) for @el }
     $ret."\n";
 }
 
-sub dir {
-    my ($dir, $length) = @_;
-    return '' unless defined $dir;
-    return $dir if length $dir < $length;
-    substr($dir, 0, int($length/2)-1) . '..' . substr $dir, -int($length/2);
+sub text {
+    my ($text, $length) = @_;
+    return '' unless defined $text;
+    return $text if length $text < $length;
+    substr($text, 0, int ($length/2)-1) . '..' . substr $text, -int ($length/2);
 }
 
 my %sopt;

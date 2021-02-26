@@ -110,7 +110,7 @@ sub add_entry {
     return " ! '$name' is not an entry name (only [a-zA-Z0-9_] starting with letter)" if $name and not App::Goto::Dir::Parse::is_name($name);
     return " ! entry name '$name' is too long, max length is $config->{entry}{name_length_max} character" if $name and length($name) > $config->{'entry'}{'name_length_max'};
     my $target_list  = $data->get_list( $target_list_name );
-    return " ! target list named '$target_list_name' does not exist, check --list-lists" unless ref $target_list;
+    return " ! target list named '$target_list_name' does not exist, please check --list-lists" unless ref $target_list;
     my $pos = $target_list->pos_from_ID( $target_ID, 'target' );
     return " ! position or name '$target_ID' does not exist in list '$target_list_name'" unless $pos;
     my $entry = App::Goto::Dir::Data::Entry->new($dir, $name);
@@ -131,7 +131,7 @@ sub delete_entry {
     $entry_ID  //= $config->{'entry'}{'position_default'};
     $list_name  //= App::Goto::Dir::Parse::is_position( $entry_ID ) ? $data->get_current_list_name : $data->get_special_list_names('all');
     my $list  = $data->get_list( $list_name );
-    return " ! list named '$list_name' does not exist, check --list-lists" unless ref $list;
+    return " ! list named '$list_name' does not exist, please check --list-lists" unless ref $list;
     if (ref $entry_ID eq 'ARRAY'){
         $entry_ID->[0] //= 1;
         $entry_ID->[1] //= -1;
@@ -163,7 +163,7 @@ sub delete_entry {
         my $entry_address = App::Goto::Dir::Parse::is_position( $ID ) ? $list_name.$config->{'syntax'}{'sigil'}{'entry_position'}.$pos
                                                                       : $config->{'syntax'}{'sigil'}{'entry_name'}.$ID;
         $ret .= $was_del ? " ! '$entry_address' was already deleted\n"
-                         : " - deleted entry '$entry_address' ".App::Goto::Dir::Format::dir($entry->full_dir(), 30)." from lists: $lnames\n";
+                         : " - deleted entry '$entry_address' ".App::Goto::Dir::Format::text($entry->full_dir(), 30)." from lists: $lnames\n";
         $data->set_special_entry( 'del', $entry );
         $data->set_special_entry( 'delete', $entry );
     }
@@ -177,7 +177,7 @@ sub undelete_entry {
     $target_entry_ID  //= $config->{'entry'}{'position_default'};
     $target_list_name //= $data->get_current_list_name;
     my $target_list  = $data->get_list( $target_list_name );
-    return " ! target list named '$target_list_name' does not exist, check --list-lists" unless ref $target_list;
+    return " ! target list named '$target_list_name' does not exist, please check --list-lists" unless ref $target_list;
     my $target_pos = $target_list->pos_from_ID( $target_entry_ID, 'target' );
     return " ! position or name '$target_entry_ID' does not exist in list '$target_list_name'" unless $target_pos;
     my $target_address = App::Goto::Dir::Parse::is_position($target_entry_ID) ? $target_list_name.$config->{'syntax'}{'sigil'}{'entry_position'}.$target_entry_ID
@@ -204,7 +204,7 @@ sub undelete_entry {
         $target_list->insert_entry( $entry, $target_pos ) if $has_target;
         my $src_address = App::Goto::Dir::Parse::is_position( $ID ) ? $bin->get_name.$config->{'syntax'}{'sigil'}{'entry_position'}.$ID
                                                                     : $bin->get_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$ID;
-        $ret .= " - undeleted entry '$src_address' ".App::Goto::Dir::Format::dir($entry->full_dir(), 30)
+        $ret .= " - undeleted entry '$src_address' ".App::Goto::Dir::Format::text($entry->full_dir(), 30)
                 .($has_target ? " and moved to '$target_address'\n" : "\n");
         $data->set_special_entry( 'undel', $entry );
         $data->set_special_entry( 'undelete', $entry );
@@ -218,15 +218,15 @@ sub remove_entry {
     $entry_ID  //= $config->{'entry'}{'position_default'};
     $list_name //= $data->get_current_list_name;
     my $list  = $data->get_list( $list_name );
-    return " ! list named '$list_name' does not exist, check --list-lists" unless ref $list;
-    return " ! list '$list_name' is not regular, check --list-lists" if $list->is_special;
+    return " ! list named '$list_name' does not exist, please check --list-lists" unless ref $list;
+    return " ! list '$list_name' is not regular, please check --list-lists" if $list->is_special;
     if (ref $entry_ID eq 'ARRAY'){
         $entry_ID->[0] //= 1;
         $entry_ID->[1] //= -1;
         my $start_pos = $list->pos_from_ID( $entry_ID->[0] );
         my $end_pos = $list->pos_from_ID( $entry_ID->[1] );
-        return " ! '$entry_ID->[0]' is not a valid position in list '".$list->get_name."', check --list ".$list->get_name unless $start_pos;
-        return " ! '$entry_ID->[1]' is not a valid position in list '".$list->get_name."', check --list ".$list->get_name unless $end_pos;
+        return " ! '$entry_ID->[0]' is not a valid position in list '".$list->get_name."', please check --list ".$list->get_name unless $start_pos;
+        return " ! '$entry_ID->[1]' is not a valid position in list '".$list->get_name."', please check --list ".$list->get_name unless $end_pos;
         $entry_ID = [$start_pos .. $end_pos];
     } else {
         return " ! position or name '$entry_ID' does not exist in list '$list_name'" unless $list->pos_from_ID( $entry_ID );
@@ -237,7 +237,7 @@ sub remove_entry {
         my $entry = $list->remove_entry( $ID );
         my $entry_address = App::Goto::Dir::Parse::is_position( $ID ) ? $list->get_name.$config->{'syntax'}{'sigil'}{'entry_position'}.$ID
                                                                       : $list->get_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$ID;
-        $ret .= " - removed entry '$entry_address' ".App::Goto::Dir::Format::dir($entry->full_dir(), 30)."\n";
+        $ret .= " - removed entry '$entry_address' ".App::Goto::Dir::Format::text($entry->full_dir(), 30)."\n";
         $data->set_special_entry( $_, $entry ) for qw/move vm/;
     }
     chomp($ret);
@@ -249,13 +249,13 @@ sub move_entry {
     $source_list_name //= $data->get_current_list_name;
     $source_entry_ID  //= $config->{'entry'}{'position_default'};
     $target_list_name //= $data->get_current_list_name;
-    return " ! missing target entry ID (name or position) to which move entries" unless defined $target_entry_ID;
+    $target_entry_ID  //= $config->{'entry'}{'position_default'};
     my $source_list  = $data->get_list( $source_list_name );
     my $target_list  = $data->get_list( $target_list_name );
-    return " ! source list named '$source_list_name' does not exist, check --list-lists" unless ref $source_list;
-    return " ! target list named '$target_list_name' does not exist, check --list-lists" unless ref $target_list;
-    return " ! source list of --move has to be regular or same as target, check --list-lists" if ref $source_list->is_special and $source_list ne $target_list;
-    return " ! target list of --move has to be regular or same as source, check --list-lists" if ref $target_list->is_special and $source_list ne $target_list;
+    return " ! source list named '$source_list_name' does not exist, please check --list-lists" unless ref $source_list;
+    return " ! target list named '$target_list_name' does not exist, please check --list-lists" unless ref $target_list;
+    return " ! source list of --move has to be regular or same as target, please check --list-lists" if ref $source_list->is_special and $source_list ne $target_list;
+    return " ! target list of --move has to be regular or same as source, please check --list-lists" if ref $target_list->is_special and $source_list ne $target_list;
     my $target_pos = $target_list->pos_from_ID( $target_entry_ID, 'target' );
     return " ! target position or name '$target_entry_ID' does not exist in list '$target_list_name'" unless $target_pos;
     if (ref $source_entry_ID eq 'ARRAY'){
@@ -280,7 +280,7 @@ sub move_entry {
         return "$ret ! $insert_error" unless ref $insert_error;
         my $src_address = App::Goto::Dir::Parse::is_position( $ID ) ? $source_list_name.$config->{'syntax'}{'sigil'}{'entry_position'}.$ID
                                                                     : $source_list_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$ID;
-        $ret .= " - moved entry '$src_address' to '$target_address' ".App::Goto::Dir::Format::dir($entry->full_dir(), 30)."\n";
+        $ret .= " - moved entry '$src_address' to '$target_address' ".App::Goto::Dir::Format::text($entry->full_dir(), 30)."\n";
         $data->set_special_entry( $_, $entry ) for qw/remove rem rm/;
     }
     chomp($ret);
@@ -289,15 +289,15 @@ sub move_entry {
 
 sub copy_entry {
     my ($source_list_name, $source_entry_ID, $target_list_name, $target_entry_ID) = @_;
-    $source_list_name //= $data->get_current_list_name;
     $source_entry_ID  //= $config->{'entry'}{'position_default'};
-    return " ! missing target list (name) to which copy entries"                 unless defined $target_list_name;
-    return " ! missing target entry ID (name or position) to which copy entries" unless defined $target_entry_ID;
-    return " ! source and target list have to be different" if $source_list_name eq $target_list_name;
+    $target_entry_ID  //= $config->{'entry'}{'position_default'};
+    $source_list_name //= App::Goto::Dir::Parse::is_name( $source_entry_ID ) ? $data->get_special_list_names('all') : $data->get_current_list_name ;
+    $target_list_name //= $data->get_current_list_name;
+    return " ! source and target list have to be different, both are '$source_list_name'" if $source_list_name eq $target_list_name;
     my $source_list  = $data->get_list( $source_list_name );
     my $target_list  = $data->get_list( $target_list_name );
-    return " ! source list named '$source_list_name' does not exist, check --list-lists" unless ref $source_list;
-    return " ! target list named '$target_list_name' does not exist, check --list-lists" unless ref $target_list;
+    return " ! source list named '$source_list_name' does not exist, please check --list-lists" unless ref $source_list;
+    return " ! target list named '$target_list_name' does not exist, please check --list-lists" unless ref $target_list;
     return " ! target list of --copy has to be regular, check --list-lists" if ref $target_list->is_special;
     my $target_pos = $target_list->pos_from_ID( $target_entry_ID, 'target' );
     return " ! position or name '$target_entry_ID' does not exist in list '$target_list_name'" unless $target_pos;
@@ -323,7 +323,7 @@ sub copy_entry {
         return "$ret ! $insert_error" unless ref $insert_error;
         my $src_address = App::Goto::Dir::Parse::is_position( $ID ) ? $source_list_name.$config->{'syntax'}{'sigil'}{'entry_position'}.$ID
                                                                     : $source_list_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$ID;
-        $ret .= " - copied entry '$src_address' to '$target_address' ".App::Goto::Dir::Format::dir($entry->full_dir(), 30)."\n";
+        $ret .= " - copied entry '$src_address' to '$target_address' ".App::Goto::Dir::Format::text($entry->full_dir(), 30)."\n";
         $data->set_special_entry( $_, $entry ) for qw/copy cp/;
     }
     chomp($ret);
@@ -331,7 +331,32 @@ sub copy_entry {
 }
 
 sub dir_entry {
-    my ($list_name, $entry_ID, $dir) = @_;
+    my ($list_name, $entry_ID, $new_dir) = @_;
+    return " ! missing directory path as argument" unless defined $new_dir;
+    $entry_ID  //= $config->{'entry'}{'position_default'};
+    $list_name //= App::Goto::Dir::Parse::is_name( $entry_ID ) ? $data->get_special_list_names('all') : $data->get_current_list_name ;
+    my $list  = $data->get_list( $list_name );
+    return " ! list named '$list_name' does not exist, please check --list-lists" unless ref $list;
+    my $pos = $list->pos_from_ID( $entry_ID );
+    return " ! position or name '$entry_ID' does not exist in list '$list_name'" unless $pos;
+    my ($all, $stale) = $data->get_special_lists(qw/all stale/);
+    my $sibling_pos = $all->pos_from_dir( $new_dir );
+    if ($sibling_pos){
+        return " ! there is already an entry with dir '$new_dir'" if $config->{'entry'}{'prefer_in_dir_conflict'} eq 'old';
+        my $sibling = $all->get_entry( $sibling_pos );
+        $data->get_list($_)->remove_entry( $sibling ) for $sibling->member_of_lists ;
+    }
+    my $entry = $list->get_entry( $entry_ID );
+    my $old_dir = $entry->full_dir;
+    $entry->redirect( $new_dir );
+    $data->get_list( $_)->refresh_reverse_hashes for $entry->member_of_lists;
+    my $address = App::Goto::Dir::Parse::is_name( $entry_ID ) ?            $config->{'syntax'}{'sigil'}{'entry_position'}.$entry_ID
+                                                              : $list_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$entry_ID;
+    " - chanded directory of entry $address from '$old_dir' to '$new_dir'";
+}
+sub redir_entry {
+    my ($old_dir, $new_dir) = @_;
+    return " ! need two directory path as arguments" unless defined $new_dir;
 #    my ($self, $list_name, $entry_ID, $new_dir) = @_;
 #    return "missing source ID of entry to change dir path" unless defined $new_dir;
 #    return "directory $new_dir is already used" if ref $self->{'list_object'}{ $self->{'config'}{'list'}{'name'}{'all'} }->get_entry( $new_dir );
@@ -343,44 +368,56 @@ sub dir_entry {
 #    ($entry, $old_dir);
 }
 
-sub redir_entry {
-    my ($old_dir, $new_dir) = @_;
-#    my ($self, $list_name, $entry_ID, $new_dir) = @_;
-#    return "missing source ID of entry to change dir path" unless defined $new_dir;
-#    return "directory $new_dir is already used" if ref $self->{'list_object'}{ $self->{'config'}{'list'}{'name'}{'all'} }->get_entry( $new_dir );
-#    my ($entry, $list) = $self->get_entry( $entry_ID );
-#    return $entry unless ref $entry;
-#    my $old_dir = $entry->full_dir;
-#    $entry->redirect($new_dir);
-#    $self->get_list( $_)->refresh_reverse_hashes for $entry->member_of_lists;
-#    ($entry, $old_dir);
-}
 sub name_entry {
     my ($list_name, $entry_ID, $new_name) = @_;
-#    my ($self, $list_name, $entry_ID, $new_name) = @_;
-#    my ($entry, $list) = $self->get_entry( $entry_ID );
-#    return $entry unless ref $entry;
+    $entry_ID  //= $config->{'entry'}{'position_default'};
+    $list_name //= App::Goto::Dir::Parse::is_name( $entry_ID ) ? $data->get_special_list_names('all') : $data->get_current_list_name ;
     $new_name //= '';
-#    my $all_entry = $self->get_special_lists('all');
-#    my $sibling = $all_entry->get_entry( $new_name );
-#    if ($new_name and ref $sibling){
-#        return "name $new_name is already taken" if $self->{'config'}{'entry'}{'prefer_in_name_conflict'} eq 'old';
-#        $self->rename_entry( undef, $new_name, '');
-#    }
-#    my $old_name = $entry->name;
-#    $entry->rename( $new_name );
-#    $self->get_list( $_)->refresh_reverse_hashes for $entry->member_of_lists;
-#    ($entry, $old_name);
+    my $list  = $data->get_list( $list_name );
+    return " ! list named '$list_name' does not exist, please check --list-lists" unless ref $list;
+    my $pos = $list->pos_from_ID( $entry_ID );
+    return " ! position or name '$entry_ID' does not exist in list '$list_name'" unless $pos;
+    my ($all, $named) = $data->get_special_lists(qw/all named/);
+    my $sibling = $all->get_entry( $new_name );
+    if (ref $sibling){
+        return " ! there is already an entry named '$new_name'" if $config->{'entry'}{'prefer_in_name_conflict'} eq 'old';
+        $sibling->rename( '' );
+        $named->remove_entry( $sibling );
+    }
+    my $entry = $list->get_entry( $entry_ID );
+    my $old_name = $entry->name;
+    $entry->rename($new_name);
+    $named->insert_entry( $entry ) if $new_name and not $old_name;
+    $named->remove_entry( $entry ) if $old_name and not $new_name;
+    $data->get_list( $_ )->refresh_reverse_hashes for $sibling->member_of_lists, $entry->member_of_lists;
+    my $address = App::Goto::Dir::Parse::is_name( $entry_ID ) ?            $config->{'syntax'}{'sigil'}{'entry_position'}.$entry_ID
+                                                              : $list_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$entry_ID;
+    " - renamed entry $address from '$old_name' to '$new_name'";
 }
 
 sub script_entry {
-    my ($list_name, $entry_ID, $script) = @_;
-#    my ($self, $list_name, $entry_ID, $script) = @_;
-#    $script //= '';
-#    my ($entry, $list) = $self->get_entry( $entry_ID );
-#    return $entry unless ref $entry;
-#    my $old_script = $entry->script;
-#    ($entry, $old_script);
+    my ($list_name, $entry_ID, $new_script, $file) = @_;
+    return " ! need only a single quoted perl script OR a file path as argument" unless defined $new_script and defined $file;
+    return " ! file $file does not exists or is not readable" if defined $file and not -r $file;
+    $entry_ID  //= $config->{'entry'}{'position_default'};
+    $list_name //= App::Goto::Dir::Parse::is_name( $entry_ID ) ? $data->get_special_list_names('all') : $data->get_current_list_name ;
+    $new_script //= '';
+    my $list  = $data->get_list( $list_name );
+    return " ! list named '$list_name' does not exist, please check --list-lists" unless ref $list;
+    my $entry = $list->get_entry( $entry_ID );
+    return " ! position or name '$entry_ID' does not exist in list '$list_name'" unless ref $entry;
+    if (defined $file){
+        open my $FH, '<', $file;
+        while (<$FH>){
+            chomp;
+            $new_script .= $_;
+        }
+    }
+    my $old_script = $entry->script;
+    $entry->edit( $new_script );
+    my $address = App::Goto::Dir::Parse::is_name( $entry_ID ) ?            $config->{'syntax'}{'sigil'}{'entry_position'}.$entry_ID
+                                                              : $list_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$entry_ID;
+    " - replaced script of entry $address from '".App::Goto::Dir::Format::text($old_script, 20)."' to '".App::Goto::Dir::Format::text($new_script, 20)."'";
 }
 
 sub goto_entry {
