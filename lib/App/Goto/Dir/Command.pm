@@ -332,11 +332,17 @@ sub dir_entry {
     my ($list_name, $entry_ID, $new_dir) = @_;
     return " ! missing directory path as argument" unless defined $new_dir;
     $entry_ID  //= $config->{'entry'}{'position_default'};
-    $list_name //= App::Goto::Dir::Parse::is_name( $entry_ID ) ? $data->get_special_list_names('all') : $data->get_current_list_name ;
-    my $list  = $data->get_list( $list_name );
-    return " ! list named '$list_name' does not exist, please check --list-lists" unless ref $list;
-    my $pos = $list->pos_from_ID( $entry_ID );
-    return " ! position or name '$entry_ID' does not exist in list '$list_name'" unless $pos;
+    $list_name //= App::Goto::Dir::Parse::is_name( $entry_ID ) ? $data->get_special_list_names('all') : $data->get_current_list_name;
+    my $entry;
+    if (ref $list_name){
+        $entry = $data->get_special_entry( $entry_ID );
+        return " ! special entry named '$config->{syntax}{sigil}{special_entry}$entry_ID' does not exist, please check --list-special" unless ref $entry;
+    } else {
+        my $list  = $data->get_list( $list_name );
+        return " ! list named '$list_name' does not exist, please check --list-lists" unless ref $list;
+        $entry = $list->get_entry( $entry_ID );
+        return " ! position or name '$entry_ID' does not exist in list '$list_name'" unless ref $entry;
+    }
     my ($all, $stale) = $data->get_special_lists(qw/all stale/);
     my $sibling_pos = $all->pos_from_dir( $new_dir );
     if ($sibling_pos){
@@ -344,7 +350,6 @@ sub dir_entry {
         my $sibling = $all->get_entry( $sibling_pos );
         $data->get_list($_)->remove_entry( $sibling ) for $sibling->member_of_lists ;
     }
-    my $entry = $list->get_entry( $entry_ID );
     my $old_dir = $entry->full_dir;
     $entry->redirect( $new_dir );
     $data->get_list( $_)->refresh_reverse_hashes for $entry->member_of_lists;
@@ -381,10 +386,16 @@ sub name_entry {
     $entry_ID  //= $config->{'entry'}{'position_default'};
     $list_name //= App::Goto::Dir::Parse::is_name( $entry_ID ) ? $data->get_special_list_names('all') : $data->get_current_list_name ;
     $new_name //= '';
-    my $list  = $data->get_list( $list_name );
-    return " ! list named '$list_name' does not exist, please check --list-lists" unless ref $list;
-    my $pos = $list->pos_from_ID( $entry_ID );
-    return " ! position or name '$entry_ID' does not exist in list '$list_name'" unless $pos;
+    my $entry;
+    if (ref $list_name){
+        $entry = $data->get_special_entry( $entry_ID );
+        return " ! special entry named '$config->{syntax}{sigil}{special_entry}$entry_ID' does not exist, please check --list-special" unless ref $entry;
+    } else {
+        my $list  = $data->get_list( $list_name );
+        return " ! list named '$list_name' does not exist, please check --list-lists" unless ref $list;
+        $entry = $list->get_entry( $entry_ID );
+        return " ! position or name '$entry_ID' does not exist in list '$list_name'" unless ref $entry;
+    }
     my ($all, $named) = $data->get_special_lists(qw/all named/);
     my $sibling = $all->get_entry( $new_name );
     if (ref $sibling){
@@ -393,7 +404,6 @@ sub name_entry {
         $named->remove_entry( $sibling );
         $data->get_list( $_ )->refresh_reverse_hashes for $sibling->member_of_lists;
     }
-    my $entry = $list->get_entry( $entry_ID );
     my $old_name = $entry->name;
     $entry->rename($new_name);
     $named->insert_entry( $entry ) if $new_name and not $old_name;
