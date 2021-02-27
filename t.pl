@@ -28,7 +28,7 @@ my $app = App::Goto::Dir->new( $cwd );
 
 #say App::Goto::Dir::Command::run('--help');
 #say App::Goto::Dir::Command::run('--help', 'basics');
-#say App::Goto::Dir::Command::run('--help', 'commands');
+say App::Goto::Dir::Command::run('--help', 'commands');
 #say App::Goto::Dir::Command::run('--help', 'install');
 #say App::Goto::Dir::Command::run('--help', 'version');
 #say App::Goto::Dir::Command::run('--help', '--add');
