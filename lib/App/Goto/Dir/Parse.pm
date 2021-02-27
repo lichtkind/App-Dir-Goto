@@ -112,53 +112,55 @@ sub run_command {
 1;
 
 __END__
-
                                     command => '-',
                                  entry_name => ':',
                                        help => '?',
+                                       file => '<',
                              entry_position => '^',
                                target_entry => '>',
                               special_entry => '+',
                                special_list => '@',
 
-
 <pos>        = -?\d+
 <name>       = [a-zA-Z]\w*
-<dir>        = [/\~][^$sig->{target_entry}$sig->{entry_name} ]*
 <text>       = '.*(?<!\\)'
+<dir>        = [/\~][^$sig->{target_entry}$sig->{entry_name} ]*
+<file>       = \S+|<text>
+<ws>         = \s*
 
 <list_name>  = $sig->{special_list}?<name>
 <special>    = $sig->{special_entry}<name>
 <entry_name> = (<list_name>?$sig->{entry_name})?<name>
 <entry_pos>  = (<list_name>?$sig->{entry_position})?<pos>
+<list_elems> = (sig->{entry_position}?<pos>)|(sig->{entry_position}?<pos>?..<pos>?)|($sig->{entry_name}?<name>)
 <entry>      = (<special>|<entry_name>|<entry_pos>)?
 <source>     = <entry>|(<list_name>?$sig->{entry_position})?<pos>?..<pos>?
 <target>     = <entry>
-<path>       = <entry><dir>
-
-|add| = (<dir>|<path>)?\s*<name>\s*><target>
+<path>       = <entry>?(<text>|<dir>)
 
 
-  -h --help[=b|c|i|s| <command>]     topic or command specific help texts
-  -s --sort=D|S|c|l|n|p|v            set sorting criterion of list display
-  -l  --list [<listname>]            change current list and display it
-  -l-s --list-special                display all special entries
-  -l-l --list-lists                  display available list names
-  -l-a --list-add <name> ? <Desc.>   create a new list
-  -l-d --list-del[ete] <name>        delete list with <listname> (has to be empty)
-  -l-N --list-name <name>:<newname>  rename list, conflicts not allowed
-  -l-D --list-description <name>?<D> change list description
-  -a --add <dir>[:<name>] [> <ID>]   add directory <dir> under <name> to a list
-  -d --del[ete] [<ID>]               delete dir entries from all regular lists
-  -u --undel[ete] [<ID>]             undelete dir entries from bin
-  -r --rem[ove] [<ID>]               remove dir entries from a chosen lists
-  -m --move [<IDa>] > <IDb>          move dir entry <IDa> to (position of) <IDb>
-  -c --copy [<IDa>] > <IDb>          copy entry <IDa> to (position of) <IDb>
-  -D --dir [<ID>] <dir>              change directory of one entry
-  -R --redir <old_dir> >> <newdir>   change root directory of more entries
-  -N --name [<ID>] [:<name>]         (re-, un-) name entry
-  -S --script [<ID>] '<code>'        edit project landing script
-
+|goto-last|      = $spec->{last}
+|goto-previous|  = $spec->{previous}
+|goto|           = <entry>
+|add|            = <path>?<ws><name><ws>$sig->{target_entry}<ws><target>
+|delete|         = <source>
+|undelete|       = <list_elems><ws>$sig->{target_entry}<ws><target>
+|remove|         = <source>
+|move|           = <source><ws>$sig->{target_entry}<ws><target>
+|copy|           = <source><ws>$sig->{target_entry}<ws><target>
+|redir|          = <path><ws>>><ws><path>
+|dir|            = <target><ws>(<dir>|<text>)
+|name|           = <target><ws>($sig->{entry_name}<name>)?
+|script|         = <target><ws>(<text>|$sig->{file}<file>)
+|help|           = (=opt|@cmd)?
+|sort|           = (=opt|sopt)?
+|list|           = <list_name>+
+|list-special|   = //
+|list-lists|     = //
+|list-add|       = <name> <ws>$sig->{target_entry}<text>
+|list-delete|    = <name>
+|list-name|      = <list_name><ws>[ $sig->{entry_name}]<list_name>
+|list-description| = <list_name><ws><text>
 
 $fmt1 = '(?<y>\d\d\d\d)-(?<m>\d\d)-(?<d>\d\d)';
 $fmt2 = '(?<m>\d\d)/(?<d>\d\d)/(?<y>\d\d\d\d)';

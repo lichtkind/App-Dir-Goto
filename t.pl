@@ -40,7 +40,7 @@ say App::Goto::Dir::Command::run('--help', 'commands');
 #say App::Goto::Dir::Command::run('--help', '--name');
 #say App::Goto::Dir::Command::run('--help', '--dir');
 #say App::Goto::Dir::Command::run('--help', '--redir');
-#say App::Goto::Dir::Command::run('--help', '--script');
+say App::Goto::Dir::Command::run('--help', '--script');
 #say App::Goto::Dir::Command::run('--help', '--list');
 #say App::Goto::Dir::Command::run('--help', '--sort');
 #say App::Goto::Dir::Command::run('--help', '--list-special');

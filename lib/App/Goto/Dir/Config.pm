@@ -43,6 +43,7 @@ our $default = {
                                     command => '-',
                                  entry_name => ':',
                                        help => '?',
+                                       file => '<',
                              entry_position => '^',
                                target_entry => '>',
                               special_entry => '+',

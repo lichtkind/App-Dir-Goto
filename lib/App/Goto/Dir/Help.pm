@@ -239,6 +239,7 @@ sub settings{ <<EOT,
     sigil:                              special character that start a kind of input
       command: '-'                        first char of short form command
       help: '?'                           separator for help text (see --list-add)
+      file: '<'                           separator for file name
       entry_name: ':'                     separator for entry name
       entry_position: '^'                 separator for list position
       target_entry: '>'                   separator between source and target
@@ -636,22 +637,21 @@ sub script {
 
  USAGE:
 
-  --script  [<entryID>] '<code>'|<file>    long command name
-   -$sc\[<entryID>] '<code>'|<file>           short alias
+  --script  [<entryID>] ('<code>'| $sig->{file} <file>)    long command name
+   -$sc\[<entryID>] ('<code>'|$sig->{file}<file>)             short alias
 
 
  EXAMPLES:
 
   --script 'say "dance"'       set code of default entry ($config->{'entry'}{'position_default'}) in current list to 'say "dance"'
   --script $sig->{entry_name}sol 'say "gg"'     set landing script code of entry bamed 'sol' to 'say "gg"'
-  --script $sig->{entry_name}sol /dir/code.pl   set code of entry to content of file '/dir/code.pl'
+  --script $sig->{entry_name}sol </dir/code.pl  set code of entry to content of file '/dir/code.pl'
   --script idle$sig->{entry_position}3 'say f2()'   set code of third entry in list 'idle' to 'say f2()'
-   -$sc\'say 99'                change <script> of default entry in current list to 'say 99'
+   -$sc\'say 99'                  change <script> of default entry in current list to 'say 99'
 
     Space (' ') is after '$sig->{entry_position}' and '$sig->{entry_name}' not allowed, but after --script required.
     Space before '$sig->{entry_position}' or '$sig->{entry_name}' and after -$sc is optional.
-    <file> has to start with '/', '\\' or '~'. If <file> contains space (' '), '$sig->{target_entry}' or '$sig->{entry_name}',
-    it has to be set in single quotes ('/a path/file.pl').
+    If <file> contains space character, it has to be set in single quotes ('/a path/file.pl').
     Entry names are globally unique (over all lists). Like list names, they contain only
     word character (A-Z,a-z,0-9,_) and have to start with a letter.
     List position may be negative, counting from the last position.
@@ -810,8 +810,8 @@ sub lname {
 
  USAGE:
 
-  --list-name  <oldname> : <newname>    long command name
-   -$sc<oldname> : <newname>            short alias
+  --list-name  <oldname> $sig->{entry_name} <newname>    long command name
+   -$sc<oldname>$sig->{entry_name}<newname>              short alias
 
 
     Space (' ') after --list-name is required, but after -$sc and around '$sig->{entry_name}' optional.
