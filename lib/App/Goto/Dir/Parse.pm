@@ -113,6 +113,15 @@ sub run_command {
 
 __END__
 
+                                    command => '-',
+                                 entry_name => ':',
+                                       help => '?',
+                             entry_position => '^',
+                               target_entry => '>',
+                              special_entry => '+',
+                               special_list => '@',
+
+
 <pos>        = -?\d+
 <name>       = [a-zA-Z]\w*
 <dir>        = [/\~][^$sig->{target_entry}$sig->{entry_name} ]*
@@ -127,13 +136,7 @@ __END__
 <target>     = <entry>
 <path>       = <entry><dir>
 
-                                    command => '-',
-                                 entry_name => ':',
-                                       help => '?',
-                             entry_position => '^',
-                               target_entry => '>',
-                              special_entry => '+',
-                               special_list => '@',
+|add| = (<dir>|<path>)?\s*<name>\s*><target>
 
 
   -h --help[=b|c|i|s| <command>]     topic or command specific help texts

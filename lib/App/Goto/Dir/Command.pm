@@ -337,6 +337,7 @@ sub dir_entry {
     if (ref $list_name){
         $entry = $data->get_special_entry( $entry_ID );
         return " ! special entry named '$config->{syntax}{sigil}{special_entry}$entry_ID' does not exist, please check --list-special" unless ref $entry;
+        return " ! special entry named '$config->{syntax}{sigil}{special_entry}$entry_ID' is currently empty" unless $entry->dir;
     } else {
         my $list  = $data->get_list( $list_name );
         return " ! list named '$list_name' does not exist, please check --list-lists" unless ref $list;
@@ -390,6 +391,7 @@ sub name_entry {
     if (ref $list_name){
         $entry = $data->get_special_entry( $entry_ID );
         return " ! special entry named '$config->{syntax}{sigil}{special_entry}$entry_ID' does not exist, please check --list-special" unless ref $entry;
+        return " ! special entry named '$config->{syntax}{sigil}{special_entry}$entry_ID' is currently empty" unless $entry->dir;
     } else {
         my $list  = $data->get_list( $list_name );
         return " ! list named '$list_name' does not exist, please check --list-lists" unless ref $list;
@@ -426,6 +428,7 @@ sub script_entry {
     if (ref $list_name){
         $entry = $data->get_special_entry( $entry_ID );
         return " ! special entry named '$config->{syntax}{sigil}{special_entry}$entry_ID' does not exist, please check --list-special" unless ref $entry;
+        return " ! special entry named '$config->{syntax}{sigil}{special_entry}$entry_ID' is currently empty" unless $entry->dir;
     } else {
         my $list  = $data->get_list( $list_name );
         return " ! list named '$list_name' does not exist, please check --list-lists" unless ref $list;
