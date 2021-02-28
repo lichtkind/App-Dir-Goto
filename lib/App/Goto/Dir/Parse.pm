@@ -4,18 +4,21 @@ use File::Spec;
 
 package App::Goto::Dir::Parse;
 
-my ($config, $sig);
+my ($config, $data);
+my %command_tr = ( 'del' => 'delete',
+                 'undel' => 'undelete',
+                   'rem' => 'remove',
+                    'rm' => 'remove',
+                    'mv' => 'move',
+                    'cp' => 'copy',
+              'list-del' => 'list-delete',
+            'list-descr' => 'list-description',
+);
 my %command = ('add' => [0, 0, 0, 0, 0], # i: 0 - option ; 1..n - arg required?
-               'del' => 'delete',
             'delete' => [0, 0],
-             'undel' => 'undelete',
           'undelete' => [0, 0],
-                'rm' => 'remove',
-               'rem' => 'remove',
             'remove' => [0, 0],
-                'mv' => 'move',
               'move' => [0, 0, 1],
-                'cp' => 'copy',
               'copy' => [0, 0, 1],
               'name' => [0, 0, 0],
                'dir' => [0, 0, 1],
@@ -26,10 +29,8 @@ my %command = ('add' => [0, 0, 0, 0, 0], # i: 0 - option ; 1..n - arg required?
               'sort' => [6],
               'list' => [0, 0],
           'list-add' => [0, 1],
-          'list-del' => 'list-delete',
        'list-delete' => [0, 1],
          'list-name' => [0, 1, 1],
-        'list-descr' => 'list-description',
   'list-description' => [0, 1, 1],
         'list-lists' => [0],
 );
@@ -49,35 +50,19 @@ my %cmd_argument = ( 'add' => [qw/dir name list entry/],
                'list-name' => ['name', 'name'],
         'list-description' => ['name', 'text'],
 );
-my %cmd_option  = ( list => [qw/add del/],
-                    sort => [qw/created dir last_visit position name visits/]
-);
-my %cmd_shortcut = (  add =>'a', delete =>'d', undelete =>'u',   copy =>'c', move =>'m', remove =>  'r',
-                     name =>'N',    dir =>'D',     edir =>'R', script =>'S',
-                     'list-add' =>'l-a', 'list-delete' =>'l-d', 'list-lists' =>'l-l', 'list-special' =>'l-s',
-                     'list-name' =>'l-N', 'list-description' =>'l-D',
-                     sort =>'s',  list =>'l', 'last' =>'_', 'previous' => '-' , help =>'h' ,
-                   ); # undo =>'<', redo =>'>',
-my %opt_shortcut = ( sort => { created => 'c', dir => 'd', last_visit => 'l', position => 'p',  name => 'n',  visits => 'v' },
-                     help => {                all => 'a',      usage => 'u', commands => 'c', },
-);
-my (%command_sc, %option_sc);
-my $sigil_command  = '-';
-my $sigil_option   = '=';
-my $sigil_name     = ':';
-my $sigil_position = '#';
-my $sigil_enty     = '*';
 
-# - : ,
+my $sig = {                   short_command => '-',
+                                 entry_name => ':',
+                                       help => '?',
+                                       file => '<',
+                             entry_position => '^',
+                               target_entry => '>',
+                              special_entry => '+',
+                               special_list => '@',
+};
+
 sub init {
-    ($config)  = @_;
-    %cmd_shortcut  = %{ $config->{'syntax'}{'command_shortcut'}};
-    %command_sc     = map { $cmd_shortcut{$_} => $_ } keys %cmd_shortcut;
-    %opt_shortcut     = %{ $config->{'syntax'}{'option_shortcut'}};
-# insert default
-    for my $opt (keys %opt_shortcut){
-        $option_sc{$opt} = { map { $opt_shortcut{$opt}{$_} => $_ } keys %{$opt_shortcut{$opt}} };
-    }
+    ($config, $data)  = @_;
     $sig = { map {$_ => quotemeta $config->{'syntax'}{'sigil'}{$_}} keys %{$config->{'syntax'}{'sigil'}}};
 }
 
@@ -93,16 +78,49 @@ sub is_name {
     return 0 if substr($name,0,1) =~ /[\d_]/;
     1;
 }
-sub is_position { defined $_[0] and $_[0] =~ /-?+\d/ }
+sub is_position { defined $_[0] and $_[0] =~ /^-?+\d$/ }
 
 sub eval_command {
-    my (@parts) = @_;
-    my @cmd = split  "-", join ' ', @parts;
-# check with names
-# when yes check compunt
-# when no check shortcut
-# check for goto <ID>
+    my (@token) = @_;
+    my @comands = ();
+    for my $token (@token){
+        my $cmd;
+        if (length $token == 1){
+            if ($token =~ /\W/){
+                (push @comands, ['last']   ), next if $token eq $config->{'syntax'}{'special_entry'}{'last'};
+                (push @comands, ['previous']),next if $token eq $config->{'syntax'}{'special_entry'}{'previous'};
+                return " ! there is no special shortcut named '$token'" unless defined $cmd;
+            }
+        }
+        (push @comands, ['goto-pos', $data->get_current_list_name, $token]),        next if is_position( $token);
+        (push @comands, ['goto-name',$data->get_special_list_names('all'), $token]),next if is_name( $token);
+        my $short_cmd = substr($token,1,2);
+        if (substr($token,0,1) eq $config->{'syntax'}{'sigil'}{'command'} and $short_cmd =~ /\w/){
+            my $cmd = $App::Goto::Dir::Config::command_shortcut{ $short_cmd };
+            if (length($token) > 3 and substr($token,2,1) eq '-'){
+                my $lshort_cmd = substr($token,1,3);
+                my $cmdl = $App::Goto::Dir::Config::command_shortcut{ $lshort_cmd };
+                ($short_cmd, $cmd) = ($lshort_cmd, $cmdl) if defined $cmdl;
 
+            }
+            return " ! there is no command shortcut $config->{'syntax'}{'sigil'}{'command'}$short_cmd, please check --help=commands" unless defined $cmd;
+            $token = "--$cmd".substr($token,2);
+        }
+        if ( substr($token,0,2) eq '--' ){
+            # cut --
+            # = opt
+            # double name (ltm)
+            # parse args
+        } else {
+            # compound adress
+            # split on : -> call with list name if name
+            # split on ^ -> call with list name if name
+            # error
+        }
+        #push @comands, $cmd;
+    }
+    #my @cmd = split  "-", join ' ', @parts;
+    \@comands;
 }
 
 sub run_command {
@@ -112,14 +130,6 @@ sub run_command {
 1;
 
 __END__
-                                    command => '-',
-                                 entry_name => ':',
-                                       help => '?',
-                                       file => '<',
-                             entry_position => '^',
-                               target_entry => '>',
-                              special_entry => '+',
-                               special_list => '@',
 
 <pos>        = -?\d+
 <name>       = [a-zA-Z]\w*
@@ -169,4 +179,4 @@ for my $d (qw(2006-10-21 15.01.2007 10/31/2005)) {
     if ( $d =~ m{$fmt1|$fmt2|$fmt3} ){
         print "day=$+{d} month=$+{m} year=$+{y}\n";
     }
-}
+}  $+[n]

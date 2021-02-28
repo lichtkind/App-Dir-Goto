@@ -119,8 +119,8 @@ sub visit_entry {
     $self->{'visits'}{'last_subdir'} = defined $sub_dir ? $sub_dir : '';
     $entry;
 }
-sub visit_last_entry     { $_[0]->visit_entry( undef, $_[0]->{'special_entry'}{'last'},     $_[0]->{'visits'}{'last_subdir'} ) }
-sub visit_previous_entry { $_[0]->visit_entry( undef, $_[0]->{'special_entry'}{'previous'}, $_[0]->{'visits'}{'previous_subdir'} ) }
+sub visit_last_entry     { $_[0]->visit_entry( $_[0]->get_special_entry('last'),  $_[0]->{'visits'}{'last_subdir'} ) }
+sub visit_previous_entry { $_[0]->visit_entry( $_[0]->get_special_entry('previous'), $_[0]->{'visits'}{'previous_subdir'} ) }
 
 sub get_special_entry {
     my ($self, $name) = @_;

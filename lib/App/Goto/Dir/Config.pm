@@ -40,7 +40,7 @@ our $default = {
                          sort_default => 'position',
                   },
           syntax => {           sigil => {
-                                    command => '-',
+                              short_command => '-',
                                  entry_name => ':',
                                        help => '?',
                                        file => '<',
@@ -97,10 +97,30 @@ our $default = {
 our $file = "goto_dir_config.yml";
 our $dfile = "goto_dir_config_default.yml";
 our $loaded;
+our (%command_shortcut, %option_shortcut, %option_name);
+
 
 sub load {
     __PACKAGE__->reset unless -r $file;
     $loaded = YAML::LoadFile($file);
+
+    my $option = $loaded->{'syntax'}{'option_shortcut'};
+    my $command = $loaded->{'syntax'}{'command_shortcut'};
+    for my $cmd (keys %$option){
+        for my $opt (keys %{$option->{$cmd}}){
+            for my $l (1 .. length $opt){
+                my $part_opt = substr $opt, 0, $l;
+                if (exists $option_name{$cmd}{$part_opt}){ $option_name{$cmd}{$part_opt} = 0 }
+                else                                     { $option_name{$cmd}{$part_opt} = $opt }
+            }
+        }
+    }
+    for my $cmd (keys %$option){
+        $option_shortcut{$cmd} = {  map { $option->{$cmd}{$_} => $_ } keys %{$option->{$cmd}}  };
+    }
+    %command_shortcut = map { $command->{$_} => $_ } keys %$command;
+
+    $loaded;
 }
 
 sub reset {

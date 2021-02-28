@@ -30,6 +30,12 @@ my %text = ( overview => \&overview,
  '--list-description' => \&ldescription,
              '--help' => \&help,
 );
+
+sub text {
+    my ($config, $ID) = @_;
+    (defined $ID and defined $text{$ID}) ? $text{$ID}( $config ) : overview( $config );
+}
+
 sub overview {
     my $config = shift;
     my $sc = $config->{'syntax'}{'command_shortcut'}{'help'};
@@ -237,7 +243,7 @@ sub settings{ <<EOT,
     prefer_in_dir_conflict: (new|old)   Create a new entry with already use dir or del old ?
   syntax:                             syntax of command line interface
     sigil:                              special character that start a kind of input
-      command: '-'                        first char of short form command
+      short_command: '-'                  first char of short form command
       help: '?'                           separator for help text (see --list-add)
       file: '<'                           separator for file name
       entry_name: ':'                     separator for entry name
@@ -312,6 +318,7 @@ sub add {
 
     Space (' ') is after '$sig->{entry_position}' and '$sig->{entry_name}' not allowed, but after --add required.
     Space before '$sig->{entry_position}' and '$sig->{entry_name}', around: '$sig->{target_entry}' and after '-$sc' is optional.
+    The content of each token in USAGE such as <dir> or $sig->{entry_name}<name> can't have unquoted space inside.
     <dir> has to start with '/', '\\' or '~'. If <dir> contains space (' '), '$sig->{target_entry}' or '$sig->{entry_name}',
     it has to be set in single quotes ('/a path').
     Entry names are globally unique (over all lists). Like list names, they contain only
@@ -859,11 +866,6 @@ sub help {
                                command shortcut (<cmd>) may be used instead (e.g. -$config->{'syntax'}{'command_shortcut'}{'add'})
                                Space before <command> is needed, but not before <cmd>.
 EOT
-}
-
-sub text {
-    my ($config, $ID) = @_;
-    (defined $ID and defined $text{$ID}) ? $text{$ID}( $config ) : overview( $config );
 }
 
 1;

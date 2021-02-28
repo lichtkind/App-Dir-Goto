@@ -16,6 +16,8 @@ use App::Goto::Dir;
 
 
 my $app = App::Goto::Dir->new( $cwd );
+
+
 #my $file = "goto_dir_config.yml";
 #my $config = App::Goto::Dir::Config::load();
 #my $data = App::Goto::Dir::Data->new( $config );
@@ -31,16 +33,16 @@ my $app = App::Goto::Dir->new( $cwd );
 say App::Goto::Dir::Command::run('--help', 'commands');
 #say App::Goto::Dir::Command::run('--help', 'install');
 #say App::Goto::Dir::Command::run('--help', 'version');
-#say App::Goto::Dir::Command::run('--help', '--add');
-#say App::Goto::Dir::Command::run('--help', '--delete');
-#say App::Goto::Dir::Command::run('--help', '--undelete');
+say App::Goto::Dir::Command::run('--help', '--add');
+say App::Goto::Dir::Command::run('--help', '--delete');
+say App::Goto::Dir::Command::run('--help', '--undelete');
 #say App::Goto::Dir::Command::run('--help', '--remove');
 #say App::Goto::Dir::Command::run('--help', '--move');
 #say App::Goto::Dir::Command::run('--help', '--copy');
 #say App::Goto::Dir::Command::run('--help', '--name');
 #say App::Goto::Dir::Command::run('--help', '--dir');
 #say App::Goto::Dir::Command::run('--help', '--redir');
-say App::Goto::Dir::Command::run('--help', '--script');
+#say App::Goto::Dir::Command::run('--help', '--script');
 #say App::Goto::Dir::Command::run('--help', '--list');
 #say App::Goto::Dir::Command::run('--help', '--sort');
 #say App::Goto::Dir::Command::run('--help', '--list-special');
@@ -76,8 +78,9 @@ say App::Goto::Dir::Command::run('--help', '--script');
 #say App::Goto::Dir::Parse::is_dir('/');
 #say App::Goto::Dir::Parse::is_position('4');
 
-say App::Goto::Dir::Command::run('--list-lists');
-say App::Goto::Dir::Command::run('--list-special');
+#say App::Goto::Dir::Command::run('--list-lists');
+#say App::Goto::Dir::Command::run('--list-special');
+
 
 my $data = $app->{'data'};
 my $all = $data->get_special_lists('all');

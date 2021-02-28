@@ -60,7 +60,7 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `<lname>#<pos> . . . . . go to directory at <pos> in list <lname>`
 - `+last . . . . . . . . . go to dir gone to last time (in short: '_')`
 - `+previous . . . . . . . go to dir gone previously (short '-', like cd -)`
-- `+new. . . . . . . . . . go to dir added last (*)`
+- `+new. . . . . . . . . . go to dir added last`
 - `<ID>/sub/dir. . . . . . go to subdirectory of a stored dir`
 - `<Enter> . . . . . . . . exit interactive mode and stay in current dir`
 

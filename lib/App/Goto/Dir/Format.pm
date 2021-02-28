@@ -81,22 +81,15 @@ my %sopt;
 sub set_sort {
     my ($config, $data, $criterion) = @_;
     my @opt = keys %{$config->{'syntax'}{'option_shortcut'}{'sort'}};
-    unless (%sopt){
-        for my $key (@opt){
-            for my $l (1 .. length $key){
-                my $pk = substr $key, 0, $l;
-                if (exists $sopt{$pk}){ $sopt{$pk} = 0 }
-                else                  { $sopt{$pk} = $key }
-            }
-        }
-    }
+
     $criterion = $config->{'list'}{'sort_default'} if not defined $criterion or $criterion eq 'default';
     my $reverse = 0;
     if (substr( $criterion, 0, 1) eq '!') {
         $reverse = 1;
         $criterion = substr $criterion, 1;
     }
-    $criterion = $sopt{ $criterion } if exists $sopt{ $criterion } and $sopt{ $criterion };
+    $criterion = $App::Goto::Dir::Config::option_name{ $criterion } if exists $App::Goto::Dir::Config::option_name{ $criterion }
+                                                                          and $App::Goto::Dir::Config::option_name{ $criterion };
     return " ! unknown list sorting criterion: '$criterion', use [!]".join '|', @opt, 'default'
         unless exists $config->{'syntax'}{'option_shortcut'}{'sort'}{$criterion};
     $data->{'list'}{'sorted_by'} = $criterion;

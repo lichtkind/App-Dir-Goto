@@ -21,7 +21,7 @@ sub new {
     my $config = App::Goto::Dir::Config::load();
     my $data = App::Goto::Dir::Data->new( $config );
     my $cwd = shift;
-    App::Goto::Dir::Parse::init( $config );
+    App::Goto::Dir::Parse::init( $config, $data );
     App::Goto::Dir::Command::init( $config, $data, $cwd );
     bless { config => $config, data => $data, cwd => $cwd};
 }
