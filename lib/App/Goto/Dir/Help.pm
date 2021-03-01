@@ -302,8 +302,8 @@ sub add {
 
  USAGE:
 
-  --add  [<dir>] [$sig->{entry_name}<name>] [> <entryID>]    long command name
-   -$sc\[<dir>] [$sig->{entry_name}<name>] [> <entryID>]        short form alias
+  --add  [<dir>] [$sig->{entry_name}<name>] [$sig->{target_entry} <entryID>]    long command name
+   -$sc\[<dir>] [$sig->{entry_name}<name>] [$sig->{target_entry} <entryID>]        short form alias
 
 
  EXAMPLES:
@@ -618,15 +618,15 @@ sub redir {
 
  USAGE:
 
-  --dir  <old_dir> >> <new_dir>    long command name
-   -$sc\<old_dir>>><new_dir>          short alias
+  --dir  <old_dir> $sig->{file}$sig->{file} <new_dir>    long command name
+   -$sc\<old_dir>$sig->{file}$sig->{file}<new_dir>          short alias
 
 
  EXAMPLES:
 
-  --redir /code/purl >> /code/perl  replace '/code/purl' with '/code/perl' in every entry <dir>
+  --redir /code/purl $sig->{file}$sig->{file} /code/perl  replace '/code/purl' with '/code/perl' in every entry <dir>
 
-    Space (' ') around '>>'  and after -$sc is optional. <dir> has to start with '/', '\\' or '~'.
+    Space (' ') around '$sig->{file}$sig->{file}'  and after -$sc is optional. <dir> has to start with '/', '\\' or '~'.
     If <dir> contains space (' '), '$sig->{target_entry}' or '$sig->{entry_name}', it has to be set in single quotes ('/a path').
 EOT
 }

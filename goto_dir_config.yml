@@ -66,14 +66,14 @@ syntax:
       script: S
       visits: v
   sigil:
-    command: '-'
     entry_name: ':'
     entry_position: '^'
     file: <
     help: '?'
+    short_command: '-'
     special_entry: +
     special_list: '@'
-    target_entry: '>'
+    target_entry: '}'
   special_entry:
     last: _
     previous: '-'

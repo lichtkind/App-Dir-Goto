@@ -45,7 +45,7 @@ our $default = {
                                        help => '?',
                                        file => '<',
                              entry_position => '^',
-                               target_entry => '>',
+                               target_entry => '}',
                               special_entry => '+',
                                special_list => '@',
                                 },
