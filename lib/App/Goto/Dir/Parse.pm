@@ -56,10 +56,18 @@ my $sig = {                   short_command => '-',
                                        help => '?',
                                        file => '<',
                              entry_position => '^',
-                               target_entry => '>',
+                               target_entry => '}',
                               special_entry => '+',
                                special_list => '@',
 };
+
+my $ws   = '\s*';
+my $pos  = '-?\d+';
+my $name = '[a-zA-Z]\w*';
+my $text = '\'.*(?<!\\)\'';
+my $dir  = '[/\~][^'.$sig->{target_entry}.$sig->{entry_name}.' ]*';
+my $file = '\S+|'.$text;
+
 
 sub init {
     ($config, $data)  = @_;
@@ -94,19 +102,39 @@ sub eval_command {
         }
         (push @comands, ['goto-pos', $data->get_current_list_name, $token]),        next if is_position( $token);
         (push @comands, ['goto-name',$data->get_special_list_names('all'), $token]),next if is_name( $token);
-        my $short_cmd = substr($token,1,2);
+        my $short_cmd = substr($token, 1, 1);
         if (substr($token,0,1) eq $config->{'syntax'}{'sigil'}{'command'} and $short_cmd =~ /\w/){
             my $cmd = $App::Goto::Dir::Config::command_shortcut{ $short_cmd };
-            if (length($token) > 3 and substr($token,2,1) eq '-'){
+            if (length($token) > 3 and substr($token, 2,1) eq '-'){
                 my $lshort_cmd = substr($token,1,3);
                 my $cmdl = $App::Goto::Dir::Config::command_shortcut{ $lshort_cmd };
                 ($short_cmd, $cmd) = ($lshort_cmd, $cmdl) if defined $cmdl;
-
             }
-            return " ! there is no command shortcut $config->{'syntax'}{'sigil'}{'command'}$short_cmd, please check --help=commands" unless defined $cmd;
-            $token = "--$cmd".substr($token,2);
+            return " ! there is no command shortcut $config->{'syntax'}{'sigil'}{'command'}$short_cmd, please check --help=commands or -hc" unless defined $cmd;
+            if (exists $config->{'syntax'}{'option_shortcut'}{$cmd} and length $token > length($short_cmd) + 1) {
+                my $opt = substr( (length($short_cmd) + 1), 1);
+                return " ! command shortcut $config->{'syntax'}{'sigil'}{'command'}$short_cmd ($cmd) has not option, please check --help $config->{'syntax'}{'sigil'}{'command'}$short_cmd "
+                    unless defined $App::Goto::Dir::Config::option_shortcut{$cmd}{$opt};
+                $token = "--$cmd=$opt";
+            }
+            unshift @token, substr($token, 2);
+            $token = "--$cmd";
         }
         if ( substr($token,0,2) eq '--' ){
+            my $cmd = substr $token, 2;
+            my @opt = split '=', $cmd;
+            if (@opt > 1){
+                return " ! there is no command '$opt[0]', please check --help=commands or -hc" unless exists $command{ $opt[0] };
+                return " ! only one command option (--command=option) is allowed" if @opt > 2;
+                return " ! command '$opt[0]' has no options" unless exists $config->{'syntax'}{'option_shortcut'}{$opt[0]};
+                return " ! command '$opt[0]' has no option '$opt[1]' (partial optio names allowed if they identify option)"
+                    unless exists $App::Goto::Dir::Config::option_name{$opt[0]}{$opt[1]};
+                $opt[1] = $App::Goto::Dir::Config::option_name{$opt[0]}{$opt[1]};
+                push @comands, \@opt;
+                next;
+            }
+            return " ! there is no command '$cmd', please check --help=commands or -hc" unless exists $command{cmd};
+
             # cut --
             # = opt
             # double name (ltm)
@@ -130,14 +158,6 @@ sub run_command {
 1;
 
 __END__
-
-<pos>        = -?\d+
-<name>       = [a-zA-Z]\w*
-<text>       = '.*(?<!\\)'
-<dir>        = [/\~][^$sig->{target_entry}$sig->{entry_name} ]*
-<file>       = \S+|<text>
-<ws>         = \s*
-
 <list_name>  = $sig->{special_list}?<name>
 <special>    = $sig->{special_entry}<name>
 <entry_name> = (<list_name>?$sig->{entry_name})?<name>
@@ -147,7 +167,6 @@ __END__
 <source>     = <entry>|(<list_name>?$sig->{entry_position})?<pos>?..<pos>?
 <target>     = <entry>
 <path>       = <entry>?(<text>|<dir>)
-
 
 |goto-last|      = $spec->{last}
 |goto-previous|  = $spec->{previous}

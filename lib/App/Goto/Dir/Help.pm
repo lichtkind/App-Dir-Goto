@@ -248,7 +248,7 @@ sub settings{ <<EOT,
       file: '<'                           separator for file name
       entry_name: ':'                     separator for entry name
       entry_position: '^'                 separator for list position
-      target_entry: '>'                   separator between source and target
+      target_entry: '}'                   separator between source and target
       special_entry: '+'                  first char of special entry name like '+last'
       special_list: '@'                   first char of special list name like '\@all'
     special_entry:                      short alias of special entries
@@ -278,9 +278,10 @@ EOT
 
 sub add {
     my $config = shift;
+    my $cmd = 'add';
     my $lname = $config->{'list'}{'special_name'};
     my $d = $config->{'list'}{'deprecate_new'} / 86400;
-    my $sc = $config->{'syntax'}{'command_shortcut'}{'add'};
+    my $sc = $config->{'syntax'}{'command_shortcut'}{$cmd};
     my $sig = $config->{'syntax'}{'sigil'};
     <<EOT;
 
@@ -302,23 +303,22 @@ sub add {
 
  USAGE:
 
-  --add  [<dir>] [$sig->{entry_name}<name>] [$sig->{target_entry} <entryID>]    long command name
-   -$sc\[<dir>] [$sig->{entry_name}<name>] [$sig->{target_entry} <entryID>]        short form alias
+  --add  [<dir>] [$sig->{entry_name}<name>] [<target>]    long command name
+   -$sc\[<dir>] [$sig->{entry_name}<name>] [<target>]        short form alias
 
 
  EXAMPLES:
 
   --add /project/dir         add the directory into current list on default position with no name
-   -$sc/path$sig->{entry_name}p                 add path into same place but under the name 'p'
-  --add /path$sig->{entry_name}p $sig->{target_entry} [$sig->{entry_position}]3       add named path to current list on third position
-  --add /path $sig->{target_entry} good$sig->{entry_position}4       add unnamed path to list named 'good' on fourth position
-  --add /path $sig->{target_entry} good$sig->{entry_name}s       add unnamed path to list 'good' on position of entry named 's'
-  --add /path $sig->{target_entry} $sig->{special_list}$lname->{all}         add new entry to no regular list
-  --add good$sig->{entry_position}2/sub/dir:gg    combine <dir> of entry nr.2 in list 'good' with subdirectory '/sub/dir'
+   -$sc/path $sig->{entry_name}p                add path into same place but under the name 'p'
+  --add /path $sig->{entry_name}p [$sig->{entry_position}]3        add named path to current list on third position
+  --add /path good$sig->{entry_position}4         add unnamed path to list named 'good' on fourth position
+  --add /path good$sig->{entry_name}s         add unnamed path to list 'good' on position of entry named 's'
+  --add /path $sig->{special_list}$lname->{all}           add new entry to no regular list
+  --add good$sig->{entry_position}2/sub/dir :gg   combine <dir> of entry nr.2 in list 'good' with subdirectory '/sub/dir'
 
-    Space (' ') is after '$sig->{entry_position}' and '$sig->{entry_name}' not allowed, but after --add required.
-    Space before '$sig->{entry_position}' and '$sig->{entry_name}', around: '$sig->{target_entry}' and after '-$sc' is optional.
-    The content of each token in USAGE such as <dir> or $sig->{entry_name}<name> can't have unquoted space inside.
+    Space (' ') is after --$cmd required, but after '-$sc' optional. It has to separate
+    argument tokens like <dir> and <name>. Inside of them no unquoted space is allowed.
     <dir> has to start with '/', '\\' or '~'. If <dir> contains space (' '), '$sig->{target_entry}' or '$sig->{entry_name}',
     it has to be set in single quotes ('/a path').
     Entry names are globally unique (over all lists). Like list names, they contain only
@@ -328,10 +328,11 @@ EOT
 }
 sub delete {
     my $config = shift;
+    my $cmd = 'delete';
     my $lname = $config->{'list'}{'special_name'};
     my $d = $config->{'list'}{'deprecate_bin'} / 86400;
     my $sig = $config->{'syntax'}{'sigil'};
-    my $sc = $config->{'syntax'}{'command_shortcut'}{'delete'};
+    my $sc = $config->{'syntax'}{'command_shortcut'}{$cmd};
      <<EOT;
 
   gt --delete      delete entry from store
@@ -344,9 +345,9 @@ sub delete {
 
  USAGE:
 
-  --delete  [<entryID>]      long command name
-  --del  [<entryID>]         shorter alias
-   -$sc\[<entryID>]             short form alias
+  --delete  [<entry>]      long command name
+  --del  [<entry>]         shorter alias
+   -$sc\[<entry>]             short form alias
 
 
  EXAMPLES:
@@ -359,8 +360,7 @@ sub delete {
   --del $sig->{special_entry}new                 deleting a previosly created entry
    -$sc\[$sig->{entry_name}]fm$sig->{entry_name}pm                delete entry named 'fm' and entry named 'pm'
 
-    Space (' ') is after '$sig->{entry_position}' and '$sig->{entry_name}' not allowed, but after --del[ete] required.
-    Space before '$sig->{entry_position}', '$sig->{entry_name}' and after '-$sc' is optional.
+    Space (' ') is after --$cmd required, but after '-$sc' optional and inside <entry> not allowed.
     Entry names are globally unique (over all lists). Like list names, they contain only
     word character (A-Z,a-z,0-9,_) and have to start with a letter.
     List position can be negative, counting from the last position.
@@ -368,10 +368,11 @@ EOT
 }
 sub undelete {
     my $config = shift;
+    my $cmd = 'undelete';
     my $lname = $config->{'list'}{'special_name'};
     my $d = $config->{'list'}{'deprecate_bin'} / 86400;
     my $sig = $config->{'syntax'}{'sigil'};
-    my $sc = $config->{'syntax'}{'command_shortcut'}{'undelete'};
+    my $sc = $config->{'syntax'}{'command_shortcut'}{$cmd};
      <<EOT;
 
   gt --undelete      restore deleted entry
@@ -383,22 +384,22 @@ sub undelete {
 
  USAGE:
 
-  --undelete  <entryID> [$sig->{target_entry} <targetID>]     long command name
-  --undel  <entryID> [$sig->{target_entry} <targetID>]        shorter alias
-   -$sc\<entryID>[$sig->{target_entry}<targetID>]               short form alias
+  --undelete  <entry> [<target>]     long command name
+  --undel  <entry> [<target>]        shorter alias
+   -$sc\<entry> [<target>]              short form alias
 
 
  EXAMPLES:
 
   --undelete                 undelete entry on default position in $sig->{special_list}$lname->{bin}
   --undel [$sig->{entry_position}]2               undelete second entry in $sig->{special_list}$lname->{bin}
-  --undel 2 $sig->{target_entry} idle$sig->{entry_position}-1        undelete second entry and insert it as last entry of list 'idle'
+  --undel 2  idle$sig->{entry_position}-1         undelete second entry and insert it as last entry of list 'idle'
   --undel [$sig->{entry_position}]1..3            undelete first, second and third entry of $sig->{special_list}$lname->{bin}
   --undel [$sig->{entry_name}]good            undelete entry named 'good'
-   -$sc\[$sig->{entry_name}]fm$sig->{target_entry}sound$sig->{entry_name}pm          undelete 'fm' and move to postion of 'pm' in list 'sound'
+   -$sc\[$sig->{entry_name}]fm sound$sig->{entry_name}pm          undelete 'fm' and move to postion of 'pm' in list 'sound'
 
-    Space (' ') is after '$sig->{entry_position}' and '$sig->{entry_name}' not allowed, but after --del[ete] required.
-    Space before '$sig->{entry_position}', '$sig->{entry_name}' and after '-$sc' is optional.
+    Space (' ') is after --$cmd required, but after '-$sc' optional. It has to separate
+    argument tokens like <entry> and <target>. Inside of them no unquoted space is allowed.
     Entry names are globally unique (over all lists). Like list names, they contain only
     word character (A-Z,a-z,0-9,_) and have to start with a letter.
     List position can be negative, counting from the last position.
@@ -406,8 +407,9 @@ EOT
 }
 sub remove {
     my $config = shift;
+    my $cmd = 'remove';
     my $lname = $config->{'list'}{'special_name'};
-    my $sc = $config->{'syntax'}{'command_shortcut'}{'remove'};
+    my $sc = $config->{'syntax'}{'command_shortcut'}{$cmd};
     my $sig = $config->{'syntax'}{'sigil'};
     my $arg = "good$sig->{entry_name}ll";
     <<EOT;
@@ -420,23 +422,22 @@ sub remove {
 
  USAGE:
 
-  --remove  [<entryID>]      long command name
-  --rm  [<entryID>]          shorter alias
-   -$sc\[<entryID>]             short form alias
+  --remove  [<entry>]    long command name
+  --rm  [<entry>]        shorter alias
+   -$sc\[<entry>]           short form alias
 
 
  EXAMPLES:
 
-  --remove                   remove entry on default position ($config->{'entry'}{'position_default'}) of current list
-  --rm [$sig->{entry_position}]-1                 remove entry from last position of current list
-  --rm good$sig->{entry_position}4                remove entry from fourth position of list named 'good'
-  --rm good$sig->{entry_position}4..              remove entries from second to last position of list 'good'
-  --rm good$sig->{entry_position}..               remove all entries from list named 'good'
-  --rm $sig->{entry_name}ll $sig->{entry_name}gg               remove entries named 'll' and 'gg' from current list
-   -$sc$arg$sig->{entry_name}gg              remove entries 'll' and 'gg' from list named 'good'
+  --remove               remove entry on default position ($config->{'entry'}{'position_default'}) of current list
+  --rm [$sig->{entry_position}]-1             remove entry from last position of current list
+  --rm good$sig->{entry_position}4            remove entry from fourth position of list named 'good'
+  --rm good$sig->{entry_position}4..          remove entries from second to last position of list 'good'
+  --rm good$sig->{entry_position}..           remove all entries from list named 'good'
+  --rm $sig->{entry_name}ll $sig->{entry_name}gg           remove entries named 'll' and 'gg' from current list
+   -$sc$arg$sig->{entry_name}gg          remove entries 'll' and 'gg' from list named 'good'
 
-    Space (' ') is after '$sig->{entry_position}' and '$sig->{entry_name}' not allowed, but after --remove or --rm required.
-    Space before '$sig->{entry_position}' or '$sig->{entry_name}' and after -$sc is optional.
+    Space (' ') is after --$cmd required, but after '-$sc' optional and inside <entry> not allowed.
     Entry names are globally unique (over all lists). Like list names, they contain only
     word character (A-Z,a-z,0-9,_) and have to start with a letter.
     List position may be negative, counting from the last position.
@@ -444,10 +445,11 @@ EOT
 }
 sub move {
     my $config = shift;
+    my $cmd = 'move';
     my $lname = $config->{'list'}{'special_name'};
-    my $sc = $config->{'syntax'}{'command_shortcut'}{'move'};
+    my $sc = $config->{'syntax'}{'command_shortcut'}{$cmd};
     my $sig = $config->{'syntax'}{'sigil'};
-    my $arg = "2$sig->{target_entry}-1";
+    my $arg = "2 -1";
     <<EOT;
 
   gt --move      move entry from one to another list
@@ -461,24 +463,24 @@ sub move {
 
  USAGE:
 
-  --move  [<sourceID>] $sig->{target_entry} <targetID>    long command name
-  --mv  [<sourceID>] $sig->{target_entry} <targetID>      shorter alias
-   -$sc\[<sourceID>] $sig->{target_entry} <targetID>         short form alias
+  --move  [<source>] <target>    long command name
+  --mv  [<source>] <target>      shorter alias
+   -$sc\[<source>] <target>         short form alias
 
 
  EXAMPLES:
 
-  --move > idle$sig->{entry_position}3            move from default position ($config->{'entry'}{'position_default'}) of current list to third pos. of list 'idle'
+  --move  idle$sig->{entry_position}3             move from default position ($config->{'entry'}{'position_default'}) of current list to third pos. of list 'idle'
    -$sc$arg                    move entry from second to last position in current list
-  --mv good$sig->{entry_position}4 $sig->{target_entry} better$sig->{entry_position}2     move entry from fourth position of list 'good' to second pos. of 'better'
-  --mv good$sig->{entry_position}..5 $sig->{target_entry} better$sig->{entry_position}2   move entries 1 to 5 of list 'good' to second pos. of 'better'
-  --mv good$sig->{entry_position}.. $sig->{target_entry} better$sig->{entry_position}2    move all entries in list 'good' to second pos. of 'better'
-  --mv rr $sig->{target_entry} good             move entry in current list named 'rr' to default position of list 'good'
-  --mv meak$sig->{entry_name}rr $sig->{target_entry} great$sig->{entry_name}d     move entry 'rr' in list 'meak' to position of entry 'd' in list 'great'
-  --move $sig->{special_entry}delete > great     undelete the most recently deleted entry and move it into list 'great'
+  --mv good$sig->{entry_position}4 better$sig->{entry_position}2       move entry from fourth position of list 'good' to second pos. of 'better'
+  --mv good$sig->{entry_position}..5 better$sig->{entry_position}2     move entries 1 to 5 of list 'good' to second pos. of 'better'
+  --mv good$sig->{entry_position}.. better$sig->{entry_position}2      move all entries in list 'good' to second pos. of 'better'
+  --mv rr good               move entry in current list named 'rr' to default position of list 'good'
+  --mv meak$sig->{entry_name}rr great$sig->{entry_name}d       move entry 'rr' in list 'meak' to position of entry 'd' in list 'great'
+  --move $sig->{special_entry}copy great         move the most recently copied entry into list 'great'
 
-    Space (' ') is after '$sig->{entry_position}' and '$sig->{entry_name}' not allowed, but after --move or --mv required.
-    Space before '$sig->{entry_position}' or '$sig->{entry_name}', around '$sig->{target_entry}' and after -$sc is optional.
+    Space (' ') is after --$cmd required, but after '-$sc' optional. It has to separate
+    argument tokens like <source> and <target>. Inside of them no unquoted space is allowed.
     Entry names are globally unique (over all lists). Like list names, they contain only
     word character (A-Z,a-z,0-9,_) and have to start with a letter.
     List position may be negative, counting from the last position.
@@ -486,10 +488,11 @@ EOT
 }
 sub copy {
     my $config = shift;
+    my $cmd = 'copy';
     my $lname = $config->{'list'}{'special_name'};
-    my $sc = $config->{'syntax'}{'command_shortcut'}{'copy'};
+    my $sc = $config->{'syntax'}{'command_shortcut'}{$cmd};
     my $sig = $config->{'syntax'}{'sigil'};
-    my $arg = "2$sig->{target_entry}-1";
+    my $arg = "2 -1";
     <<EOT;
 
   gt --copy      copy entry from one to another list
@@ -501,24 +504,24 @@ sub copy {
 
  USAGE:
 
-  --copy  [<sourceID>] $sig->{target_entry} <targetID>    long command name
-  --cp  [<sourceID>] $sig->{target_entry} <targetID>      shorter alias
-   -$sc\[<sourceID>] $sig->{target_entry} <targetID>         short form alias
+  --copy  [<sourceID>] <targetID>    long command name
+  --cp  [<sourceID>] <targetID>      shorter alias
+   -$sc\[<sourceID>] <targetID>         short form alias
 
 
  EXAMPLES:
 
-  --copy $sig->{target_entry} idle$sig->{entry_position}3            copy from default position ($config->{'entry'}{'position_default'}) of current list to third position of 'idle'
+  --copy idle$sig->{entry_position}3              copy from default position ($config->{'entry'}{'position_default'}) of current list to third position of 'idle'
    -$sc$arg                    copy from second to last position in current list (produces dir_conflict!)
-  --cp all$sig->{entry_position}4 $sig->{target_entry} better$sig->{entry_position}2      copy entry from fourth position of list 'all' to second pos. of 'better'
-  --cp all$sig->{entry_position}..4 $sig->{target_entry} better$sig->{entry_position}2    copy first four entries of list 'all' to second pos. of 'better'
-  --cp $sig->{special_list}stale$sig->{entry_position}.. $sig->{target_entry} weird     copy all entries of special list '$sig->{special_list}stale' to default position of 'weird'
-  --cp $sig->{special_entry}move $sig->{target_entry} idle$sig->{entry_position}3        copy recently moved entry to third pos. of list 'idle'
-  --cp rr $sig->{target_entry} good             copy entry named 'rr' (of any list) to default position of list 'good'
-  --cp $sig->{entry_name}rr $sig->{target_entry} great$sig->{entry_name}d         copy entry 'rr' to position of entry 'd' in list 'great'
+  --cp all$sig->{entry_position}4 better$sig->{entry_position}2        copy entry from fourth position of list 'all' to second pos. of 'better'
+  --cp all$sig->{entry_position}..4 better$sig->{entry_position}2      copy first four entries of list 'all' to second pos. of 'better'
+  --cp $sig->{special_list}stale$sig->{entry_position}.. weird       copy all entries of special list '$sig->{special_list}stale' to default position of 'weird'
+  --cp $sig->{special_entry}move idle$sig->{entry_position}3          copy recently moved entry to third pos. of list 'idle'
+  --cp rr good               copy entry named 'rr' (of any list) to default position of list 'good'
+  --cp $sig->{entry_name}rr great$sig->{entry_name}d           copy entry 'rr' to position of entry 'd' in list 'great'
 
-    Space (' ') is after '$sig->{entry_position}' and '$sig->{entry_name}' not allowed, but after --copy or --cp required.
-    Space before '$sig->{entry_position}' or '$sig->{entry_name}', around '$sig->{target_entry}' and after -$sc is optional.
+    Space (' ') is after --$cmd required, but after '-$sc' optional. It has to separate
+    argument tokens like <source> and <target>. Inside of them no unquoted space is allowed.
     Entry names are globally unique (over all lists). Like list names, they contain only
     word character (A-Z,a-z,0-9,_) and have to start with a letter.
     List position may be negative, counting from the last position.
@@ -618,8 +621,8 @@ sub redir {
 
  USAGE:
 
-  --dir  <old_dir> $sig->{file}$sig->{file} <new_dir>    long command name
-   -$sc\<old_dir>$sig->{file}$sig->{file}<new_dir>          short alias
+  --redir  <old_dir> $sig->{file}$sig->{file} <new_dir>    long command name
+   -$sc\<old_dir>$sig->{file}$sig->{file}<new_dir>            short alias
 
 
  EXAMPLES:
