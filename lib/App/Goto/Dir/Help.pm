@@ -10,29 +10,30 @@ my %text = ( overview => \&overview,
              install  => \&install,
              settings => \&settings,
              version  => \&version,
-              '--add' => \&add,
-           '--delete' => \&delete,
-         '--undelete' => \&undelete,
-           '--remove' => \&remove,
-             '--move' => \&move,
-             '--copy' => \&copy,
-             '--name' => \&name,
-              '--dir' => \&dir,
-            '--redir' => \&redir,
-           '--script' => \&script,
-             '--list' => \&list,
-             '--sort' => \&sort,
-       '--list-lists' => \&llists,
-     '--list-special' => \&lspecial,
-         '--list-add' => \&ladd,
-      '--list-delete' => \&ldelete,
-        '--list-name' => \&lname,
- '--list-description' => \&ldescription,
-             '--help' => \&help,
+                'add' => \&add,
+             'delete' => \&delete,
+           'undelete' => \&undelete,
+             'remove' => \&remove,
+               'move' => \&move,
+               'copy' => \&copy,
+               'name' => \&name,
+                'dir' => \&dir,
+              'redir' => \&redir,
+             'script' => \&script,
+               'list' => \&list,
+               'sort' => \&sort,
+         'list-lists' => \&llists,
+       'list-special' => \&lspecial,
+           'add-list' => \&ladd,
+        'delete-list' => \&ldelete,
+          'name-list' => \&lname,
+      'describe-list' => \&ldescription,
+               'help' => \&help,
 );
 
 sub text {
     my ($config, $ID) = @_;
+    $ID = substr $ID, 2 if length($ID) > 2 and substr($ID, 0,2) eq '--';
     (defined $ID and defined $text{$ID}) ? $text{$ID}( $config ) : overview( $config );
 }
 
@@ -369,6 +370,7 @@ EOT
 sub undelete {
     my $config = shift;
     my $cmd = 'undelete';
+say "|||";
     my $lname = $config->{'list'}{'special_name'};
     my $d = $config->{'list'}{'deprecate_bin'} / 86400;
     my $sig = $config->{'syntax'}{'sigil'};
@@ -384,9 +386,9 @@ sub undelete {
 
  USAGE:
 
-  --undelete  <entry> [<target>]     long command name
-  --undel  <entry> [<target>]        shorter alias
-   -$sc\<entry> [<target>]              short form alias
+  --undelete  [<entry>] [<target>]     long command name
+  --undel  [<entry>] [<target>]        shorter alias
+   -$sc\[<entry>] [<target>]              short form alias
 
 
  EXAMPLES:
@@ -621,7 +623,7 @@ sub redir {
 
  USAGE:
 
-  --redir  <old_dir> $sig->{file}$sig->{file} <new_dir>    long command name
+  --redir  <old_dir> [$sig->{file}$sig->{file}] <new_dir>    long command name
    -$sc\<old_dir>$sig->{file}$sig->{file}<new_dir>            short alias
 
 
@@ -761,11 +763,11 @@ EOT
 }
 sub ladd {
     my $config = shift;
-    my $sc = $config->{'syntax'}{'command_shortcut'}{'list-add'};
+    my $sc = $config->{'syntax'}{'command_shortcut'}{'add-list'};
     my $sig = $config->{'syntax'}{'sigil'};
     <<EOT;
 
-  gt --list-add      create a list
+  gt --add-list      create a list
  ----------------------------------
 
     Create a new empty regular list for path entries. It's mandatory <name> can't be taken by another list.
@@ -773,79 +775,80 @@ sub ladd {
 
  USAGE:
 
-  --list-add  <name> [$sig->{help}] <description>    long command name
+  --add-list  <name> [$sig->{help}] <description>    long command name
    -$sc<name>[$sig->{help}]<description>             short alias
 
 
  EXAMPLES:
 
-  --list-add  bear 'only the best entries'    creates a new list named 'bear'
+  --add-list  bear 'only the best entries'    creates a new list named 'bear'
 
-    Space (' ') after --list-add is required, but after -$sc optional.
+    Space (' ') after --add-list is required, but after -$sc optional.
     List names have to be unique, contain only word character (A-Za-z0-9_) and start with a letter.
 EOT
 }
 sub ldelete {
     my $config = shift;
-    my $sc = $config->{'syntax'}{'command_shortcut'}{'list-delete'};
+    my $cmd = 'delete-list';
+    my $sc = $config->{'syntax'}{'command_shortcut'}{'delete-list'};
     my $sig = $config->{'syntax'}{'sigil'};
     <<EOT;
 
    gt --list-delete      remove an empty list
   --------------------------------------------
 
-    Deletes an empty, not special (user created) list. There is no undelete, but --list-add.
-    To emty a list use --move <name>$sig->{entry_position}.. $sig->{target_entry} <targetID> or --remove <name>$sig->{entry_position}.. (or --delete).
+    Deletes an empty, not special (user created) list. There is no undelete, but --add-list.
+    To emty a list use --move <name>$sig->{entry_position}.. <targetID> or --remove <name>$sig->{entry_position}.. (or --delete).
 
  USAGE:
 
-  --list-delete  <name>    long command name
-  --list-del  <name>       shorter alias
+  --delete-list  <name>    long command name
+  --del-list  <name>       shorter alias
    -$sc<name>              short alias
 
-    Space (' ') after --list-delete and --list-del is required, but after -$sc optional.
+    Space (' ') after $cmd and --del-list is required, but after -$sc optional.
     List names have to be unique, contain only word character (A-Za-z0-9_) and start with a letter.
 EOT
 }
 sub lname {
     my $config = shift;
-    my $sc = $config->{'syntax'}{'command_shortcut'}{'list-name'};
+    my $sc = $config->{'syntax'}{'command_shortcut'}{'name-list'};
     my $sig = $config->{'syntax'}{'sigil'};
     <<EOT;
 
-  gt --list-name      rename a list
+  gt --name-list      rename a list
  -----------------------------------
 
     Change name of any list, even the special ones (start with $sig->{special_list}). Does not work when <newname> is taken.
 
  USAGE:
 
-  --list-name  <oldname> $sig->{entry_name} <newname>    long command name
+  --name-list  <oldname> $sig->{entry_name} <newname>    long command name
    -$sc<oldname>$sig->{entry_name}<newname>              short alias
 
 
-    Space (' ') after --list-name is required, but after -$sc and around '$sig->{entry_name}' optional.
+    Space (' ') after --name-list is required, but after -$sc and around '$sig->{entry_name}' optional.
     List names have to be unique, contain only word character (A-Za-z0-9_) and start with a letter.
 EOT
 }
 sub ldescription {
     my $config = shift;
-    my $sc = $config->{'syntax'}{'command_shortcut'}{'list-description'};
+    my $sc = $config->{'syntax'}{'command_shortcut'}{'describe-list'};
     my $sig = $config->{'syntax'}{'sigil'};
     <<EOT;
 
-  gt --list-description      change description of list
- -------------------------------------------------------
+  gt --describe-list      change description of list
+ ----------------------------------------------------
 
     Change description text of a list, even the special ones (start with $sig->{special_list}). Does not work when <newname> is taken.
 
  USAGE:
 
-  --list-description  <name> [$sig->{help}] '<description>'    long command name
-   -$sc<name>[$sig->{help}]'<description>'                     short alias
+  --describe-list  <name> [$sig->{help}] '<description>'    long command name
+   -$sc<name>[$sig->{help}]'<description>'                  short alias
 
 
-    Space (' ') after --list-name is required, but after -$sc and around '$sig->{help}' optional.
+    Space (' ') after --describe-list is required, but after -$sc and around '$sig->{help}' optional.
     List names have to be unique, contain only word character (A-Za-z0-9_) and start with a letter.
 EOT
 }
@@ -867,7 +870,7 @@ sub help {
 
   --help <command>  -$sc<cmd>    detailed explanation of one <command> (e.g. --add)
                                command shortcut (<cmd>) may be used instead (e.g. -$config->{'syntax'}{'command_shortcut'}{'add'})
-                               Space before <command> is needed, but not before <cmd>.
+                               space before <command> is needed, but not before <cmd>.
 EOT
 }
 

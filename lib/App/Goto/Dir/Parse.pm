@@ -11,63 +11,68 @@ my %command_tr = ( 'del' => 'delete',
                     'rm' => 'remove',
                     'mv' => 'move',
                     'cp' => 'copy',
-              'list-del' => 'list-delete',
-            'list-descr' => 'list-description',
+              'del-list' => 'delete-list',
+            'descr-list' => 'describe-list',
 );
-my %command = ('add' => [0, 0, 0, 0, 0], # i: 0 - option ; 1..n - arg required?
-            'delete' => [0, 0],
-          'undelete' => [0, 0],
-            'remove' => [0, 0],
-              'move' => [0, 0, 1],
-              'copy' => [0, 0, 1],
-              'name' => [0, 0, 0],
-               'dir' => [0, 0, 1],
-             'redir' => [0, 1, 1],
-              'last' => [0],
-          'previous' => [0],
-              'help' => [3, 0],
-              'sort' => [6],
-              'list' => [0, 0],
-          'list-add' => [0, 1],
-       'list-delete' => [0, 1],
-         'list-name' => [0, 1, 1],
-  'list-description' => [0, 1, 1],
-        'list-lists' => [0],
+my %command = ('add' => [0, 0, 0, 0, 0], # i: 0 - has option ;
+            'delete' => [0, 0,       1], #    1 -s lurp arg
+          'undelete' => [0, 0, 0,    0], #    2..n - arg required?
+            'remove' => [0, 0,       1],
+              'move' => [0, 0, 1,    0],
+              'copy' => [0, 0, 1,    0],
+              'name' => [0, 0, 0,    0],
+            'script' => [0, 0, 1,    0],
+               'dir' => [0, 0, 1,    0],
+             'redir' => [0, 1, 0, 1, 0],
+              'goto' => [0, 1,       0],
+              'last' =>  0,
+          'previous' =>  0,
+              'help' => [3,         -1],
+              'sort' => [6],             # no args
+              'list' => [0, 0,       1],
+          'list-add' => [0, 1,       0],
+       'list-delete' => [0, 1,       0],
+         'list-name' => [0, 1, 1,    0],
+  'list-description' => [0, 1, 1,    0],
+        'list-lists' =>  0,
+      'list-special' =>  0,
 );
-my %cmd_argument = ( 'add' => [qw/dir name list entry/],
-                    delete => ['list', 'entry'],
-                  undelete => ['source', 'target'],
-                    remove => ['source'],
-                      move => ['source', 'target'],
-                      copy => ['source', 'target'],
-                      name => ['source', 'name'],
-                       dir => ['source', 'dir'],
-                     redir => ['dir', '>>', 'dir'],
-                    script => ['source', 'text'],
-                      help => ['command'],
-                'list-add' => ['name'],
-             'list-delete' => ['name'],
-               'list-name' => ['name', 'name'],
-        'list-description' => ['name', 'text'],
+my %command_argument = ( 'add' => [qw/dir name list entry/],
+                        delete => ['source', 'entry'],
+                      undelete => ['list_elems', 'target'],
+                        remove => ['source'],
+                          move => ['source', 'target'],
+                          copy => ['source', 'target'],
+                          name => ['source', 'name'],
+                           dir => ['source', 'dir'],
+                         redir => ['dir', '<<', 'dir'],
+                        script => ['source', 'text'],
+                          help => ['command'],
+                    'add-list' => ['name'],
+                 'delete-list' => ['name'],
+                   'name-list' => ['name', 'name'],
+               'describe-list' => ['name', 'text'],
 );
 
-my $sig = {                   short_command => '-',
-                                 entry_name => ':',
-                                       help => '?',
-                                       file => '<',
-                             entry_position => '^',
-                               target_entry => '}',
-                              special_entry => '+',
-                               special_list => '@',
-};
-
-my $ws   = '\s*';
-my $pos  = '-?\d+';
-my $name = '[a-zA-Z]\w*';
-my $text = '\'.*(?<!\\)\'';
-my $dir  = '[/\~][^'.$sig->{target_entry}.$sig->{entry_name}.' ]*';
-my $file = '\S+|'.$text;
-
+my $sig = { short_command => '-', entry_name => ':',
+                     help => '?', entry_position => '^',
+                     file => '<', special_entry => '+', special_list => '@', };
+my $ws    = '\s*';
+my $pos   = '-?\d+';
+my $name  = '[a-zA-Z]\w*';
+my $text  = '\'.*(?<!\\)\'';
+my $dir   = '[/\~][^'.$sig->{entry_name}.' ]*';
+my $file  = '\S+|'.$text;
+my $list_name  = "$sig->{special_list}?$name";
+my $special    = "$sig->{special_entry}$name";
+my $entry_name = "(?:$list_name?$sig->{entry_name})?$name";
+my $entry_pos  = "(?:$list_name?$sig->{entry_position})?$pos";
+my $list_elem = "(?:$sig->{entry_position}?$pos)|(?:$sig->{entry_name}?$name)";
+my $list_elems = "(?:$sig->{entry_position}?$pos)|(?:$sig->{entry_position}?(?:$pos)?..(?:$pos)?)|(?:$sig->{entry_name}?$name)";
+my $entry      = "(?:$special|$entry_name|$entry_pos)";
+my $source     = "(?:(?:$special)|(?:$entry_name)|(?:$entry_pos)|(?:  (?:$list_name?$sig->{entry_position})?$pos?..$pos)?  ))";
+my $target     = $entry;
+my $path       = "$entry?(?:$text|$dir)";
 
 sub init {
     ($config, $data)  = @_;
@@ -121,9 +126,10 @@ sub eval_command {
             $token = "--$cmd";
         }
         if ( substr($token,0,2) eq '--' ){
-            my $cmd = substr $token, 2;
-            my @opt = split '=', $cmd;
+            my $cmd_name = substr $token, 2;
+            my @opt = split '=', $cmd_name;
             if (@opt > 1){
+                $opt[0] = $command_tr{ $opt[0] } if exists $command_tr{ $opt[0] };
                 return " ! there is no command '$opt[0]', please check --help=commands or -hc" unless exists $command{ $opt[0] };
                 return " ! only one command option (--command=option) is allowed" if @opt > 2;
                 return " ! command '$opt[0]' has no options" unless exists $config->{'syntax'}{'option_shortcut'}{$opt[0]};
@@ -131,12 +137,12 @@ sub eval_command {
                     unless exists $App::Goto::Dir::Config::option_name{$opt[0]}{$opt[1]};
                 $opt[1] = $App::Goto::Dir::Config::option_name{$opt[0]}{$opt[1]};
                 push @comands, \@opt;
+                # exception help with cmd args
                 next;
             }
-            return " ! there is no command '$cmd', please check --help=commands or -hc" unless exists $command{cmd};
+            $cmd_name = $command_tr{$cmd_name} if exists $command_tr{$cmd_name};
+            return " ! there is no command '$cmd', please check --help=commands or -hc" unless exists $command{$cmd_name};
 
-            # cut --
-            # = opt
             # double name (ltm)
             # parse args
         } else {
@@ -158,15 +164,6 @@ sub run_command {
 1;
 
 __END__
-<list_name>  = $sig->{special_list}?<name>
-<special>    = $sig->{special_entry}<name>
-<entry_name> = (<list_name>?$sig->{entry_name})?<name>
-<entry_pos>  = (<list_name>?$sig->{entry_position})?<pos>
-<list_elems> = (sig->{entry_position}?<pos>)|(sig->{entry_position}?<pos>?..<pos>?)|($sig->{entry_name}?<name>)
-<entry>      = (<special>|<entry_name>|<entry_pos>)?
-<source>     = <entry>|(<list_name>?$sig->{entry_position})?<pos>?..<pos>?
-<target>     = <entry>
-<path>       = <entry>?(<text>|<dir>)
 
 |goto-last|      = $spec->{last}
 |goto-previous|  = $spec->{previous}

@@ -93,18 +93,18 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 - `--rem[ove] [<ID>] . . . . . . . remove entry from chosen, but not special lists (-r)`
 - `--move [<IDa>] > <IDb>. . . . . move entry <IDa> to (position of) <IDb> (-m)`
 - `--copy [<IDa>] > <IDb>. . . . . copy entry <IDa> to (position of) <IDb> (-c)`
-- `--name [<ID>]:<name>. . . . . . (re-)name entry, resolve conflict like configured (-N)`
+- `--name [<ID>] :<name> . . . . . (re-)name entry, resolve conflict like configured (-N)`
 - `--name [<ID>] . . . . . . . . . delete name of entry (-N)`
 - `--dir [<ID>] <dir>. . . . . . . change directory of entry with <ID> (-D)`
-- `--redir <old> >> <dir>. . . . . change directory <old> to <dir> in all entries (-R)`
-- `--script [<ID>] '<code>'. . . . edit script, that is run when gone to dir (-E)`
+- `--redir <old> << <dir>. . . . . change directory <old> to <dir> in all entries (-R)`
+- `--script [<ID>] '<code>'. . . . edit script, that is run when gone to dir (-S)`
 
 ## commands for managing lists:
 
-- `--list-add <name> ? <des.> . create a new list (-l-a)`
-- `--list-del[ete] <lname>. . . delete list of <lname> (has to be empty) (-l-d)`
-- `--list-name <old> > <new>. . rename any list, conflicts not allowed (-l-n)`
-- `--list-description <name>?<D> change description of any list (-l-D)`
+- `--add-list <name> ? <des.> . create a new list (-l-a)`
+- `--del[ete]-list <lname>. . . delete list of <lname> (has to be empty) (-l-d)`
+- `--name-list <old> <new>. . . rename any list, conflicts not allowed (-l-n)`
+- `--describe-list <name> ? <D> change description of any list (-l-D)`
 - `--list-lists . . . . . . . . <lname> and <lpos> of available lists (short -l-l)`
 
 

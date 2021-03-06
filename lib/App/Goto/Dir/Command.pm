@@ -10,25 +10,27 @@ my         ($config, $data, $cwd);
 sub init { ($config, $data, $cwd) = @_ }
 sub run {
    my ($cmd, @arg) = @_;
-   if    ($cmd eq '--help')            { App::Goto::Dir::Help::text(              $config,        $arg[0])}
-   elsif ($cmd eq '--sort')            { App::Goto::Dir::Format::set_sort(        $config, $data, $arg[0])}
-   elsif ($cmd eq '--list')            { App::Goto::Dir::Format::list_entries(    $config, $data, @arg )  }
-   elsif ($cmd eq '--list-special')    { App::Goto::Dir::Format::special_entries( $config, $data       )  }
-   elsif ($cmd eq '--list-lists')      { App::Goto::Dir::Format::lists(           $config, $data       )  }
-   elsif ($cmd eq '--list-add')        {                         add_list(                        @arg )  }
-   elsif ($cmd eq '--list-delete')     {                         delete_list(                     @arg )  }
-   elsif ($cmd eq '--list-name')       {                         name_list(                       @arg )  }
-   elsif ($cmd eq '--list-description'){                         describe_list(                   @arg )  }
-   elsif ($cmd eq '--add')             {                         add_entry(                       @arg )  }
-   elsif ($cmd eq '--delete')          {                         delete_entry(                    @arg )  }
-   elsif ($cmd eq '--undelete')        {                         undelete_entry(                  @arg )  }
-   elsif ($cmd eq '--remove')          {                         remove_entry(                    @arg )  }
-   elsif ($cmd eq '--move')            {                         move_entry(                      @arg )  }
-   elsif ($cmd eq '--copy')            {                         copy_entry(                      @arg )  }
-   elsif ($cmd eq '--dir')             {                         dir_entry(                       @arg )  }
-   elsif ($cmd eq '--name')            {                         name_entry(                      @arg )  }
-   elsif ($cmd eq '--script')          {                         script_entry(                    @arg )  }
-   else                                {                         goto_entry(                      @arg )  }
+   if    ($cmd eq 'help')            { App::Goto::Dir::Help::text(              $config,        @arg)   }
+   elsif ($cmd eq 'version')         { App::Goto::Dir::Help::text(              $config,        $cmd   )}
+   elsif ($cmd eq 'sort')            { App::Goto::Dir::Format::set_sort(        $config, $data, $arg[0])}
+   elsif ($cmd eq 'list')            { App::Goto::Dir::Format::list_entries(    $config, $data, @arg )  }
+   elsif ($cmd eq 'list-special')    { App::Goto::Dir::Format::special_entries( $config, $data       )  }
+   elsif ($cmd eq 'list-lists')      { App::Goto::Dir::Format::lists(           $config, $data       )  }
+   elsif ($cmd eq 'add-list')        {                         add_list(                        @arg )  }
+   elsif ($cmd eq 'delete-list')     {                         delete_list(                     @arg )  }
+   elsif ($cmd eq 'name-list')       {                         name_list(                       @arg )  }
+   elsif ($cmd eq 'describe-list')   {                         describe_list(                   @arg )  }
+   elsif ($cmd eq 'add')             {                         add_entry(                       @arg )  }
+   elsif ($cmd eq 'delete')          {                         delete_entry(                    @arg )  }
+   elsif ($cmd eq 'undelete')        {                         undelete_entry(                  @arg )  }
+   elsif ($cmd eq 'remove')          {                         remove_entry(                    @arg )  }
+   elsif ($cmd eq 'move')            {                         move_entry(                      @arg )  }
+   elsif ($cmd eq 'copy')            {                         copy_entry(                      @arg )  }
+   elsif ($cmd eq 'dir')             {                         dir_entry(                       @arg )  }
+   elsif ($cmd eq 'name')            {                         name_entry(                      @arg )  }
+   elsif ($cmd eq 'script')          {                         script_entry(                    @arg )  }
+   elsif ($cmd eq 'goto')            {                         goto_entry(                      @arg )  }
+   else                              {                         goto_entry(                      @arg )  }
 }
 #### LIST COMMANDS #####################################################
 sub add_list {
