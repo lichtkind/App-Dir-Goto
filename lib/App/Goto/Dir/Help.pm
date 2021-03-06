@@ -370,7 +370,6 @@ EOT
 sub undelete {
     my $config = shift;
     my $cmd = 'undelete';
-say "|||";
     my $lname = $config->{'list'}{'special_name'};
     my $d = $config->{'list'}{'deprecate_bin'} / 86400;
     my $sig = $config->{'syntax'}{'sigil'};
@@ -823,8 +822,8 @@ sub lname {
 
  USAGE:
 
-  --name-list  <oldname> $sig->{entry_name} <newname>    long command name
-   -$sc<oldname>$sig->{entry_name}<newname>              short alias
+  --name-list  <oldname> $sig->{entry_name}<newname>    long command name
+   -$sc<oldname>$sig->{entry_name}<newname>             short alias
 
 
     Space (' ') after --name-list is required, but after -$sc and around '$sig->{entry_name}' optional.
@@ -844,8 +843,8 @@ sub ldescription {
 
  USAGE:
 
-  --describe-list  <name> [$sig->{help}] '<description>'    long command name
-   -$sc<name>[$sig->{help}]'<description>'                  short alias
+  --describe-list  <name> '<description>'    long command name
+   -$sc<name>'<description>'                 short alias
 
 
     Space (' ') after --describe-list is required, but after -$sc and around '$sig->{help}' optional.

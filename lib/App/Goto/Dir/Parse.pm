@@ -26,32 +26,32 @@ my %command = ('add' => [0, 0, 0, 0, 0], # i: 0 - has option ;
              'redir' => [0, 1, 0, 1, 0],
               'goto' => [0, 1,       0],
               'last' =>  0,
-          'previous' =>  0,
+          'previous' =>  0,              # no args no options
               'help' => [3,         -1],
-              'sort' => [6],             # no args
+              'sort' => [6],             # no args, just 6 options
               'list' => [0, 0,       1],
-          'list-add' => [0, 1,       0],
-       'list-delete' => [0, 1,       0],
-         'list-name' => [0, 1, 1,    0],
-  'list-description' => [0, 1, 1,    0],
+          'add-list' => [0, 1,       0],
+       'delete-list' => [0, 1,       0],
+         'name-list' => [0, 1, 1,    0],
+     'describe-list' => [0, 1, 1,    0],
         'list-lists' =>  0,
       'list-special' =>  0,
 );
-my %command_argument = ( 'add' => [qw/dir name list entry/],
+my %command_argument = ( 'add' => [qw/path name target/],
                         delete => ['source', 'entry'],
                       undelete => ['list_elems', 'target'],
                         remove => ['source'],
                           move => ['source', 'target'],
-                          copy => ['source', 'target'],
+                          copy => ['entry',  'target'],
                           name => ['source', 'name'],
                            dir => ['source', 'dir'],
                          redir => ['dir', '<<', 'dir'],
                         script => ['source', 'text'],
                           help => ['command'],
-                    'add-list' => ['name'],
-                 'delete-list' => ['name'],
-                   'name-list' => ['name', 'name'],
-               'describe-list' => ['name', 'text'],
+                    'add-list' => ['list_name'],
+                 'delete-list' => ['list_name'],
+                   'name-list' => ['list_name', 'list_name'],
+               'describe-list' => ['list_name', 'text'],
 );
 
 my $sig = { short_command => '-', entry_name => ':',
@@ -60,23 +60,34 @@ my $sig = { short_command => '-', entry_name => ':',
 my $ws    = '\s*';
 my $pos   = '-?\d+';
 my $name  = '[a-zA-Z]\w*';
-my $text  = '\'.*(?<!\\)\'';
-my $dir   = '[/\~][^'.$sig->{entry_name}.' ]*';
-my $file  = '\S+|'.$text;
-my $list_name  = "$sig->{special_list}?$name";
-my $special    = "$sig->{special_entry}$name";
-my $entry_name = "(?:$list_name?$sig->{entry_name})?$name";
-my $entry_pos  = "(?:$list_name?$sig->{entry_position})?$pos";
+
+my $text  = '\'(?<content>.*(?<!\\))\'';
+my $dir   = '(?<dir>[/\~][^'.$sig->{entry_name}.' ]*)';
+my $file  = '(?:'.$sig->{file}.'?'.$dir.'|'.$sig->{'file'}.$text.')';
+my $list_name      = '(?:(?<special>'.$sig->{'special_list'}.')?(?<listname>'.$name.'))';
+my $entry_name     = '(?:'.$sig->{'entry_name'}.'(?<entry_name>'.$name.'))';
+my $reg_list_name  = "(?<list_name>$name)";
+my $special_entry  = "$sig->{special_entry}(?<special>$name)";
+
+my $entry_name_adr = "(?:(?:$list_name?$sig->{entry_name})?(?<entry_name>$name))";
+my $entry_pos_adr  = "(?:(?:$list_name?$sig->{entry_position})?(?<entry_pos>$pos))";
+my $reg_name_adr   = "(?:(?:$reg_list_name?$sig->{entry_name})?(?<entry_name>$name))";
+my $reg_pos_adr    = "(?:(?:$reg_list_name?$sig->{entry_position})?(?<entrypos>$pos))";
+
 my $list_elem = "(?:$sig->{entry_position}?$pos)|(?:$sig->{entry_name}?$name)";
 my $list_elems = "(?:$sig->{entry_position}?$pos)|(?:$sig->{entry_position}?(?:$pos)?..(?:$pos)?)|(?:$sig->{entry_name}?$name)";
-my $entry      = "(?:$special|$entry_name|$entry_pos)";
-my $source     = "(?:(?:$special)|(?:$entry_name)|(?:$entry_pos)|(?:  (?:$list_name?$sig->{entry_position})?$pos?..$pos)?  ))";
+my $entry      = "(?:$special_entry|$entry_name_adr|$entry_pos_adr)"; # eny entries
+my $source     = "(?:(?:$special_entry)|(?:$entry_name_adr)|(?:$entry_pos_adr)|(?:  (?:$list_name?$sig->{entry_position})?$pos?..$pos)?  ))"; # one or more el of normal list
 my $target     = $entry;
 my $path       = "$entry?(?:$text|$dir)";
 
 sub init {
     ($config, $data)  = @_;
     $sig = { map {$_ => quotemeta $config->{'syntax'}{'sigil'}{$_}} keys %{$config->{'syntax'}{'sigil'}}};
+    say $sig->{entry_name};
+    say $entry_name;
+    say ":der" =~ $entry_name;
+    say defined $+{entry_name};
 }
 
 sub is_dir {

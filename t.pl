@@ -17,7 +17,6 @@ use App::Goto::Dir;
 
 my $app = App::Goto::Dir->new( $cwd );
 
-
 #my $file = "goto_dir_config.yml";
 #my $config = App::Goto::Dir::Config::load();
 #my $data = App::Goto::Dir::Data->new( $config );
@@ -35,10 +34,10 @@ my $app = App::Goto::Dir->new( $cwd );
 #say App::Goto::Dir::Command::run('help', 'version');
 #say App::Goto::Dir::Command::run('help', '--add');
 #say App::Goto::Dir::Command::run('help', '--delete');
-say App::Goto::Dir::Command::run('help', '--undelete');
-say App::Goto::Dir::Command::run('help', '--remove');
-say App::Goto::Dir::Command::run('help', '--move');
-say App::Goto::Dir::Command::run('help', '--copy');
+#say App::Goto::Dir::Command::run('help', '--undelete');
+#say App::Goto::Dir::Command::run('help', '--remove');
+#say App::Goto::Dir::Command::run('help', '--move');
+#say App::Goto::Dir::Command::run('help', '--copy');
 #say App::Goto::Dir::Command::run('help', '--name');
 #say App::Goto::Dir::Command::run('help', '--dir');
 #say App::Goto::Dir::Command::run('help', '--redir');
@@ -85,7 +84,6 @@ say App::Goto::Dir::Command::run('help', '--copy');
 my $data = $app->{'data'};
 my $all = $data->get_special_lists('all');
 my $pos = $all->pos_from_name('');
-say $pos;
 
 say '   run goto test in ', sprintf("%.4f",timediff( Benchmark->new, $t)->[1]), ' sec';
 
