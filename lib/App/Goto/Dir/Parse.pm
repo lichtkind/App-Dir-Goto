@@ -37,15 +37,15 @@ my %command = ('add' => [0, 0, 0, 0, 0], # i: 0 - has option ;
         'list-lists' =>  0,
       'list-special' =>  0,
 );
-my %command_argument = ( 'add' => [qw/path name target/],
-                        delete => ['source', 'entry'],
-                      undelete => ['list_elems', 'target'],
+my %command_argument = ( 'add' => [qw/path entry_name reg_target/],
+                        delete => ['source', 'list_target'],
+                      undelete => ['list_elems', 'reg_target'],
                         remove => ['source'],
                           move => ['source', 'target'],
-                          copy => ['entry',  'target'],
-                          name => ['source', 'name'],
-                           dir => ['source', 'dir'],
-                         redir => ['dir', '<<', 'dir'],
+                          copy => ['entry',  'reg_target'],
+                          name => ['source', 'entry_name'],
+                           dir => ['source', 'path'],
+                         redir => ['path', '<<', 'path'],
                         script => ['source', 'text'],
                           help => ['command'],
                     'add-list' => ['list_name'],
@@ -61,25 +61,29 @@ my $ws    = '\s*';
 my $pos   = '-?\d+';
 my $name  = '[a-zA-Z]\w*';
 
-my $text  = '\'(?<content>.*(?<!\\))\'';
+my $text  = '\'(?<text_content>.*(?<!\\))\'';
 my $dir   = '(?<dir>[/\~][^'.$sig->{entry_name}.' ]*)';
 my $file  = '(?:'.$sig->{file}.'?'.$dir.'|'.$sig->{'file'}.$text.')';
-my $list_name      = '(?:(?<special>'.$sig->{'special_list'}.')?(?<listname>'.$name.'))';
-my $entry_name     = '(?:'.$sig->{'entry_name'}.'(?<entry_name>'.$name.'))';
-my $reg_list_name  = "(?<list_name>$name)";
-my $special_entry  = "$sig->{special_entry}(?<special>$name)";
-
-my $entry_name_adr = "(?:(?:$list_name?$sig->{entry_name})?(?<entry_name>$name))";
-my $entry_pos_adr  = "(?:(?:$list_name?$sig->{entry_position})?(?<entry_pos>$pos))";
-my $reg_name_adr   = "(?:(?:$reg_list_name?$sig->{entry_name})?(?<entry_name>$name))";
-my $reg_pos_adr    = "(?:(?:$reg_list_name?$sig->{entry_position})?(?<entrypos>$pos))";
+my $list_name       = '(?:(?<special_list>'.$sig->{'special_list'}.')?(?<listname>'.$name.'))';
+my $entry_name      = '(?:'.$sig->{'entry_name'}.'(?<entry_name>'.$name.'))';
+my $reg_list_name   = '(?<list_name>'.$name.')';
+my $special_entry   = '(?:'.$sig->{special_entry}.'(?<special>$name))';
+my $entry_name_adr  = '(?:(?:'.$list_name.'?'.$sig->{entry_name}.')?(?<entry_name>'.$name.'))';
+my $entry_pos_adr   = '(?:(?:'.$list_name.'?'.$sig->{entry_position}.')?(?<entry_pos>'.$pos.'))';
+my $entry_pos_group = '';
+my $reg_name_adr    = '(?:(?:'.$reg_list_name.'?'.$sig->{entry_name}.')?(?<entry_name>'.$name.'))';
+my $reg_pos_adr     = '(?:(?:'.$reg_list_name.'?'.$sig->{entry_position}.')?(?<entrypos>'.$pos.'))';
+my $reg_pos_group   = '';
+my $reg_target      = $reg_name_adr.'|'.$reg_pos_adr;
+my $list_target     = '';
 
 my $list_elem = "(?:$sig->{entry_position}?$pos)|(?:$sig->{entry_name}?$name)";
 my $list_elems = "(?:$sig->{entry_position}?$pos)|(?:$sig->{entry_position}?(?:$pos)?..(?:$pos)?)|(?:$sig->{entry_name}?$name)";
-my $entry      = "(?:$special_entry|$entry_name_adr|$entry_pos_adr)"; # eny entries
+my $entry      = '(?:'.$special_entry.'|'.$entry_name_adr.'|'.$entry_pos_adr.')'; # any entries
 my $source     = "(?:(?:$special_entry)|(?:$entry_name_adr)|(?:$entry_pos_adr)|(?:  (?:$list_name?$sig->{entry_position})?$pos?..$pos)?  ))"; # one or more el of normal list
-my $target     = $entry;
-my $path       = "$entry?(?:$text|$dir)";
+my $target     = '|'; #one full addr
+my $path       = $entry.'?(?:'.$text.'|'.$dir.')';
+my $command    = '';
 
 sub init {
     ($config, $data)  = @_;

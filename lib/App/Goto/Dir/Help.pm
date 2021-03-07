@@ -88,25 +88,28 @@ sub basics {
   Basic use of gt
  -----------------
 
-  The prime use of gt is changing the working directory of the users shell
-  to a <dir>, that is already stored in gt as an entry. Theses entries are
-  organized in named lists (<list>) and may have names (<name>) themself.
-  Call gt -$sc$opt->{commands} to learn how to administer entries.
-  Switch directory by calling gt and identify (with <ID>) an entry:
+  The prime use of gt is changing the working directory of a shell to a
+  directory path (<dir>), that is already stored in a file as an entry.
+  Theses entries are organized in named lists (<list>) and may have
+  names (<name>) themself. Call gt -$sc$opt->{commands} to learn how to
+  administer lists and change the properties of an entry.
 
-    gt [$sig->{entry_name}]<name>           calling <dir> entry by name
-    gt [$sig->{entry_position}]<pos>            calling <dir> entry by position
-    gt <list>$sig->{entry_position}<pos>        calling <dir> entry from any list
+  Switch directory by calling gt and identify (with <entryID>) an entry:
+
+    gt [$sig->{entry_name}]<name>           calling entry by name
+    gt [$sig->{entry_position}]<pos>            calling entry by position of current list
+    gt <list>$sig->{entry_position}<pos>        entry at position of any list
 
   A negative position is counting from the lists last position (-1 = last).
   If <list> is omitted, than gt assumes the current list. List and entry
   names contain only word character (A-Za-z0-9_) and start with a letter.
 
-  There are a number of special <dir> entry names (starting with $sig->{special_entry})
-  and names of special lists (starting with $sig->{special_list}) that are listed below.
-  They can be used in this function as regular entry and list names.
-  No matter the way an entry is identified, the user can attach a path,
-  that will be understood as subdirectory of the entry <dir>:
+  There are a number of special <dir> entry names (starting with $sig->{special_entry}) and
+  names of special lists (starting with $sig->{special_list}) that can be used in <entryID>
+  like regular named entries or regular lists. These are listed below.
+
+  To any <entryID> can be attached another directory path, that will be
+  understood as subdirectory of the entry <dir>:
 
     gt $sig->{special_entry}last/..            go to parent directory of <dir> gone to last time
 
@@ -122,15 +125,16 @@ sub basics {
   $sig->{special_entry}last                   destination of last gt call (with subdir)
   $sig->{special_entry}prev[ious]             destination of second last gt call (with subdir)
   $sig->{special_entry}add|[un]del[ete]       every command has special entry with same name,
-  $sig->{special_entry}\[re]move|copy          an alias to the entry touched by the command most recently
+  $sig->{special_entry}\[re]move|copy          .. which is an alias to the entry touched by
+  $sig->{special_entry}dir|name|script        .. the last usage of the command
 
  SPECIAL LISTS:
 
   $sig->{special_list}all                    entries from all lists, even $sig->{special_list}bin
-  $sig->{special_list}new                    newly created entries (configure how old, --help=settings)
+  $sig->{special_list}new                    newly created entries (default is 2 weeks old)
   $sig->{special_list}bin                    deleted entries (scrapped after configured period)
   $sig->{special_list}named                  all entries with names
-  $sig->{special_list}stale                  all entries with defunct (not existing) directory
+  $sig->{special_list}stale                  all entries with defunct (not existing) <dir>
 EOT
 }
 sub install{
