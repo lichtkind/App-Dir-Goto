@@ -101,10 +101,10 @@ DISCLAIMER: program is in rebuild and does currently not work at all
 
 ## commands for managing lists:
 
-- `--add-list <name> ? <des.> . create a new list (-l-a)`
-- `--del[ete]-list <lname>. . . delete list of <lname> (has to be empty) (-l-d)`
-- `--name-list <old> <new>. . . rename any list, conflicts not allowed (-l-n)`
-- `--describe-list <name> ? <D> change description of any list (-l-D)`
+- `--add-list <name> ? <des.> . create a new list (-a-l)`
+- `--del[ete]-list <lname>. . . delete list of <lname> (has to be empty) (-d-l)`
+- `--name-list <old> <new>. . . rename any list, conflicts not allowed (-N-l)`
+- `--describe-list <name> ? <D> change description of any list (-D-l)`
 - `--list-lists . . . . . . . . <lname> and <lpos> of available lists (short -l-l)`
 
 

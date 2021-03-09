@@ -100,21 +100,23 @@ sub add_entry {
             my $entry = $data->get_entry( $dir->[0], $dir->[1] );
             return " ! there is no entry with name or position '$dir->[0]' in list '$dir->[1]'" unless ref $entry;
             $dir = File::Spec->catdir( $entry->full_dir, $dir->[2] );
-        } elsif (@$dir == 4) {
+        } elsif (@$dir == 4) { # [specialname subdir 0  0 ]
             my $entry = $data->get_special_entry_dir( $dir->[0] );
             return " ! there is no special entry named '$dir->[0]'" unless ref $entry;
             $dir = File::Spec->catdir( $entry->full_dir, $dir->[1] );
         } else {}
     }
+    my $all_name = $data->get_special_list_names('all');
     $dir  //= $cwd;
     $name //= '';
     $target_ID  //= $config->{'entry'}{'position_default'};
-    $target_list_name //= App::Goto::Dir::Parse::is_position( $target_ID ) ? $data->get_current_list_name : $data->get_special_list_names('all');
+    $target_list_name //= App::Goto::Dir::Parse::is_position( $target_ID ) ? $data->get_current_list_name : $all_name;
     return " ! '$dir' is not an accessible directory" if $config->{'entry'}{'dir_exists'} and not -d $dir;
     return " ! '$name' is not an entry name (only [a-zA-Z0-9_] starting with letter)" if $name and not App::Goto::Dir::Parse::is_name($name);
     return " ! entry name '$name' is too long, max length is $config->{entry}{name_length_max} character" if $name and length($name) > $config->{'entry'}{'name_length_max'};
     my $target_list  = $data->get_list( $target_list_name );
     return " ! target list named '$target_list_name' does not exist, please check --list-lists" unless ref $target_list;
+    return " ! the only special list allowed as target is $all_name" if $target_list->is_special and $target_list_name ne $all_name;
     my $pos = $target_list->pos_from_ID( $target_ID, 'target' );
     return " ! position or name '$target_ID' does not exist in list '$target_list_name'" unless $pos;
     my $entry = App::Goto::Dir::Data::Entry->new($dir, $name);
