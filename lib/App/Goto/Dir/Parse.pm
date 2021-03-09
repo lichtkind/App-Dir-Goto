@@ -25,17 +25,15 @@ my %command = ('add' => [0, 0, 0, 0, 0], # i: 0 - has option ;
                'dir' => [0, 0, 1,    0],
              'redir' => [0, 1, 0, 1, 0],
               'goto' => [0, 1,       0],
-              'last' =>  0,
-          'previous' =>  0,              # no args no options
               'help' => [3, 0       -1],
               'sort' => [6],             # no args, just 6 options
               'list' => [0, 0,       1],
+        'list-lists' =>  0,
+      'list-special' =>  0,
           'add-list' => [0, 1,       0],
        'delete-list' => [0, 1,       0],
          'name-list' => [0, 1, 1,    0],
      'describe-list' => [0, 1, 1,    0],
-        'list-lists' =>  0,
-      'list-special' =>  0,
 );
 my %command_argument = ( 'add' => [qw/path entry_name target/],
                         delete => ['source'],
@@ -110,29 +108,20 @@ sub init {
 #    say defined $+{entry_name};
 }
 
-sub is_dir {
-    my ($dir) = @_;
-    return 0 unless defined $dir and $dir;
-    substr($dir, 0, 1) =~ m|[/\\~]|;
-}
-sub is_name {
-    my ($name) = @_;
-    return 0 unless defined $name and $name;
-    return 0 if $name =~ /\W/;
-    return 0 if substr($name,0,1) =~ /[\d_]/;
-    1;
-}
-sub is_position { defined $_[0] and $_[0] =~ /^-?+\d$/ }
+sub is_dir      { defined $_[0] and $_[0] =~ '^'.$rule->{'dir'}.'$' }
+sub is_name     { defined $_[0] and $_[0] =~ '^'.$rule->{'name'}.'$' }
+sub is_position { defined $_[0] and $_[0] =~ '^'.$rule->{'pos'}.'$' }
 
-sub eval_command {
+sub eval_args {
     my (@token) = @_;
     my @comands = ();
+    my $sig = $config->{'syntax'}{'sigil'};
     for my $token (@token){
         my $cmd;
         if (length $token == 1){
             if ($token =~ /\W/){
-                (push @comands, ['last']   ), next if $token eq $config->{'syntax'}{'special_entry'}{'last'};
-                (push @comands, ['previous']),next if $token eq $config->{'syntax'}{'special_entry'}{'previous'};
+                (push @comands, ['goto', $sig->{'special_entry'}.'last']),next if $token eq $config->{'syntax'}{'special_entry'}{'last'};
+                (push @comands, ['goto', $sig->{'special_entry'}.'prev']),next if $token eq $config->{'syntax'}{'special_entry'}{'previous'};
                 return " ! there is no special shortcut named '$token'" unless defined $cmd;
             }
         }
@@ -173,7 +162,25 @@ sub eval_command {
             }
             $cmd_name = $command_tr{$cmd_name} if exists $command_tr{$cmd_name};
             return " ! there is no command '$cmd', please check --help=commands or -hc" unless exists $command{$cmd_name};
-
+            if      ($cmd eq 'add'){
+            } elsif ($cmd eq 'delete'){
+            } elsif ($cmd eq 'undelete'){
+            } elsif ($cmd eq 'remove'){
+            } elsif ($cmd eq 'move'){
+            } elsif ($cmd eq 'copy'){
+            } elsif ($cmd eq 'name'){
+            } elsif ($cmd eq 'dir'){
+            } elsif ($cmd eq 'redir'){
+            } elsif ($cmd eq 'help'){
+            } elsif ($cmd eq 'sort'){
+            } elsif ($cmd eq 'list'){
+            } elsif ($cmd eq 'list-special'){
+            } elsif ($cmd eq 'list-lists'){
+            } elsif ($cmd eq 'add-list'){
+            } elsif ($cmd eq 'delete-list'){
+            } elsif ($cmd eq 'name-list'){
+            } elsif ($cmd eq 'describe-list'){
+            }
             # double name (ltm)
             # parse args
         } else {
@@ -194,35 +201,3 @@ sub run_command {
 
 1;
 
-__END__
-|goto-last|      = $spec->{last}
-|goto-previous|  = $spec->{previous}
-|goto|           = <entry>
-|add|            = <path>?<ws><name><ws>$sig->{target_entry}<ws><target>
-|delete|         = <source>
-|undelete|       = <list_elems><ws>$sig->{target_entry}<ws><target>
-|remove|         = <source>
-|move|           = <source><ws>$sig->{target_entry}<ws><target>
-|copy|           = <source><ws>$sig->{target_entry}<ws><target>
-|redir|          = <path><ws>>><ws><path>
-|dir|            = <target><ws>(<dir>|<text>)
-|name|           = <target><ws>($sig->{entry_name}<name>)?
-|script|         = <target><ws>(<text>|$sig->{file}<file>)
-|help|           = (=opt|@cmd)?
-|sort|           = (=opt|sopt)?
-|list|           = <list_name>+
-|list-special|   = //
-|list-lists|     = //
-|list-add|       = <name> <ws>$sig->{target_entry}<text>
-|list-delete|    = <name>
-|list-name|      = <list_name><ws>[ $sig->{entry_name}]<list_name>
-|list-description| = <list_name><ws><text>
-
-$fmt1 = '(?<y>\d\d\d\d)-(?<m>\d\d)-(?<d>\d\d)';
-$fmt2 = '(?<m>\d\d)/(?<d>\d\d)/(?<y>\d\d\d\d)';
-$fmt3 = '(?<d>\d\d)\.(?<m>\d\d)\.(?<y>\d\d\d\d)';
-for my $d (qw(2006-10-21 15.01.2007 10/31/2005)) {
-    if ( $d =~ m{$fmt1|$fmt2|$fmt3} ){
-        print "day=$+{d} month=$+{m} year=$+{y}\n";
-    }
-}  $+[n]
