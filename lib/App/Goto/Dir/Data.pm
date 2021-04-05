@@ -124,12 +124,13 @@ sub visit_previous_entry { $_[0]->visit_entry( $_[0]->get_special_entry('previou
 
 sub get_special_entry {
     my ($self, $name) = @_;
-    $self->{'special_entry'}{$name} if exists $self->{'special_entry'}{$name};
+    return unless exists $self->{'special_entry'}{$name};
+    wantarray ? @{$self->{'special_entry'}{$name}} : $self->{'special_entry'}{$name}->[0];
 }
 sub set_special_entry {
     my ($self, $name, $entry, $list_name) = @_;
     return if ref $entry ne 'App::Goto::Dir::Data::Entry' or not defined $list_name or not exists $self->{'list_object'}{$list_name};
-    $self->{'special_entry'}{$name} = $entry;
+    $self->{'special_entry'}{$name} = [defined $list_name ? $list_name : get_special_lists('all'), $entry];
 }
 
 ########################################################################

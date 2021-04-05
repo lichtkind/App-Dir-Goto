@@ -35,17 +35,18 @@ my %command = ('add' => [0, 0, 0, 0, 0], # i: 0 - has option ;
          'name-list' => [0, 1, 1,    0],
      'describe-list' => [0, 1, 1,    0],
 );
-my %command_argument = ( 'add' => [qw/path entry_name target/],
+my %command_argument = ( 'add' => [qw/path named_entry target/],
                         delete => ['source'],
                       undelete => ['list_elems', 'reg_target'],
                         remove => ['reg_source'],
                           move => ['reg_source', 'target'],
                           copy => ['source',  'reg_target'],
-                          name => ['entry', 'named_entry'],
-                           dir => ['entry', 'path'],
+                          name => ['target', 'named_entry'],
+                           dir => ['target', 'path'],
                          redir => ['path', '<<', 'path'],
-                        script => ['entry', 'text'],
+                        script => ['target', 'text'],
                           help => ['command'],
+                          list => ['list_name'],
                     'add-list' => ['list_name'],
                  'delete-list' => ['list_name'],
                    'name-list' => ['list_name', 'list_name'],
@@ -70,42 +71,36 @@ sub init {
     $rule->{'dir'}              = '(?<dir>[/\\\~]\S*)';
     $rule->{'file'}             = '(?:'.$sig->{file}.'?'.$rule->{dir}.'|'.$sig->{file}.$rule->{text}.')';
 
-    $rule->{'reg_list_name'}    = '(?<list_name>'.$rule->{name}.')';
-    $rule->{'list_name'}        = '(?:(?<special_list>'.$sig->{special_list}.')?'.$rule->{reg_list_name}.')';
+    $rule->{'reg_list_name'}    = '(?<reg_list_name>'.$rule->{name}.')';
+    $rule->{'list_name'}        = '(?<list_name>(?<special_list>'.$sig->{special_list}.')?'.$rule->{reg_list_name}.')';
     $rule->{'entry_name'}       = '(?<entry_name>'.$rule->{name}.')';
     $rule->{'entry_pos'}        = '(?<entry_pos>'.$rule->{pos}.')';
-    $rule->{'named_entry'}      = '(?:'.$sig->{entry_name}.$rule->{entry_name}.')';
-    $rule->{'special_entry'}    = '(?:'.$sig->{special_entry}.'(?<special>'.$rule->{name}.'))';
+    $rule->{'named_entry'}      = '(?:'.$sig->{entry_name}.'?'.$rule->{entry_name}.')';
+    $rule->{'special_entry'}    = '(?:'.$sig->{special_entry}.'(?<special_entry>'.$rule->{name}.'))';
     $rule->{'name_group'}       = '(?<name_group>(?:'.$sig->{entry_name}.$rule->{name}.')+)';
-    $rule->{'pos_group'}        = '(?:(?<start_pos>'.$rule->{pos}.')?\.\.(?<end_pos>'.$rule->{pos}.'))';
+    $rule->{'pos_group'}        = '(?<pos_group>(?:'.$sig->{entry_position}.$rule->{name}.')+)';
+    $rule->{'pos_range'}        = '(?:(?<start_pos>'.$rule->{pos}.')?\.\.(?<end_pos>'.$rule->{pos}.'))';
 
     $rule->{'entry_name_adr'}   = '(?:(?:'.$rule->{list_name}.'?'.$sig->{entry_name}.')?'.$rule->{entry_name}.')';
     $rule->{'entry_pos_adr'}    = '(?:(?:'.$rule->{list_name}.'?'.$sig->{entry_position}.')?'.$rule->{entry_pos}.')';
     $rule->{'entry_name_group'} = '(?:'.$rule->{list_name}.'?'.$rule->{name_group}.')';
-    $rule->{'entry_pos_group'}  = '(?:(?:'.$rule->{list_name}.'?'.$sig->{entry_position}.')?'.$rule->{pos_group}.')';
-    $rule->{'entry'}            = '(?:'.$rule->{special_entry}.'|'.$rule->{entry_name_adr}.'|'.$rule->{entry_pos_adr}.')'; # any single entry
+    $rule->{'entry_pos_group'}  = '(?:'.$rule->{list_name}.'?'.$rule->{pos_group}.')';
+    $rule->{'entry_pos_range'}  = '(?:(?:'.$rule->{list_name}.'?'.$sig->{entry_position}.')?'.$rule->{pos_range}.')';
+    $rule->{'entry'}            = '(?<entry>'.$rule->{special_entry}.'|'.$rule->{entry_name_adr}.'|'.$rule->{entry_pos_adr}.')'; # any single entry
     $rule->{'reg_name_adr'}     = '(?:(?:'.$rule->{reg_list_name}.'?'.$sig->{entry_name}.')?'.$rule->{entry_name}.')';
     $rule->{'reg_pos_adr'}      = '(?:(?:'.$rule->{reg_list_name}.'?'.$sig->{entry_position}.')?'.$rule->{entry_pos}.')';
     $rule->{'reg_name_group'}   = '(?:(?:'.$rule->{reg_list_name}.'?'.$rule->{name_group}.')';
-    $rule->{'reg_pos_group'}    = '(?:(?:'.$rule->{reg_list_name}.'?'.$sig->{entry_position}.')?'.$rule->{pos_group}.')';
+    $rule->{'reg_pos_group'}    = '(?:(?:'.$rule->{reg_list_name}.'?'.$rule->{pos_group}.')';
+    $rule->{'reg_pos_range'}    = '(?:(?:'.$rule->{reg_list_name}.'?'.$sig->{entry_position}.')?'.$rule->{pos_range}.')';
 
     $rule->{'list_elem'}        = '(?:'.$sig->{entry_position}.'?'.$rule->{entry_pos}.'|'.$sig->{entry_name}.'?'.$rule->{entry_name}.')';
-    $rule->{'list_elems'}       = '(?:'.$rule->{list_elem}.'|'.$sig->{entry_position}.'?'.$rule->{pos_group}.'|'.$rule->{name_group}.')';
-    $rule->{'reg_source'}       = $rule->{reg_name_adr}.'|'.$rule->{reg_pos_adr}.'|'.$rule->{reg_name_group}.'|'.$rule->{reg_pos_group};
-    $rule->{'reg_target'}       = $rule->{reg_name_adr}.'|'.$rule->{reg_pos_adr};
-    $rule->{'source'}           = $rule->{entry_name_adr}.'|'.$rule->{entry_pos_adr}.'|'.$rule->{entry_name_group}.'|'.$rule->{entry_pos_group};
-    $rule->{'target'}           = $rule->{entry_name_adr}.'|'.$rule->{entry_pos_adr};
+    $rule->{'list_elems'}       = '(?:'.$rule->{list_elem}.'|'.$sig->{entry_position}.'?'.$rule->{pos_range}.'|'.$rule->{pos_group}.'|'.$rule->{name_group}.')';
+    $rule->{'reg_source'}       = $rule->{reg_name_adr}.'|'.$rule->{reg_pos_adr}.'|'.$rule->{reg_name_group}.'|'.$rule->{reg_pos_group}.'|'.$sig->{entry_position}.'?'.$rule->{reg_pos_range}.'|'.$rule->{special_entry}; #special dont have to be regular
+    $rule->{'reg_target'}       = $rule->{reg_name_adr}.'|'.$rule->{reg_pos_adr}.'|'.$rule->{special_entry};
+    $rule->{'source'}           = $rule->{entry}.'|'.$rule->{entry_name_group}.'|'.$rule->{entry_pos_group}.'|'.$rule->{entry_pos_range};
+    $rule->{'target'}           = $rule->{'entry'};
     $rule->{'path'}             = $rule->{entry}.'?(?:'.$rule->{text}.'|'.$rule->{dir}.')';
     $rule->{'command'}          = '(?:--)?(?:'.(join '|',@cmd).')';
-
-    # $config->{'list'}{'special_name'}{'all'}
-    #say $sig->{entry_name};
-    #say $rule->{entry_name};
-    #say ":der" =~ $rule->{entry_name};
-    #say $1;
-#    say '\\';
-#    say '~' =~ $rule->{'dir'};
-#    say defined $+{entry_name};
 }
 
 sub is_dir      { defined $_[0] and $_[0] =~ '^'.$rule->{'dir'}.'$' }
@@ -157,32 +152,86 @@ sub eval_args {
                     unless exists $App::Goto::Dir::Config::option_name{$opt[0]}{$opt[1]};
                 $opt[1] = $App::Goto::Dir::Config::option_name{$opt[0]}{$opt[1]};
                 push @comands, \@opt;
-                # exception help with cmd args
                 next;
             }
             $cmd_name = $command_tr{$cmd_name} if exists $command_tr{$cmd_name};
             return " ! there is no command '$cmd', please check --help=commands or -hc" unless exists $command{$cmd_name};
-            if      ($cmd eq 'add'){
-            } elsif ($cmd eq 'delete'){
-            } elsif ($cmd eq 'undelete'){
-            } elsif ($cmd eq 'remove'){
-            } elsif ($cmd eq 'move'){
-            } elsif ($cmd eq 'copy'){
-            } elsif ($cmd eq 'name'){
-            } elsif ($cmd eq 'dir'){
-            } elsif ($cmd eq 'redir'){
-            } elsif ($cmd eq 'help'){
-            } elsif ($cmd eq 'sort'){
-            } elsif ($cmd eq 'list'){
-            } elsif ($cmd eq 'list-special'){
-            } elsif ($cmd eq 'list-lists'){
-            } elsif ($cmd eq 'add-list'){
-            } elsif ($cmd eq 'delete-list'){
-            } elsif ($cmd eq 'name-list'){
-            } elsif ($cmd eq 'describe-list'){
+            return ['help', "--$cmd_name"] if ref $command{$cmd_name} and $command{$cmd_name}[0]; # expected option but not found one
+            push @comands, [$cmd_name];
+            next if $command{$cmd_name} == 0 or @{$command{$cmd_name}} == 1; # no arguments expected
+
+            for my $arg_nr (0 .. $#{$command_argument{$cmd_name}}){
+                my $arg_type = $command_argument{$cmd_name}[$arg_nr];
+                my $arg_required = $command{$cmd_name}[$arg_nr+1];
+                my $arg_slurp = (($_ == $#{$command_argument{$cmd_name}}) and $command{$cmd_name}[-1]);
+                unless (@token){
+                    if ($arg_required) { return " ! command $cmd_name is missing argument number $arg_nr: <$arg_type>, plesse check --help $cmd_name" }
+                    else               { push @{$comands[-1]}, undef; next }
+                }
+                my $argument = shift @token;
+                my $match = exists $rule->{ $arg_type } ? $argument =~ $rule->{ $arg_type }
+                                                        : $argument =~ /$arg_type/;
+                unless ($match){
+                    if ($arg_required) { return " ! command $cmd_name has missing or malformed argument <$arg_type>, plesse check --help $cmd_name" }
+                    else               { push @{$comands[-1]}, undef; unshift @token, $argument; next } # put back unmatched token
+                }
+                unless (exists $rule->{$arg_type}){
+                    push @{$comands[-1]}, $match;
+                    next;
+                }
+                my $arg_value;
+                if    ($arg_type eq 'path'){
+                    my $dir =  $+{'entry_name'} ?  $+{'entry_name'} : $+{'text_content'};
+                    if ( $+{'entry'}){
+                        my $entry;
+                        if ($+{'special_entry'}){
+                            $entry = $data->get_special_entry( $+{'special_entry'});
+                            return " ! there is no special entry '$sig->{special_entry}$+{special_entry}'" unless ref $entry;
+                        } else {
+                            my $list = $data->get_list( $+{'list_name'} );
+                            return " ! there is no list '$+{list_name}'" unless ref $list;
+                            my $elem = get_list_elems();
+                            $entry = $list->get_entry($elem);
+                            return " ! there is no entry named '$+{entry_name}' in list '$+{'list_name'}'" unless ref $entry or $+{'entry_pos'};
+                            return " ! there is no entry on position '$+{entry_pos}' in list '$+{'list_name'}'" unless ref $entry or $+{'entry_name'};
+                        }
+                        $dir = File::Spec->catdir($entry->full_dir, $dir);
+                    }
+                    $arg_value = $dir;
+                }
+                elsif ($arg_type eq 'source')     {$arg_value = $+{'special_entry'} ? [[],                 $+{'special_entry'}]
+                                                                                    : [$+{'list_name'},    get_list_elems()   ] }
+                elsif ($arg_type eq 'reg_source') {$arg_value = $+{'special_entry'} ? [[],                 $+{'special_entry'}]
+                                                                                    : [$+{'reg_list_name'},get_list_elems()] }
+                elsif ($arg_type eq 'target')     {$arg_value = $+{'special_entry'} ? [[],                 $+{'special_entry'}]
+                                                                                    : [$+{'list_name'},    get_list_elems()   ] }
+                elsif ($arg_type eq 'reg_target') {$arg_value = $+{'special_entry'} ? [[],                 $+{'special_entry'}]
+                                                                              : [$+{'reg_list_name'},get_list_elems()] }
+                elsif ($arg_type eq 'list_elems') {$arg_value = get_list_elems()   }
+                elsif ($arg_type eq 'named_entry'){$arg_value = $+{'entry_name'}   }
+                elsif ($arg_type eq 'list_name')  {$arg_value = $match }
+                elsif ($arg_type eq 'text')       {$arg_value = $+{'text_content'} }
+                else                              {$arg_value = $match }            # command
+                push @{$comands[-1]}, $arg_value;
+                if ($arg_slurp){
+                    while (@token){
+                        my $argument = shift @token;
+                        my $match = $argument =~ $rule->{ $arg_type };
+                        my $arg_value;
+                        if    ($arg_type eq 'source')     {$arg_value = $+{'special_entry'} ? [[],                 $+{'special_entry'}]
+                                                                                            : [$+{'list_name'},    get_list_elems()   ] }
+                        elsif ($arg_type eq 'reg_source') {$arg_value = $+{'special_entry'} ? [[],                 $+{'special_entry'}]
+                                                                                            : [$+{'reg_list_name'},get_list_elems()] }
+                        elsif ($arg_type eq 'list_name')  {$arg_value = $match }
+                        elsif ($arg_type eq 'command')    {$arg_value = $match }
+                        else                              {  }
+
+                        if ($match){ push @{$comands[-1]}, $arg_value }
+                        else       { unshift @token, $argument; last }
+                    }
+
+                }
             }
-            # double name (ltm)
-            # parse args
         } else {
             # compound adress
             # split on : -> call with list name if name
@@ -193,6 +242,21 @@ sub eval_args {
     }
     #my @cmd = split  "-", join ' ', @parts;
     \@comands;
+}
+
+
+sub get_list_elems {
+    return $+{'entry_pos'}                    if $+{'entry_pos'};
+    return $+{'entry_name'}                   if $+{'entry_name'};
+    return [$+{'start_pos'} .. $+{'end_pos'}] if $+{'start_pos'};
+    if ($+{'pos_group'}) {
+        my @pos = split $sig->{'entry_position'}, $+{'pos_group'};
+        shift @pos; return \@pos;
+    }
+    if ($+{'name_group'}){
+         my @name = split $sig->{'entry_name'}, $+{'name_group'};
+        shift @name; return \@name
+    }
 }
 
 sub run_command {

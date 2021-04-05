@@ -128,7 +128,7 @@ sub add_entry {
     $named->insert_entry( $entry ) if $entry->name;
     $stale->insert_entry( $entry ) unless -d $entry->full_dir;
     $target_list->insert_entry( $entry, $target_ID ) unless $target_list eq $all;
-    $data->set_special_entry( 'add', $entry );
+    $data->set_special_entry( 'add', $entry, $target_list_name);
     " - added dir '$dir' to list '$target_list_name' on position $pos";
 }
 
@@ -170,8 +170,8 @@ sub delete_entry {
                                                                       : $config->{'syntax'}{'sigil'}{'entry_name'}.$ID;
         $ret .= $was_del ? " ! '$entry_address' was already deleted\n"
                          : " - deleted entry '$entry_address' ".App::Goto::Dir::Format::text($entry->full_dir(), 30)." from lists: $lnames\n";
-        $data->set_special_entry( 'del', $entry );
-        $data->set_special_entry( 'delete', $entry );
+        $data->set_special_entry( 'del', $entry, $list_name );
+        $data->set_special_entry( 'delete', $entry, $list_name );
     }
     chomp($ret);
     $ret;
@@ -183,13 +183,13 @@ sub undelete_entry {
     $target_entry_ID  //= $config->{'entry'}{'position_default'};
     $target_list_name //= $data->get_current_list_name;
     my $target_list  = $data->get_list( $target_list_name );
+    my ($bin, $all) = $data->get_special_lists(qw/bin all/);
     return " ! target list named '$target_list_name' does not exist, please check --list-lists" unless ref $target_list;
     my $target_pos = $target_list->pos_from_ID( $target_entry_ID, 'target' );
     return " ! position or name '$target_entry_ID' does not exist in list '$target_list_name'" unless $target_pos;
     my $target_address = App::Goto::Dir::Parse::is_position($target_entry_ID) ? $target_list_name.$config->{'syntax'}{'sigil'}{'entry_position'}.$target_entry_ID
                                                                               : $target_list_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$target_entry_ID;
     my $has_target =  App::Goto::Dir::Parse::is_name( $target_list_name );
-    my ($bin) = $data->get_special_lists(qw/bin/);
     if (ref $source_entry_ID eq 'ARRAY'){
         $source_entry_ID->[0] //= 1;
         $source_entry_ID->[1] //= -1;
@@ -212,8 +212,7 @@ sub undelete_entry {
                                                                     : $bin->get_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$ID;
         $ret .= " - undeleted entry '$src_address' ".App::Goto::Dir::Format::text($entry->full_dir(), 30)
                 .($has_target ? " and moved to '$target_address'\n" : "\n");
-        $data->set_special_entry( 'undel', $entry );
-        $data->set_special_entry( 'undelete', $entry );
+        $data->set_special_entry( $_, $entry ) for qw/undel undelete/;
     }
     chomp($ret);
     $ret;
@@ -287,7 +286,7 @@ sub move_entry {
         my $src_address = App::Goto::Dir::Parse::is_position( $ID ) ? $source_list_name.$config->{'syntax'}{'sigil'}{'entry_position'}.$ID
                                                                     : $source_list_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$ID;
         $ret .= " - moved entry '$src_address' to '$target_address' ".App::Goto::Dir::Format::text($entry->full_dir(), 30)."\n";
-        $data->set_special_entry( $_, $entry ) for qw/remove rem rm/;
+        $data->set_special_entry( $_, $entry, $target_list_name ) for qw/remove rem rm/;
     }
     chomp($ret);
     $ret;
@@ -330,7 +329,7 @@ sub copy_entry {
         my $src_address = App::Goto::Dir::Parse::is_position( $ID ) ? $source_list_name.$config->{'syntax'}{'sigil'}{'entry_position'}.$ID
                                                                     : $source_list_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$ID;
         $ret .= " - copied entry '$src_address' to '$target_address' ".App::Goto::Dir::Format::text($entry->full_dir(), 30)."\n";
-        $data->set_special_entry( $_, $entry ) for qw/copy cp/;
+        $data->set_special_entry( $_, $entry, $target_list_name ) for qw/copy cp/;
     }
     chomp($ret);
     $ret;
@@ -362,7 +361,7 @@ sub dir_entry {
     my $old_dir = $entry->full_dir;
     $entry->redirect( $new_dir );
     $data->get_list( $_)->refresh_reverse_hashes for $entry->member_of_lists;
-    $data->set_special_entry( 'dir', $entry );
+    $data->set_special_entry( 'dir', $entry, $list_name);
     my $address = App::Goto::Dir::Parse::is_name( $entry_ID ) ?            $config->{'syntax'}{'sigil'}{'entry_position'}.$entry_ID
                                                               : $list_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$entry_ID;
     " - chanded directory of entry $address from '$old_dir' to '$new_dir'";
@@ -419,7 +418,7 @@ sub name_entry {
     $named->insert_entry( $entry ) if $new_name and not $old_name;
     $named->remove_entry( $entry ) if $old_name and not $new_name;
     $data->get_list( $_ )->refresh_reverse_hashes for $entry->member_of_lists;
-    $data->set_special_entry( 'name', $entry );
+    $data->set_special_entry( 'name', $entry, $list_name);
     my $address = App::Goto::Dir::Parse::is_name( $entry_ID ) ?            $config->{'syntax'}{'sigil'}{'entry_position'}.$entry_ID
                                                               : $list_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$entry_ID;
     " - renamed entry $address from '$old_name' to '$new_name'";
@@ -452,7 +451,7 @@ sub script_entry {
     }
     my $old_script = $entry->script;
     $entry->edit( $new_script );
-    $data->set_special_entry( 'script', $entry );
+    $data->set_special_entry( 'script', $entry, $list_name );
     my $address = App::Goto::Dir::Parse::is_name( $entry_ID ) ?            $config->{'syntax'}{'sigil'}{'entry_position'}.$entry_ID
                                                               : $list_name.$config->{'syntax'}{'sigil'}{'entry_name'}.$entry_ID;
     " - replaced script of entry $address from '".App::Goto::Dir::Format::text($old_script, 20)."' to '".App::Goto::Dir::Format::text($new_script, 20)."'";
